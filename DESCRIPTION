@@ -22,7 +22,8 @@ Imports:
     parallelly,
     deSolve
 Remotes: AgroCares/rotsee
-License: GPL-3 | file LICENSE
+License: 
+    GPL-3
 URL: https://github.com/AgroCares/rotsee
 BugReports: https://github.com/AgroCares/rotsee/issues
 Encoding: UTF-8
