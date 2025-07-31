@@ -49,10 +49,10 @@ rc_sim <- function(A_SOM_LOI,
   soc = CDPM = CRPM = CBIO = CHUM = CIOM = bd = . = NULL
   
   # add internal table
-  blnp <- BLN::bln_parms
+  rcp <- rotsee::rc_parms
   
   # add checks
-  checkmate::assert_numeric(A_SOM_LOI, lower = blnp[code == "A_SOM_LOI", value_min], upper = blnp[code == "A_SOM_LOI", value_max],len = 1)
+  checkmate::assert_numeric(A_SOM_LOI, lower = rcp[code == "A_SOM_LOI", value_min], upper = rcp[code == "A_SOM_LOI", value_max],len = 1)
   checkmate::assert_numeric(A_CLAY_MI, lower = 0, upper = 100, any.missing = FALSE, len = 1)
   checkmate::assert_numeric(A_DEPTH, lower = 0, upper = 0.6, any.missing = FALSE, len = 1)
   checkmate::assert_numeric(B_DEPTH, lower = 0, upper = 0.3, any.missing = FALSE, len = 1)
@@ -65,10 +65,10 @@ rc_sim <- function(A_SOM_LOI,
   checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_NAME", "year","month","P_OM","P_HC","p_p2o5", "P_DOSE"), empty.ok = FALSE)
   
   # create an internal crop rotation file
-  dt.crop <- bln_rothc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
+  dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
   
   # create an internal amendment file
-  dt.org <- bln_rothc_input_amendment(dt = rothc_amendment)
+  dt.org <- rc_input_amendment(dt = rothc_amendment)
   
   # rothC model parameters
   
@@ -118,16 +118,16 @@ rc_sim <- function(A_SOM_LOI,
   }
   
   
-  # prepare the RothC model inputs (see: bln_rothc_inputs.R)
+  # prepare the RothC model inputs
   
   # make rate modifying factors input database
-  dt.rmf <- bln_rothc_input_rmf(dt = dt.crop,A_CLAY_MI = A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield)
+  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield)
   
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)
   
-  # prepare EVENT database with all C inputs over time (see: bln_rothc_events.R)
-  rothc.event <- bln_rothc_event(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = simyears)
+  # prepare EVENT database with all C inputs over time 
+  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = simyears)
   
   # initialize the RothC pools (kg C / ha)
   
@@ -231,7 +231,7 @@ rc_sim <- function(A_SOM_LOI,
   # run the model
   out <- deSolve::ode(y = y,
                       times = rothc.times,
-                      bln_rothc,
+                      rc_ode,
                       parms = rothc.parms,
                       events=list(data=rothc.event),
                       method = method,
