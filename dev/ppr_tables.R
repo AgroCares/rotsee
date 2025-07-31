@@ -1,6 +1,28 @@
 # load packages
 require(data.table);library(usethis)
 
+# make a table with input varibles and associated properties
+
+  # loaddata
+  rc_parms <- fread('data-raw/rc_parameters.csv',encoding = 'UTF-8')
+  
+  # remove prefix
+  setnames(rc_parms,gsub('rc_parm_','',colnames(rc_parms)))
+  
+  # Unpack options
+  for(this.code in rc_parms[enum == TRUE, code]){
+    if(grepl('_HELP$',this.code)){
+      rc_parms[code == this.code, choices := list(pandex::enum_opts('B_HELP_WENR'))]
+    } else {
+      rc_parms[code == this.code, choices := list(pandex::enum_opts(this.code))]
+    }
+    
+  }
+  rc_parms[code == 'B_GWL_CLASS', choices := list(pandex::enum_opts("B_GWL_CLASS"))]
+  
+  # save updated BLN parameter table
+  usethis::use_data(rc_parms,overwrite = TRUE)
+
 # make crop table
   
   # load table with crop properties from pandex (private repo)
