@@ -15,7 +15,11 @@ Depends:
     R (>= 3.5.0)
 Imports: 
     checkmate,
-    data.table
+    data.table,
+    future.apply,
+    progressr,
+    future,
+    parallelly
 Remotes: AgroCares/rotsee
 License: GPL-3 | file LICENSE
 URL: https://github.com/AgroCares/rotsee
