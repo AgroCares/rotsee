@@ -19,7 +19,8 @@ Imports:
     future.apply,
     progressr,
     future,
-    parallelly
+    parallelly,
+    deSolve
 Remotes: AgroCares/rotsee
 License: GPL-3 | file LICENSE
 URL: https://github.com/AgroCares/rotsee

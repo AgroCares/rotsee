@@ -31,8 +31,8 @@ rc_parallel <- function(this.xs, dt.c, scen, simyears = 50,p = NULL,final = TRUE
     this.som <- mean(sim.dt$A_SOM_LOI)
     this.clay <- mean(sim.dt$A_CLAY_MI)
     
-    # run RothC
-    out <- rc_field(B_LU_BRP = sim.dt$B_LU_BRP,
+    # run RothC to estimate SHI
+    out <- rc_shi_field(B_LU_BRP = sim.dt$B_LU_BRP,
                            A_SOM_LOI = this.som,
                            A_CLAY_MI =  this.clay,
                            simyears = simyears,
@@ -105,7 +105,7 @@ rc_multicore <- function(ID,B_LU_BRP,B_GWL_GLG,A_SOM_LOI,A_CLAY_MI, scen, simyea
   # Check inputs
   arg.length <- max(length(B_LU_BRP), length(A_SOM_LOI), length(A_CLAY_MI))
   checkmate::assert_numeric(B_LU_BRP, any.missing = FALSE, min.len = 1, len = arg.length)
-  checkmate::assert_subset(B_LU_BRP, choices = unique(BLN::bln_crops$crop_code), empty.ok = FALSE)
+  checkmate::assert_subset(B_LU_BRP, choices = unique(rotsee::rc_crops$crop_code), empty.ok = FALSE)
   checkmate::assert_numeric(A_CLAY_MI, lower = 0, upper = 100, any.missing = FALSE, min.len = 1)
   checkmate::assert_numeric(A_SOM_LOI, lower = 0.1, upper = 100, any.missing = FALSE, min.len = 1, len = arg.length)
   checkmate::assert_numeric(B_GWL_GLG, lower = 0, any.missing = FALSE, len = arg.length)
