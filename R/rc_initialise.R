@@ -45,13 +45,16 @@ rc_initialise <- function(B_LU_BRP,A_SOM_LOI,A_CLAY_MI,type ='A'){
   # calulate initial carbon pools at equilibrium using analytical solution (Heuvelink)
   if(type=='spinup_analytical_heuvelink'){
     
-    # averaged total C input (kg C/ha/year)
-    c_input_crop <- rotation[,sum(B_LU_EOM * 0.5 / B_LU_HC + B_LU_EOM* 0.5 / B_LU_HC)/max(year)]
+    # averaged total C input (kg C/ha/year) from crop, crop residues, catch crops and amendments
+    c_input_crop <- rotation[,sum(B_LU_EOM + fifelse(M_CROPRESIDUE==TRUE, B_LU_EOM* 0.5 / B_LU_HC,0))/max(year)]
     c_input_man <- amendment[,sum(P_DOSE * P_OM * 0.01 * 0.5)/max(year)]
-    
+    c_input_green <- rotation[,sum(fifelse(M_GREEN_TIMING=='october',300,
+                                       fifelse(M_GREEN_TIMING== 'september',500,
+                                               fifelse(M_GREEN_TIMING=='august',900,0)))* 0.5 / 0.31)/max(year)]
+
     # calculate C input ratio of crop and amendments
-    CR_proportion <- c_input_crop / (c_input_crop+c_input_man)
-    M_proportion <- c_input_man / (c_input_crop+c_input_man)
+    CR_proportion <- (c_input_crop + c_input_green) / (c_input_crop+c_input_man+c_input_green)
+    M_proportion <- c_input_man / (c_input_crop+c_input_man+c_input_green)
     
     # estimate DPM-RPM ratio of the inputs from crop and amendments
     rotation[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
@@ -95,8 +98,13 @@ rc_initialise <- function(B_LU_BRP,A_SOM_LOI,A_CLAY_MI,type ='A'){
     tau <- (1 - 0.02) * DR_amendment / (1 + DR_amendment)
     nu <- (1 - 0.02) * 1 / (1 + DR_amendment)
 
+    # calculate soil texture dependent density
+    dens.sand <- (1 / (0.02525 * A_SOM_LOI + 0.6541))
+    dens.clay <-  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206)
+    cf <- pmin(1, A_CLAY_MI/25)
+    bd <- cf * dens.clay + (1-cf) * dens.sand
+    
     # total SOC stock (ton C / ha) from bulk density (estimated with Dutch pedotransferfunction)
-    bd <- (1 / (0.02525 * A_SOM_LOI + 0.6541)) 
     CTOT <- A_SOM_LOI * 100 * 100 * 0.3 * bd * 0.01 * 0.5 
       
     # IOM pool (ton C / ha) using Falloon method
@@ -134,6 +142,78 @@ rc_initialise <- function(B_LU_BRP,A_SOM_LOI,A_CLAY_MI,type ='A'){
                       fr_BIO = Cpools[3] / Ctotal)
     
   }
+  
+  # calulate initial C pools at equilibrium using analytical solution (as implemented in BodemCoolstof tool)
+  if(type=='spinup_analytical_bodemcoolstof'){
+  
+    #B_LU_BRP <- c(2951,256,233,1932,2951,256,233)
+    
+    # what is length of the crop rotation in years
+    isimyears <- max(rotation$year)
+    
+    # use EVENT object to calculate all C inputs over time 
+    rothc.event <- rc_input_events(crops = rotation,amendment = amendment,
+                                   A_CLAY_MI = A_CLAY_MI,simyears = isimyears)
+    
+    # make rate modifying factors input function
+    dt.rmf <- rc_input_rmf(dt = rotation,B_LU_BRP = NULL,A_CLAY_MI = A_CLAY_MI, 
+                           B_DEPTH = 0.3,simyears = isimyears, cf_yield = 1)
+    
+    # make internal data.table
+    dt.soc <- data.table(A_SOM_LOI = A_SOM_LOI,A_CLAY_MI = A_CLAY_MI,B_DEPTH = 0.3)
+    
+    # calculate soil texture dependent density
+    dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541))]
+    dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206)]
+    
+    # fraction clay correction
+    dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
+    
+    # clay dependent density
+    dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
+    
+    # calculate total organic carbon (ton C / ha)
+    dt.soc[,toc := A_SOM_LOI * 0.5 * bd * B_DEPTH * 100 * 100 / 100]
+    
+    # time correction (is 12 in documentation Chantals' study, not clear why, probably due to fixed time step calculation)
+    timecor = 1
+    
+    # set rate modifying parameters
+    abc <- dt.rmf$abc
+    
+    # CDPM pool (ton C / ha)
+    cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]
+    cdpm.ini[,cf_abc := abc(time)]
+    cdpm.ini <- cdpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k1]
+    dt.soc[, cdpm.ini := mean(cdpm.ini)]
+    
+    # CRPM pool (ton C / ha)
+    crpm.ini = rothc.event[var == 'CRPM',list(time,value)]
+    crpm.ini[,cf_abc := abc(time)]
+    crpm.ini <- crpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k2]
+    dt.soc[, crpm.ini := mean(crpm.ini)]
+    
+    # CIOM pool (ton C / ha)
+    dt.soc[, ciom.ini := 0.049 * toc^1.139]
+    
+    # CBIOHUM pool (ton C /ha)
+    dt.soc[,biohum.ini := toc - ciom.ini - crpm.ini - cdpm.ini]
+    
+    # set to defaults when RPM and DPM inputs exceeds 70% / 50% of total C to avoid negative values for initial C pools
+    dt.soc[biohum.ini <0, cdpm.ini := 0.015 * (toc-ciom.ini)]
+    dt.soc[biohum.ini <0, crpm.ini := 0.125 * (toc-ciom.ini)]
+    dt.soc[, biohum.ini := toc-ciom.ini - crpm.ini - cdpm.ini]
+    
+    # CBIO and CHUM pool
+    dt.soc[,cbio.ini := biohum.ini / (1 + k3 / k4)]
+    dt.soc[,chum.ini := biohum.ini / (1 + k4 / k3)]
+    
+    fractions <- dt.soc[,.(fr_IOM = ciom.ini / toc,
+                           fr_DPM = cdpm.ini / toc,
+                           fr_RPM = crpm.ini / toc,
+                           fr_BIO = cbio.ini / toc)]
+    
+    }
   
   # unlist fractions
   fractions <- unlist(fractions)
