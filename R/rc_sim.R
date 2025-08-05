@@ -163,6 +163,9 @@ rc_sim <- function(A_SOM_LOI,
     # set rate modifying parameters
     abc <- rothc.parms$abc
     
+    # set decomposiiton rates for the four RothC pools
+    k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
+    
     # CDPM pool (ton C / ha)
     cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]
     cdpm.ini[,cf_abc := abc(time)]
