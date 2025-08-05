@@ -130,31 +130,34 @@ rc_sim <- function(A_SOM_LOI,
   # prepare EVENT database with all C inputs over time 
   rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = simyears)
   
+  # make internal data.table
+  dt.soc <- data.table(A_SOM_LOI = A_SOM_LOI,A_CLAY_MI = A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH)
+  
+  # Correct A_SOM_LOI for sampling depth
+  dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
+  dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
+  
+  # calculate soil texture dependent density
+  dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
+  dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
+  
+  # fraction clay correction
+  dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
+  
+  # clay dependent density
+  dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
+  
+  # calculate total organic carbon (kg C / ha)
+  dt.soc[,toc := A_SOM_LOI * 0.5 * bd * b_depth * 100 * 100 / 100]
+  
+  
   # initialize the RothC pools (kg C / ha)
   if(initialize == TRUE){ 
     
-     # make internal data.table
-     dt.soc <- data.table(A_SOM_LOI = A_SOM_LOI,A_CLAY_MI = A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH)
-    
-     # Correct A_SOM_LOI for sampling depth
-     dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
-     dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
-     
-     # calculate soil texture dependent density
-     dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
-     dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
-
-     # fraction clay correction
-     dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
-
-     # clay dependent density
-     dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
-
-     # calculate total organic carbon (kg C / ha)
-     dt.soc[,toc := A_SOM_LOI * 0.5 * bd * b_depth * 100 * 100 / 100]
+     # the new fractions to be calculated
+     cols <- c('fr_IOM','fr_DPM','fr_RPM','fr_BIO')
      
      # derive the initial distribution of C pools (original data.tables are used as input)
-     cols <- c('fr_IOM','fr_DPM','fr_RPM','fr_BIO')
      dt.soc[,c(cols) := as.list(rc_initialise(crops = rothc_rotation, 
                                               amendment = rothc_amendment,
                                               B_LU_BRP,A_SOM_LOI,A_CLAY_MI,
