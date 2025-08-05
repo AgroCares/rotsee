@@ -217,22 +217,29 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
     # set column names to lower case
     setnames(dt,tolower(colnames(dt)))
     
-    # add dpm-rmp ratio
-    dt[,fr_dpm_rpm := fifelse(p_hc < 0.92, -2.174 * p_hc + 2.02, 0)]
+    # do check if C inputs per pool needs to be calculated
+    check <- all(c('p_name','year','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p') %in% colnames(dt))
     
-    # estimate total Carbon input per crop and year (kg product * % organic matter * C-fraction = kg C / ha)
-    dt[, cin_tot := p_dose * p_om * 0.01 * 0.5]
+    if(check == FALSE){
+      
+      # add dpm-rmp ratio
+      dt[,fr_dpm_rpm := fifelse(p_hc < 0.92, -2.174 * p_hc + 2.02, 0)]
+      
+      # estimate total Carbon input per crop and year (kg product * % organic matter * C-fraction = kg C / ha)
+      dt[, cin_tot := p_dose * p_om * 0.01 * 0.5]
+      
+      # estimate C input for DPM, RDM and HUM pool
+      dt[, cin_hum := 0.02 * cin_tot]
+      dt[, cin_dpm := (1 - 0.02) * cin_tot * fr_dpm_rpm/ (1 + fr_dpm_rpm)]
+      dt[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
+      
+      # fractie EOC per unit p
+      dt[,fr_eoc_p := p_om * p_hc * 0.5 / p_p2o5]
+      
+      # select only columns that are relevant here
+      dt <- dt[,.(year,month,cin_tot,cin_hum,cin_dpm,cin_rpm,fr_eoc_p)]
+    }
     
-    # estimate C input for DPM, RDM and HUM pool
-    dt[, cin_hum := 0.02 * cin_tot]
-    dt[, cin_dpm := (1 - 0.02) * cin_tot * fr_dpm_rpm/ (1 + fr_dpm_rpm)]
-    dt[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
-    
-    # fractie EOC per unit p
-    dt[,fr_eoc_p := p_om * p_hc * 0.5 / p_p2o5]
-    
-    # select only columns that are relevant here
-    dt <- dt[,.(year,month,cin_tot,cin_hum,cin_dpm,cin_rpm,fr_eoc_p)]
   }
   
   

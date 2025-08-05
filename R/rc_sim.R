@@ -41,7 +41,7 @@ rc_sim <- function(A_SOM_LOI,
                    M_TILLAGE_SYSTEM = 'CT',
                    rothc_rotation = NULL,
                    rothc_amendment = NULL,
-                   rothc_parms = list(simyears = 50, init = FALSE,spinup = 10,method='adams')){
+                   rothc_parms = list(simyears = 50, initialize = FALSE,spinup = 10,method='adams')){
   
   # add visual bindings
   code = value_min = value_max = a_depth = dens.sand = dens.clay = cf = bd = toc = NULL
@@ -61,7 +61,7 @@ rc_sim <- function(A_SOM_LOI,
   checkmate::assert_subset(M_TILLAGE_SYSTEM,choices = c('NT','ST','CT','DT'), empty.ok = FALSE)
   checkmate::assert_data_table(rothc_rotation)
   checkmate::assert_data_table(rothc_amendment)
-  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year","B_LU_EOM","B_LU_EOM_RESIDUE", "B_LU_HC","M_GREEN_TIMING","M_CROPRESIDUE","B_LU"), empty.ok = FALSE)
+  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year","B_LU_EOM","B_LU_EOM_RESIDUE", "B_LU_HC","M_GREEN_TIMING","M_CROPRESIDUE","B_LU",'M_IRRIGATION','cf_yield'), empty.ok = FALSE)
   checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_NAME", "year","month","P_OM","P_HC","p_p2o5", "P_DOSE"), empty.ok = FALSE)
   
   # create an internal crop rotation file
@@ -104,7 +104,8 @@ rc_sim <- function(A_SOM_LOI,
   # add checks on C distribution over pools
   
   # set defaults equal to input
-  c_fractions <- list(fr_IOM = 0.049,fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015)
+  c_fractions <- list(fr_IOM = 0.049,
+                      fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015)
   
   # overwrite with user input
   if(!is.null(rothc_parms$c_fractions)){
@@ -130,75 +131,41 @@ rc_sim <- function(A_SOM_LOI,
   rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = simyears)
   
   # initialize the RothC pools (kg C / ha)
-  
-  # make internal data.table
-  dt.soc <- data.table(A_SOM_LOI = A_SOM_LOI,A_CLAY_MI = A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH)
-  
-  # Correct A_SOM_LOI for sampling depth
-  dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
-  dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
-  
-  # calculate soil texture dependent density
-  dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
-  dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
-  
-  # fraction clay correction
-  dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
-  
-  # clay dependent density
-  dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
-  
-  # calculate total organic carbon (kg C / ha)
-  dt.soc[,toc := A_SOM_LOI * 0.5 * bd * b_depth * 100 * 100 / 100]
-  
-  # set the default initialisation to the one used in BodemCoolstof
-  if(initialize == TRUE){
+  if(initialize == TRUE){ 
     
-    # set TOC to ton C / ha
-    dt.soc[, toc := toc * 0.001]
+     # make internal data.table
+     dt.soc <- data.table(A_SOM_LOI = A_SOM_LOI,A_CLAY_MI = A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH)
     
-    # time correction (is 12 in documentation Chantals' study, not clear why, probably due to fixed time step calculation)
-    timecor = 1
-    
-    # set rate modifying parameters
-    abc <- rothc.parms$abc
-    
-    # set decomposiiton rates for the four RothC pools
-    k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
-    
-    # CDPM pool (ton C / ha)
-    cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]
-    cdpm.ini[,cf_abc := abc(time)]
-    cdpm.ini <- cdpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k1]
-    dt.soc[, cdpm.ini := mean(cdpm.ini)]
-    
-    # CRPM pool (ton C / ha)
-    crpm.ini = rothc.event[var == 'CRPM',list(time,value)]
-    crpm.ini[,cf_abc := abc(time)]
-    crpm.ini <- crpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k2]
-    dt.soc[, crpm.ini := mean(crpm.ini)]
-    
-    # CIOM pool (ton C / ha)
-    dt.soc[, ciom.ini := 0.049 * toc^1.139]
-    
-    # CBIOHUM pool (ton C /ha)
-    dt.soc[,biohum.ini := toc - ciom.ini - crpm.ini - cdpm.ini]
-    
-    # set to defaults when RPM and DPM inputs exceeds 70% / 50% of total C to avoid negative values for initial C pools
-    dt.soc[biohum.ini <0, cdpm.ini := 0.015 * (toc-ciom.ini)]
-    dt.soc[biohum.ini <0, crpm.ini := 0.125 * (toc-ciom.ini)]
-    dt.soc[, biohum.ini := toc-ciom.ini - crpm.ini - cdpm.ini]
-    
-    # CBIO and CHUM pool
-    dt.soc[,cbio.ini := biohum.ini / (1 + k3 / k4)]
-    dt.soc[,chum.ini := biohum.ini / (1 + k4 / k3)]
-    
+     # Correct A_SOM_LOI for sampling depth
+     dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
+     dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
+     
+     # calculate soil texture dependent density
+     dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
+     dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
+
+     # fraction clay correction
+     dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
+
+     # clay dependent density
+     dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
+
+     # calculate total organic carbon (kg C / ha)
+     dt.soc[,toc := A_SOM_LOI * 0.5 * bd * b_depth * 100 * 100 / 100]
+     
+     # derive the initial distribution of C pools (original data.tables are used as input)
+     cols <- c('fr_IOM','fr_DPM','fr_RPM','fr_BIO')
+     dt.soc[,c(cols) := as.list(rc_initialise(crops = rothc_rotation, 
+                                              amendment = rothc_amendment,
+                                              B_LU_BRP,A_SOM_LOI,A_CLAY_MI,
+                                              type ='spinup_analytical_bodemcoolstof'))]
+     
     # Set the intial C pools (kg C / ha)
-    dt.soc[,CIOM0 := ciom.ini * 1000]
-    dt.soc[,CDPM0 := cdpm.ini * 1000]
-    dt.soc[,CRPM0 := crpm.ini * 1000]
-    dt.soc[,CBIO0 := cbio.ini * 1000]
-    dt.soc[,CHUM0 := chum.ini * 1000]
+    dt.soc[,CIOM0 := toc * fr_IOM]
+    dt.soc[,CDPM0 := toc * fr_DPM]
+    dt.soc[,CRPM0 := toc * fr_RPM]
+    dt.soc[,CBIO0 := toc * fr_BIO]
+    dt.soc[,CHUM0 := toc * (1 - fr_IOM - fr_DPM - fr_RPM-fr_BIO)]
     
   } else {
     
