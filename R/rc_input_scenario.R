@@ -179,8 +179,12 @@ rc_input_scenario <- function(B_LU_BRP, scen){
     
   }
   
+  # add default situation with no irrigation
+  rotation[, M_IRRIGATION := FALSE]
+  
   # subset final rotation
-  rotation <- rotation[,.(year,B_LU_BRP,B_LU_EOM,B_LU_EOM_RESIDUE,B_LU_HC,M_GREEN_TIMING,M_CROPRESIDUE)]
+  rotation <- rotation[,.(year,B_LU_BRP,B_LU_EOM,B_LU_EOM_RESIDUE,B_LU_HC,
+                          M_GREEN_TIMING,M_CROPRESIDUE,M_IRRIGATION)]
   
   # add B_LU for Dutch situation
   rotation[, B_LU := paste0('nl_',B_LU_BRP)]
