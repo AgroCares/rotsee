@@ -85,9 +85,12 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   # get internal copies of tables
   cc.crop <- as.data.table(rotsee::rc_crops)
   cc.crop[,B_LU := paste0('nl_',crop_code)]
+  cc.crop[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
+  cc.crop[is.na(fr_dpm_rpm), fr_dpm_rpm := 1.44]
   
   # add crop names and catch crop characteristics to table
-  dt <- merge(dt,cc.crop,by = 'B_LU',all.x = TRUE)
+  cols <- c(colnames(cc.crop)[!colnames(cc.crop) %in% colnames(dt)],'B_LU')
+  dt <- merge(dt,cc.crop[,mget(cols)],by = 'B_LU',all.x = TRUE)
   
   # adjust crop rotation plan, and extend to months
   
@@ -101,7 +104,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   
   # set crop carbon inputs from catch crops
   dt.green[M_GREEN_TIMING == 'august', green_eom := 900]
-  dt.green[M_GREEN_TIMING == 'septmber', green_eom := 500]
+  dt.green[M_GREEN_TIMING == 'september', green_eom := 500]
   dt.green[M_GREEN_TIMING == 'october', green_eom := 300]
   dt.green[M_GREEN_TIMING == 'november', green_eom := 0]
   dt.green[,M_GREEN_TIMING := NULL]
@@ -125,7 +128,11 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   dt[grepl('^nl_',B_LU) & month < 4 & year %in% year_cc, crop_name := "catch crop"]
   dt[,crflt := NULL]
   
-  # estimate total EOC input
+  # estimate total EOC input via crop and residue
+  dt[, cin_crop_dpm :=  (B_LU_EOM * 0.5 / B_LU_HC) *  fr_dpm_rpm / (1 + fr_dpm_rpm)]
+  dt[, cin_crop_rpm :=  (B_LU_EOM * 0.5 / B_LU_HC) *  1 / (1 + fr_dpm_rpm)]
+  dt[, cin_res_dpm :=  (B_LU_EOM_RESIDUE * 0.5 / B_LU_HC) *  fr_dpm_rpm / (1 + fr_dpm_rpm)]
+  dt[, cin_res_rpm :=  (B_LU_EOM_RESIDUE * 0.5 / B_LU_HC) *  1 / (1 + fr_dpm_rpm)]
   
   # add total crop EOC input (kg C/ ha) for the RothC pools, uncorrected for cf_yield
   dt[,cin_dpm := cin_crop_dpm + fifelse(M_CROPRESIDUE==TRUE, cin_res_dpm, 0)]
@@ -201,8 +208,33 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   cin_hum = cin_rpm = cin_dpm = method = crop_code = crop_name = NULL
   fr_eoc_p = time = NULL
   
-  # make local copy
-  dt <- copy(amendment)
+  # make local copy and add relevant variables if missing
+  if(!is.null(amendment)){
+    
+    # make local copy
+    dt <- copy(amendment)
+    
+    # set column names to lower case
+    setnames(dt,tolower(colnames(dt)))
+    
+    # add dpm-rmp ratio
+    dt[,fr_dpm_rpm := fifelse(p_hc < 0.92, -2.174 * p_hc + 2.02, 0)]
+    
+    # estimate total Carbon input per crop and year (kg product * % organic matter * C-fraction = kg C / ha)
+    dt[, cin_tot := p_dose * p_om * 0.01 * 0.5]
+    
+    # estimate C input for DPM, RDM and HUM pool
+    dt[, cin_hum := 0.02 * cin_tot]
+    dt[, cin_dpm := (1 - 0.02) * cin_tot * fr_dpm_rpm/ (1 + fr_dpm_rpm)]
+    dt[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
+    
+    # fractie EOC per unit p
+    dt[,fr_eoc_p := p_om * p_hc * 0.5 / p_p2o5]
+    
+    # select only columns that are relevant here
+    dt <- dt[,.(year,month,cin_tot,cin_hum,cin_dpm,cin_rpm,fr_eoc_p)]
+  }
+  
   
   # make default crop amendment data.table when dt = NULL
   if(is.null(dt)){dt <- data.table(year = crops[1,year], month = 1, cin_tot = 0, cin_hum = 0,
@@ -268,7 +300,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
     dt2[!grepl('gras',B_LU_NAME) & p_cat == 'autumn', tcf := fifelse(month == 10,1, 0)]
     
     # add timings for winter cereal
-    dt2[grepl('^nl_',B_LU) & grepl('tarwe|Wheat',B_LU_NAME) & grepl('winter|wheat',B_LU_NAME), tcf := fifelse(month == 9,1,0)]
+    dt2[grepl('^nl_',B_LU) & grepl('tarwe|wheat',B_LU_NAME) & grepl('winter|wheat',B_LU_NAME), tcf := fifelse(month == 9,1,0)]
     
     # all other crops, assume amendment month is April
     dt2[is.na(tcf), tcf := fifelse(month == 3,1,0)]
