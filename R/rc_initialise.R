@@ -1,22 +1,40 @@
 #' Function for initializing the RothC model
 #'
+#' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
+#' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.
 #' @param B_LU_BRP (numeric) value of the BRP crop code
 #' @param A_SOM_LOI (numeric) value for the soil organic matter content of the soil
 #' @param A_CLAY_MI (numeric) value for the clay content of the soil
+#' @param type (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #' @import data.table
+#' 
+#' @details
+#' The crop table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
+#' To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
+#' if crops is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
+#' The same is done for the amendment data.table. This table requires as input:"P_NAME", "year","month","P_OM","P_HC","p_p2o5", and "P_DOSE"
 #'
 #' @export
-rc_initialise <- function(B_LU_BRP,A_SOM_LOI,A_CLAY_MI,type ='A'){
+rc_initialise <- function(crops = NULL,amendment = NULL,
+                          B_LU_BRP = NULL,A_SOM_LOI,A_CLAY_MI,
+                          type ='spinup_analytical_bodemcoolstof'){
   
   # add visual bindings
   . = CIOM = CDPM = CRPM = CBIO = NULL
   
   # Prepare input for scenario Business As Usual
-  scen.inp <- rc_input_scenario(B_LU_BRP = B_LU_BRP, scen = 'BAU')
-  rotation <- scen.inp$rotation
-  amendment <- scen.inp$amendment
+  if(is.null(crops) | is.null(amendment)){
+    
+    # get default estimates following the land use BRP
+    scen.inp <- rc_input_scenario(B_LU_BRP = B_LU_BRP, scen = 'BAU')
+    
+  }
   
+  # get estimates for crop and amendment table
+  if(is.null(crops)){rotation <-  scen.inp$rotation} else {rotation <- crops}
+  if(is.null(amendment)){amendment <- scen.inp$amendment} else {amendment <- amendment}
+
   # initialise options
   
   # do a simulation for 150 years to estimate the C fractions assuming system is in equilibrium
@@ -42,7 +60,7 @@ rc_initialise <- function(B_LU_BRP,A_SOM_LOI,A_CLAY_MI,type ='A'){
     
   }
   
-  # calulate initial carbon pools at equilibrium using analytical solution (Heuvelink)
+  # calculate initial carbon pools at equilibrium using analytical solution (Heuvelink)
   if(type=='spinup_analytical_heuvelink'){
     
     # averaged total C input (kg C/ha/year) from crop, crop residues, catch crops and amendments
@@ -72,7 +90,7 @@ rc_initialise <- function(B_LU_BRP,A_SOM_LOI,A_CLAY_MI,type ='A'){
                            B_DEPTH = 0.3,simyears = isimyears, cf_yield = 1)
     
     # ratio CO2 / (BIO+HUM)
-    x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * clay))
+    x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * A_CLAY_MI))
     
     # transfer coefficients (B is BIO, H = HUM)
     B = 0.46/(x + 1)
@@ -98,13 +116,13 @@ rc_initialise <- function(B_LU_BRP,A_SOM_LOI,A_CLAY_MI,type ='A'){
     tau <- (1 - 0.02) * DR_amendment / (1 + DR_amendment)
     nu <- (1 - 0.02) * 1 / (1 + DR_amendment)
 
-    # calculate soil texture dependent density
+    # calculate soil texture dependent density (estimated with Dutch pedotransferfunction)
     dens.sand <- (1 / (0.02525 * A_SOM_LOI + 0.6541))
     dens.clay <-  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206)
     cf <- pmin(1, A_CLAY_MI/25)
     bd <- cf * dens.clay + (1-cf) * dens.sand
     
-    # total SOC stock (ton C / ha) from bulk density (estimated with Dutch pedotransferfunction)
+    # total SOC stock (ton C / ha) from bulk density 
     CTOT <- A_SOM_LOI * 100 * 100 * 0.3 * bd * 0.01 * 0.5 
       
     # IOM pool (ton C / ha) using Falloon method
@@ -180,6 +198,9 @@ rc_initialise <- function(B_LU_BRP,A_SOM_LOI,A_CLAY_MI,type ='A'){
     
     # set rate modifying parameters
     abc <- dt.rmf$abc
+    
+    # set default decomposition rates
+    k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
     
     # CDPM pool (ton C / ha)
     cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]
