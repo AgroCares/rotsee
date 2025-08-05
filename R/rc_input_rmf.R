@@ -53,7 +53,6 @@ rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, si
   # check crops input data
   checkmate::assert_data_table(dt)
   checkmate::assert_true(sum(c('M_GREEN_TIMING','M_IRRIGATION','M_CROPRESIDUE') %in% colnames(dt)) == 3)
-  checkmate::assert_numeric(dt$cf_yield,lower = 0, upper = 2.0, any.missing = FALSE)
   checkmate::assert_character(dt$M_GREEN_TIMING, any.missing = FALSE)
   checkmate::assert_subset(dt$M_GREEN_TIMING,c('august','september','october','november','never'))
   checkmate::assert_logical(dt$M_CROPRESIDUE,any.missing = FALSE)
