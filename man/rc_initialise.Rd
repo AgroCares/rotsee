@@ -4,15 +4,34 @@
 \alias{rc_initialise}
 \title{Function for initializing the RothC model}
 \usage{
-rc_initialise(B_LU_BRP, A_SOM_LOI, A_CLAY_MI)
+rc_initialise(
+  crops = NULL,
+  amendment = NULL,
+  B_LU_BRP = NULL,
+  A_SOM_LOI,
+  A_CLAY_MI,
+  type = "spinup_analytical_bodemcoolstof"
+)
 }
 \arguments{
+\item{crops}{(data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.}
+
+\item{amendment}{(data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.}
+
 \item{B_LU_BRP}{(numeric) value of the BRP crop code}
 
 \item{A_SOM_LOI}{(numeric) value for the soil organic matter content of the soil}
 
 \item{A_CLAY_MI}{(numeric) value for the clay content of the soil}
+
+\item{type}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
 }
 \description{
 Function for initializing the RothC model
+}
+\details{
+The crop table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
+To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
+if crops is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
+The same is done for the amendment data.table. This table requires as input:"P_NAME", "year","month","P_OM","P_HC","p_p2o5", and "P_DOSE"
 }

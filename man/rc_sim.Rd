@@ -13,7 +13,7 @@ rc_sim(
   M_TILLAGE_SYSTEM = "CT",
   rothc_rotation = NULL,
   rothc_amendment = NULL,
-  rothc_parms = list(simyears = 50, init = FALSE, spinup = 10, method = "adams")
+  rothc_parms = list(simyears = 50, initialize = FALSE, spinup = 10, method = "adams")
 )
 }
 \arguments{

@@ -4,12 +4,14 @@
 \alias{rc_input_scenario}
 \title{Function to prepare inputs for various scenarios with RothC (for the Netherlands)}
 \usage{
-rc_input_scenario(B_LU_BRP, scen)
+rc_input_scenario(B_LU_BRP, scen, cf_yield = 1)
 }
 \arguments{
 \item{B_LU_BRP}{(numeric) value of the BRP crop code}
 
 \item{scen}{(character) possible scenarios. Include BAU, CLT, BAUIMPR and ALL}
+
+\item{cf_yield}{(numeric) A yield correction factor (fraction) if yield is higher than regional average}
 }
 \description{
 This functions prepares the input for scenarios differing in C inputs.

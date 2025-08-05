@@ -47,6 +47,7 @@ rc_sim <- function(A_SOM_LOI,
   code = value_min = value_max = a_depth = dens.sand = dens.clay = cf = bd = toc = NULL
   b_depth = var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
   soc = CDPM = CRPM = CBIO = CHUM = CIOM = bd = . = NULL
+  fr_IOM = fr_DPM = fr_RPM = fr_BIO = B_LU_BRP = NULL
   
   # add internal table
   rcp <- rotsee::rc_parms
@@ -160,7 +161,7 @@ rc_sim <- function(A_SOM_LOI,
      # derive the initial distribution of C pools (original data.tables are used as input)
      dt.soc[,c(cols) := as.list(rc_initialise(crops = rothc_rotation, 
                                               amendment = rothc_amendment,
-                                              B_LU_BRP,A_SOM_LOI,A_CLAY_MI,
+                                              B_LU_BRP = NULL,A_SOM_LOI,A_CLAY_MI,
                                               type ='spinup_analytical_bodemcoolstof'))]
      
     # Set the intial C pools (kg C / ha)

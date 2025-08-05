@@ -8,6 +8,7 @@
 #' @param type (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #' @import data.table
+#' @importFrom stats weighted.mean
 #' 
 #' @details
 #' The crop table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
@@ -22,7 +23,10 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
   
   # add visual bindings
   . = CIOM = CDPM = CRPM = CBIO = NULL
-  
+  B_LU_EOM = B_LU_EOM_RESIDUE = M_CROPRESIDUE = B_LU_HC = P_DOSE = P_OM = P_HC = NULL
+  M_GREEN_TIMING = fr_dpm_rpm = toc = B_DEPTH = time = var = cf_abc = NULL
+  ciom.ini = biohum.ini = cbio.ini = chum.ini = NULL
+    
   # Prepare input for scenario Business As Usual
   if(is.null(crops) | is.null(amendment)){
     

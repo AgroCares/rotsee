@@ -66,6 +66,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   M_GREEN_TIMING = M_CROPRESIDUE = green_eom = NULL
   crflt = cin_dpm = cin_crop_dpm = cin_res_dpm = cin_rpm = cin_crop_rpm = cin_res_rpm = NULL
   cin_crop = tcf = method = cf_yield = crop_code = time = NULL
+  fr_dpm_rpm = B_LU_EOM = B_LU_HC = B_LU_EOM_RESIDUE = M_IRRIGATION = NULL
   
   # check inputs
   arg.length <- nrow(crops)
@@ -206,7 +207,8 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   # add visual bindings
   B_LU = B_LU_NAME = p_cat = fre_eoc_p = crflt = tcf = NULL
   cin_hum = cin_rpm = cin_dpm = method = crop_code = crop_name = NULL
-  fr_eoc_p = time = NULL
+  fr_eoc_p = time = fr_dpm_rpm = cin_tot = NULL
+  . = p_dose = p_om = p_hc = p_p2o5 = NULL
   
   # make local copy and add relevant variables if missing
   if(!is.null(amendment)){

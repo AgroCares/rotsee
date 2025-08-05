@@ -13,6 +13,7 @@ rc_input_scenario <- function(B_LU_BRP, scen, cf_yield = 1){
   . = B_LU_NAME = B_LU_EOM = B_LU_EOM_RESIDUE = B_LU_HC = B_LU_WATERSTRESS_OBIC = NULL
   B_LU = gld = cereal = nat = bld = M_GREEN_TIMING = M_CROPRESIDUE = man_name = NULL
   P_OM = P_HC = P_p2o5 = P_DOSE = P_NAME = p_p2o5 = crop_code = crop_name = NULL
+  M_IRRIGATION = NULL
   
   # check inputs
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
