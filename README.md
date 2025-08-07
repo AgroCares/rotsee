@@ -41,7 +41,7 @@ This project is licensed under the GPL-3 License - see the [LICENSE](LICENSE) fi
 
 The `rotsee` package is developed and maintained by the [Nutrienten Management Instituut (NMI)](https://nmi-agro.nl) in Wageningen, the Netherlands.
 
-![Logo of NMI](https://www.nmi-agro.nl/wp-content/uploads/2021/03/NMI-logo- tagline-768x292.png)
+![Logo of NMI](https://media.licdn.com/dms/image/C560BAQEYGcm4HjNnxA/company-logo_200_200/0?e=2159024400&v=beta&t=u40rJ7bixPWB2SAqaj3KCKzJRoKcqf0wUXCdmsTDQvw)
 
 ## Contact
 
