@@ -2,25 +2,18 @@
 #'
 #' This function combines required inputs into a data.table that is needed as input for the RothC model.
 #'
-#' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.
-#' @param A_CLAY_MI (numeric) The clay content of the soil (\%).
+#' @param crops (data.table) Table containing carbon inputs of DPM and RPM from crops, calculated in rc_input_event_crop
+#' @param amendment (data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments, calculated in rc_input_event_amendment
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #'
 #' @export
-rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears){
+rc_input_events <- function(crops,amendment, simyears){
   
   # add visual bindings
   id = time = yr_rep = NULL
   
-  # estimate default crop rotation plan, the building block
-  event.crop <- rc_input_event_crop(crops = crops, A_CLAY_MI)
-  
-  # estimate Carbon input via manure, compost and organic residues
-  event.man <- rc_input_event_amendment(crops = crops,amendment = amendment)
-  
   # create event
-  rothc.event <- rbind(event.crop,event.man)
+  rothc.event <- rbind(crops,amendment)
   
   # sum multiple additives that are given at same time
   rothc.event <- rothc.event[,list(value = sum(value)),by = c('time','var','method')]

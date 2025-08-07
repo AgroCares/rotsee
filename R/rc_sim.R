@@ -126,8 +126,14 @@ rc_sim <- function(A_SOM_LOI,
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)
   
+  # estimate default crop rotation plan, the building block
+  event.crop <- rc_input_event_crop(crops = dt.crop, A_CLAY_MI)
+  
+  # estimate Carbon input via manure, compost and organic residues
+  event.man <- rc_input_event_amendment(crops = dt.crop,amendment = dt.org)
+  
   # prepare EVENT database with all C inputs over time 
-  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = simyears)
+  rothc.event <- rc_input_events(crops = event.crop,amendment = dt.org, simyears = simyears)
   
   # initialize the RothC pools (kg C / ha)
   
