@@ -1,4 +1,6 @@
 # rotsee UNRELEASED
+## Added
+* Add GitHub Action to run R-CMD-CHECK for PR's
 
 # rotsee v0.0.1 2025-07-31
 
