@@ -1,3 +1,13 @@
+# rotsee UNRELEASED
+## Added
+* Add GitHub Action to run R-CMD-CHECK for PR's
+
+## Changed
+* Expand README with some introductory text about the package
+
+## Fixed
+* Add missing dependenies for `roxygen2`, `devtools` and `usethis`
+
 # rotsee v0.0.1 2025-07-31
 
 ## Added
