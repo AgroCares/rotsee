@@ -1,4 +1,7 @@
 # rotsee UNRELEASED
+## Changed
+* Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
+  
 ## Added
 * Add GitHub Action to run R-CMD-CHECK for PR's
 
@@ -6,7 +9,7 @@
 * Expand README with some introductory text about the package
 
 ## Fixed
-* Add missing dependenies for `roxygen2`, `devtools` and `usethis`
+* Add missing dependencies for `roxygen2`, `devtools` and `usethis`
 
 # rotsee v0.0.1 2025-07-31
 
