@@ -34,5 +34,6 @@ Suggests:
     knitr,
     rmarkdown,
     ggplot2,
-    patchwork
+    patchwork,
+    roxygen2
 Config/testthat/edition: 3
