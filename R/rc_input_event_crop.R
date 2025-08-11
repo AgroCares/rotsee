@@ -48,7 +48,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   
   # set crop carbon inputs from catch crops
   dt.green[M_GREEN_TIMING == 'august', green_eom := 900]
-  dt.green[M_GREEN_TIMING == 'septmber', green_eom := 500]
+  dt.green[M_GREEN_TIMING == 'september', green_eom := 500]
   dt.green[M_GREEN_TIMING == 'october', green_eom := 300]
   dt.green[M_GREEN_TIMING == 'november', green_eom := 0]
   dt.green[,M_GREEN_TIMING := NULL]
