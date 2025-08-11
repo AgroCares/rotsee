@@ -85,8 +85,12 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
     dt2[!grepl('gras',B_LU_NAME) & p_cat == 'autumn', tcf := fifelse(month == 10,1, 0)]
     
     # add timings for winter cereal
-    dt2[grepl('^nl_',B_LU) & grepl('tarwe|Wheat',B_LU_NAME) & grepl('winter|wheat',B_LU_NAME), tcf := fifelse(month == 9,1,0)]
-    
+    dt2[
+      grepl('^nl_', B_LU) &
+      grepl('tarwe|wheat', B_LU_NAME, ignore.case = TRUE) &
+      grepl('winter',   B_LU_NAME, ignore.case = TRUE),
+      tcf := fifelse(month == 9, 1, 0)
+    ]
     # all other crops, assume amendment month is April
     dt2[is.na(tcf), tcf := fifelse(month == 3,1,0)]
     
