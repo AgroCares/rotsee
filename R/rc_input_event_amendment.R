@@ -14,7 +14,7 @@
 rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # add visual bindings
-  B_LU = B_LU_NAME = p_cat = fre_eoc_p = crflt = tcf = NULL
+  B_LU = B_LU_NAME = p_cat = fr_eoc_p = crflt = tcf = NULL
   cin_hum = cin_rpm = cin_dpm = method = crop_code = crop_name = NULL
   fr_eoc_p = time = NULL
   
