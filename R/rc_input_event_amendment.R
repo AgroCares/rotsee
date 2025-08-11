@@ -92,8 +92,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
       tcf := fifelse(month == 9, 1, 0)
     ]
     # all other crops, assume amendment month is April
-    dt2[is.na(tcf), tcf := fifelse(month == 3,1,0)]
-    
+    dt2[is.na(tcf), tcf := fifelse(month == 4, 1, 0)]
   } else {
     
     # make a copy if month is already given
