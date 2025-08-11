@@ -32,9 +32,9 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
-  checkmate::assert_subset(colnames(dt),
-                           c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'),
-                           empty.ok = FALSE)
+  checkmate::assert_names(names(dt),
+    must.include = c('year','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'),
+    subset.of    = c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'))
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt))
