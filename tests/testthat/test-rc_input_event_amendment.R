@@ -7,7 +7,7 @@ library(data.table)
 # Setup function to create test data
 create_test_crops <- function() {
   data.table(
-    B_LU = c("nl_101", "nl_102", "nl_103"),
+    B_LU = c("nl_233", "nl_244", "nl_316"),
     year = c(2020, 2021, 2022)
   )
 }
