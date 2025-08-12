@@ -70,7 +70,7 @@ test_that("rc_input_events repetition logic works correctly", {
   actual_dpm_times <- sort(result[var == "DPM"]$time)
   actual_rpm_times <- sort(result[var == "RPM"]$time)
   
-  expect_equal(actual_dpm_times, expected_dmp_times)
+  expect_equal(actual_dpm_times, expected_dpm_times)
   expect_equal(actual_rpm_times, expected_rpm_times)
 })
 

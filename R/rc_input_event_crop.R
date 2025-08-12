@@ -102,7 +102,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   dt[,crflt := NULL]
   
   # add carbon crop residue from catch crops
-  dt <- merge(dt,dt.green, by = 'year', all.x = TRUE)
+  dt <- merge(dt,dt.green, by = 'year', all.x = TRUE, allow.cartesian = TRUE)
   dt[grepl('^nl_',B_LU) & grepl('catch crop',crop_name) & month == 3,crflt := 1]
   dt[crflt == 1, cin_dpm := (green_eom * 0.5 / 0.31) * cf_yield * 1.35 / (1 + 1.35)]
   dt[crflt == 1, cin_rpm := (green_eom * 0.5 / 0.31) * cf_yield * 1 / (1 + 1.35)]
