@@ -14,7 +14,7 @@
 rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # add visual bindings
-  B_LU = B_LU_NAME = p_cat = fre_eoc_p = crflt = tcf = NULL
+  B_LU = B_LU_NAME = p_cat = fr_eoc_p = crflt = tcf = NULL
   cin_hum = cin_rpm = cin_dpm = method = crop_code = crop_name = NULL
   fr_eoc_p = time = NULL
   
@@ -32,9 +32,9 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
-  checkmate::assert_subset(colnames(dt),
-                           c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'),
-                           empty.ok = FALSE)
+  checkmate::assert_names(names(dt),
+    must.include = c('year','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'),
+    subset.of    = c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'))
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt))
@@ -47,7 +47,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   cc.crop[,B_LU := paste0('nl_',crop_code)]
   
   # merge table with amendment c input with crop name
-  dt <- merge(dt, crops[,list(B_LU,year)], by='year')
+  dt <- merge(dt, crops[,list(B_LU,year)], by='year', allow.cartesian = TRUE)
   dt <- merge(dt, cc.crop[,list(B_LU,B_LU_NAME=crop_name)],by='B_LU')
   
   # add manure category depending on eoc-to-p ratio
@@ -85,11 +85,14 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
     dt2[!grepl('gras',B_LU_NAME) & p_cat == 'autumn', tcf := fifelse(month == 10,1, 0)]
     
     # add timings for winter cereal
-    dt2[grepl('^nl_',B_LU) & grepl('tarwe|Wheat',B_LU_NAME) & grepl('winter|wheat',B_LU_NAME), tcf := fifelse(month == 9,1,0)]
-    
+    dt2[
+      grepl('^nl_', B_LU) &
+      grepl('tarwe|wheat', B_LU_NAME, ignore.case = TRUE) &
+      grepl('winter',   B_LU_NAME, ignore.case = TRUE),
+      tcf := fifelse(month == 9, 1, 0)
+    ]
     # all other crops, assume amendment month is April
-    dt2[is.na(tcf), tcf := fifelse(month == 3,1,0)]
-    
+    dt2[is.na(tcf), tcf := fifelse(month == 4, 1, 0)]
   } else {
     
     # make a copy if month is already given
