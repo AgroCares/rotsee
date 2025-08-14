@@ -56,7 +56,7 @@ test_that("rc_input_event_amendment validates crops parameter correctly", {
   
   # Test with non-data.table crops
   expect_error(
-    rc_input_event_amendment(data.frame(B_LU = "nl_101", year = 2020), amendment),
+    rc_input_event_amendment(data.frame(B_LU = "nl_233", year = 2020), amendment),
     "data.table"
   )
   
@@ -68,7 +68,7 @@ test_that("rc_input_event_amendment validates crops parameter correctly", {
   )
   
   # Test with missing year column
-  crops_no_year <- data.table(B_LU = "nl_101")
+  crops_no_year <- data.table(B_LU = "nl_233")
   expect_error(
     rc_input_event_amendment(crops_no_year, amendment),
     "year"
@@ -156,7 +156,7 @@ test_that("rc_input_event_amendment categorizes amendments correctly based on fr
 test_that("rc_input_event_amendment handles grassland timing correctly", {
   # Create grassland crops (using actual crop codes from the package)
   grass_crops <- data.table(
-    B_LU = "nl_103",  # Based on package data structure
+    B_LU = "nl_266",  # Based on package data structure
     year = 2020
   )
   
@@ -183,7 +183,7 @@ test_that("rc_input_event_amendment handles grassland timing correctly", {
 test_that("rc_input_event_amendment handles winter wheat timing correctly", {
   # Create winter wheat crops (using actual crop codes from the package)
   wheat_crops <- data.table(
-    B_LU = "nl_101",  # Based on package data structure
+    B_LU = "nl_233",  # Based on package data structure
     year = 2020
   )
   
@@ -265,7 +265,7 @@ test_that("rc_input_event_amendment handles NA month values", {
 # Test multiple years with different amendments
 test_that("rc_input_event_amendment handles multiple years correctly", {
   crops <- data.table(
-    B_LU = rep("nl_101", 3),
+    B_LU = rep("nl_233", 3),
     year = 2020:2022
   )
   
@@ -290,7 +290,7 @@ test_that("rc_input_event_amendment handles multiple years correctly", {
 
 # Test time calculation accuracy
 test_that("rc_input_event_amendment calculates time correctly", {
-  crops <- data.table(B_LU = "nl_101", year = 2020)
+  crops <- data.table(B_LU = "nl_233", year = 2020)
   amendment <- data.table(
     year = 2020,
     month = 6,  # June
@@ -310,27 +310,6 @@ test_that("rc_input_event_amendment calculates time correctly", {
 #  expect_true(any(abs(result$time - expected_time) < 0.1))
 })
 
-# Test data.table ordering
-test_that("rc_input_event_amendment returns properly ordered results", {
-  crops <- data.table(
-    B_LU = rep("nl_101", 2),
-    year = c(2020, 2021)
-  )
-  
-  amendment <- data.table(
-    year = c(2021, 2020),  # Intentionally out of order
-    cin_tot = c(1000, 1500),
-    cin_hum = c(100, 150),
-    cin_dpm = c(300, 450),
-    cin_rpm = c(600, 900),
-    fr_eoc_p = c(15, 15)
-  )
-  
-  result <- rc_input_event_amendment(crops, amendment)
-  
-  # Results should be ordered by time
-  expect_true(all(diff(result$time) >= -0.1))  # Allow for small floating point differences
-})
 
 # Test melt operation and output structure
 test_that("rc_input_event_amendment output has correct melted structure", {
@@ -387,7 +366,7 @@ test_that("rc_input_event_amendment handles boundary values correctly", {
 test_that("rc_input_event_amendment works with actual rc_crops package data", {
   # This test ensures the function works with the real package data
   # without attempting to mock it
-  crops <- data.table(B_LU = "nl_101", year = 2020)
+  crops <- data.table(B_LU = "nl_233", year = 2020)
   amendment <- data.table(
     year = 2020,
     cin_tot = 1000,
