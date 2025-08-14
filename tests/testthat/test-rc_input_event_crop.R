@@ -76,7 +76,7 @@ test_that("rc_input_event_crop validates input parameters correctly", {
 test_that("rc_input_event_crop handles valid inputs correctly", {
   # Create valid test data
   crops_valid <- data.table(
-    B_LU = c("nl_233", "nl_266"),
+    B_LU = c("nl_233", "nl_252"),
     year = c(2020, 2021),
     M_GREEN_TIMING = c("august", "september"),
     M_CROPRESIDUE = c(TRUE, FALSE),
@@ -231,7 +231,7 @@ test_that("rc_input_event_crop handles edge cases for cf_yield", {
 test_that("rc_input_event_crop handles multiple years correctly", {
   # Test multi-year crop rotation
   crops_multi_year <- data.table(
-    B_LU = rep(c("nl_233", "nl_266"), 3),
+    B_LU = rep(c("nl_233", "nl_242"), 3),
     year = rep(c(2020, 2021, 2022), each = 2),
     M_GREEN_TIMING = rep(c("august", "october"), 3),
     M_CROPRESIDUE = rep(c(TRUE, FALSE), 3),

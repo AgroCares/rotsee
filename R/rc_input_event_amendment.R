@@ -130,7 +130,6 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   # add method how RothC should treat the event
   out[, method := 'add']
   
-  browser()
   # return output
   return(out)
 }
