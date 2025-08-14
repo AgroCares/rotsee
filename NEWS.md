@@ -1,6 +1,7 @@
 # rotsee UNRELEASED
 ## Changed
 * Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
+* Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
   
 ## Added
 * Add GitHub Action to run R-CMD-CHECK for PR's
