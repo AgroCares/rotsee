@@ -13,7 +13,7 @@ test_that("rc_input_event_crop validates input parameters correctly", {
   
   # Test missing required columns
   crops_missing_cols <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020
   )
   expect_error(
@@ -23,7 +23,7 @@ test_that("rc_input_event_crop validates input parameters correctly", {
   
   # Test invalid cf_yield values
   crops_invalid_yield <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -40,7 +40,7 @@ test_that("rc_input_event_crop validates input parameters correctly", {
   
   # Test invalid M_GREEN_TIMING values
   crops_invalid_timing <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "invalid_timing",
     M_CROPRESIDUE = TRUE,
@@ -57,7 +57,7 @@ test_that("rc_input_event_crop validates input parameters correctly", {
   
   # Test negative cf_yield values
   crops_negative_yield <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -76,7 +76,7 @@ test_that("rc_input_event_crop validates input parameters correctly", {
 test_that("rc_input_event_crop handles valid inputs correctly", {
   # Create valid test data
   crops_valid <- data.table(
-    B_LU = c("nl_233", "nl_252"),
+    B_LU = c("nl_308", "nl_252"),
     year = c(2020, 2021),
     M_GREEN_TIMING = c("august", "september"),
     M_CROPRESIDUE = c(TRUE, FALSE),
@@ -108,7 +108,7 @@ test_that("rc_input_event_crop handles catch crop timing correctly", {
   
   for (timing in timing_values) {
     crops_test <- data.table(
-      B_LU = "nl_233",
+      B_LU = "nl_308",
       year = 2020,
       M_GREEN_TIMING = timing,
       M_CROPRESIDUE = TRUE,
@@ -157,7 +157,7 @@ test_that("rc_input_event_crop handles mandatory catch crops on sandy soils", {
 test_that("rc_input_event_crop handles crop residue management correctly", {
   # Test with crop residue incorporation
   crops_with_residue <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -172,7 +172,7 @@ test_that("rc_input_event_crop handles crop residue management correctly", {
   
   # Test without crop residue incorporation
   crops_without_residue <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = FALSE,
@@ -197,7 +197,7 @@ test_that("rc_input_event_crop handles crop residue management correctly", {
 test_that("rc_input_event_crop handles edge cases for cf_yield", {
   # Test minimum valid cf_yield (0)
   crops_min_yield <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -213,7 +213,7 @@ test_that("rc_input_event_crop handles edge cases for cf_yield", {
   
   # Test maximum valid cf_yield (2.0)
   crops_max_yield <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -231,7 +231,7 @@ test_that("rc_input_event_crop handles edge cases for cf_yield", {
 test_that("rc_input_event_crop handles multiple years correctly", {
   # Test multi-year crop rotation
   crops_multi_year <- data.table(
-    B_LU = rep(c("nl_233", "nl_242"), 3),
+    B_LU = rep(c("nl_308", "nl_242"), 3),
     year = rep(c(2020, 2021, 2022), each = 2),
     M_GREEN_TIMING = rep(c("august", "october"), 3),
     M_CROPRESIDUE = rep(c(TRUE, FALSE), 3),
@@ -256,7 +256,7 @@ test_that("rc_input_event_crop handles multiple years correctly", {
 test_that("rc_input_event_crop output structure is correct", {
   # Test output structure with valid input
   crops_test <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -310,7 +310,7 @@ test_that("rc_input_event_crop handles empty input gracefully", {
 
 test_that("rc_input_event_crop handles boundary clay content values", {
   crops_test <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -334,33 +334,9 @@ test_that("rc_input_event_crop handles boundary clay content values", {
   expect_s3_class(result_above, "data.table")
 })
 
-test_that("rc_input_event_crop typo in september timing is handled", {
-  # Test the typo in line 51: 'septmber' instead of 'september'
-  # This tests the actual bug in the code
-  crops_test <- data.table(
-    B_LU = "nl_233",
-    year = 2020,
-    M_GREEN_TIMING = "september",
-    M_CROPRESIDUE = TRUE,
-    cf_yield = 1.0,
-    cin_crop_dpm = 500,
-    cin_res_dpm = 200,
-    cin_crop_rpm = 300,
-    cin_res_rpm = 100
-  )
-  
-  result <- rc_input_event_crop(crops_test, A_CLAY_MI = 15)
-  
-  # The function should still work despite the typo
-  expect_s3_class(result, "data.table")
-  
-  # Note: This test documents the existing bug where 'septmber' != 'september'
-  # In a real scenario, this would be a test that fails until the bug is fixed
-})
-
 test_that("rc_input_event_crop handles different crop types", {
   # Test with different B_LU patterns that would match different crop types
-  crop_types <- c("nl_233", "nl_256", "nl_266", "non_nl_crop")
+  crop_types <- c("nl_308", "nl_256", "nl_266", "non_nl_crop")
   
   for (crop_type in crop_types) {
     crops_test <- data.table(
@@ -385,7 +361,7 @@ test_that("rc_input_event_crop handles different crop types", {
 test_that("rc_input_event_crop handles zero carbon inputs", {
   # Test with zero carbon inputs
   crops_zero_carbon <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -403,7 +379,7 @@ test_that("rc_input_event_crop handles zero carbon inputs", {
 test_that("rc_input_event_crop handles high carbon inputs", {
   # Test with high carbon inputs
   crops_high_carbon <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,
@@ -422,7 +398,7 @@ test_that("rc_input_event_crop handles high carbon inputs", {
 test_that("rc_input_event_crop carbon calculation is correct", {
   # Test that cin_dpm and cin_rpm are calculated correctly from components
   crops_test <- data.table(
-    B_LU = "nl_233",
+    B_LU = "nl_308",
     year = 2020,
     M_GREEN_TIMING = "august",
     M_CROPRESIDUE = TRUE,

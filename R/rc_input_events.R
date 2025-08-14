@@ -12,6 +12,9 @@ rc_input_events <- function(crops,amendment, simyears){
   # add visual bindings
   id = time = yr_rep = NULL
   
+  # check parameters
+  checkmate::assert_numeric(simyears,lower = 0.1,  any.missing = FALSE)
+  
   # create event
   rothc.event <- rbind(crops,amendment)
   

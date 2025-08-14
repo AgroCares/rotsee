@@ -7,7 +7,7 @@ library(data.table)
 # Setup function to create test data
 create_test_crops <- function() {
   data.table(
-    B_LU = c("nl_233", "nl_244", "nl_316"),
+    B_LU = c("nl_308", "nl_242", "nl_308"),
     year = c(2020, 2021, 2022)
   )
 }
@@ -130,26 +130,24 @@ test_that("rc_input_event_amendment categorizes amendments correctly based on fr
   
   result_high <- rc_input_event_amendment(crops[1], high_fr_amendment)
 
-  
   # For autumn amendments, should see October timing (month 10) 
-  # Momenteel gaat er iets mis dat in dt alles NA is en daardoor time naar 0 gaat, achteraan!!
-#  expect_true(any(result_high$time %% 1 == 10/12))  # October timing
-  
-  # Test low fr_eoc_p (should be spring)
-  low_fr_amendment <- data.table(
-    year = 2020,
-    cin_tot = 1000,
-    cin_hum = 100,
-    cin_dpm = 300,
-    cin_rpm = 600,
-    fr_eoc_p = 15  # <= 20, should be spring
-  )
-  
-  result_low <- rc_input_event_amendment(crops[1], low_fr_amendment)
-  
-  # For spring amendments, should see April timing (month 4) for non-grass
-  # Momenteel gaat er iets mis dat in dt alles NA is en daardoor time naar 0 gaat, achteraan!!
-#  expect_true(any(result_low$time %% 1 == 4/12 - 1/12))  # April timing
+  expect_true(any(round(result_high$time %% 1, 5) == round(10/12, 5)))  # October timing
+
+
+# Test low fr_eoc_p (should be spring)
+low_fr_amendment <- data.table(
+  year = 2020,
+  cin_tot = 1000,
+  cin_hum = 100,
+  cin_dpm = 300,
+  cin_rpm = 600,
+  fr_eoc_p = 15  # <= 20, should be spring
+)
+
+result_low <- rc_input_event_amendment(crops[1], low_fr_amendment)
+
+# For spring amendments, should see April timing (month 4) for non-grass
+expect_true(any(round(result_low$time %% 1,5) == round(4/12,5)))  # April timing
 })
 
 # Test grassland-specific timing
@@ -307,7 +305,8 @@ test_that("rc_input_event_amendment calculates time correctly", {
   # For year 2020, month 6: 2020 + 6/12 - 2020 = 0.5
   # Momenteel gaat er iets mis dat in dt alles NA is en daardoor time naar 0 gaat, achteraan!!
   expected_time <- 6/12
-#  expect_true(any(abs(result$time - expected_time) < 0.1))
+  
+  #expect_true(any(abs(result$time - expected_time) < 0.1))
 })
 
 
