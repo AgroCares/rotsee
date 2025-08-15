@@ -1,0 +1,54 @@
+library(data.table)
+
+test_that("rc_update_weather returns default weather data when input is NULL", {
+  default_weather <- rc_update_weather(NULL)
+  expect_s3_class(default_weather, "data.table")
+  expect_equal(nrow(default_weather), 12)
+  expect_equal(ncol(default_weather), 5)
+  expect_equal(names(default_weather), c("month", "W_TEMP_MEAN_MONTH", "W_PREC_MEAN_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH"))
+})
+
+test_that("rc_update_weather validates input data table", {
+  # Create a valid data table
+  valid_dt <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_MEAN_MONTH = rep(50, 12),
+    W_ET_POT_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = rep(47, 12)
+  )
+  
+  # Test with valid data table
+  expect_no_error(rc_update_weather(valid_dt))
+  
+  # Test missing columns
+  invalid_dt <- valid_dt[, W_ET_POT_MONTH := NULL]
+  expect_no_error(rc_update_weather(invalid_dt)) # only one of W_ET_POT_MONTH or W_ET_ACT_MONTH must be provided
+  
+  invalid_dt <- valid_dt[, month := NULL]
+  expect_error(rc_update_weather(invalid_dt), "Must be a subset of") # month must be provided
+  
+  invalid_dt <- valid_dt[, `:=`(W_TEMP_MEAN_MONTH = NULL, W_PREC_MEAN_MONTH = NULL)]
+  expect_error(rc_update_weather(invalid_dt), "Must be a subset of") # W_TEMP_MEAN_MONTH and W_PREC_MEAN_MONTH must be provided
+  
+  # Test invalid month values
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[, month := 0]
+  expect_error(rc_update_weather(invalid_dt), "Must be a subset of")
+  
+  # Test invalid temperature values
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[, W_TEMP_MEAN_MONTH := -50]
+  expect_error(rc_update_weather(invalid_dt), "W_TEMP_MEAN_MONTH")
+  
+  # Test invalid precipitation values
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[, W_PREC_MEAN_MONTH := -10]
+  expect_error(rc_update_weather(invalid_dt), "W_PREC_MEAN_MONTH")
+  
+})
+
+
+# context("cf_ind_importance")
+#
+# test_that("cf_ind_importance() works", {

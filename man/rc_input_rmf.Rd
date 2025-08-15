@@ -10,7 +10,8 @@ rc_input_rmf(
   B_DEPTH = 0.3,
   A_CLAY_MI,
   simyears,
-  cf_yield
+  cf_yield,
+  dt.weather = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ rc_input_rmf(
 \item{simyears}{(numeric) Amount of years for which the simulation should run, default: 50 years}
 
 \item{cf_yield}{(numeric) A yield correction factor (fraction) if yield is higher than regional average}
+
+\item{weather}{(data.table) Data table containing relative weather conditions. Default set to standard weather conditions of the Netherlands.}
 }
 \description{
 This function prepares the rate modifying factors for RothC given crop cover

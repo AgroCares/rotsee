@@ -8,24 +8,26 @@
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #' @param cf_yield (numeric) A yield correction factor (fraction) if yield is higher than regional average
+#' @param weather (data.table) Data table containing relative weather conditions. Default set to standard weather conditions of the Netherlands.
 #'
 #' @details
 #' To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
 #' if dt is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 #'
 #' @export
-rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, simyears,cf_yield){
+rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, simyears,cf_yield, dt.weather =  NULL){
   
   # add visual bindings
   B_LU = crop_name = M_RENEWAL = B_LU_MAKKINK = B_LU_NAME = M_GREEN_TIMING = NULL
-  mcf = crop_cover = crflt = time = cf_temp = temp = tsmdmax = NULL
-  tsmdmax_cor = et_act = et_pot = smd = prec = hv = acc_smd = acc_smd2 = cf_moist = cf_soilcover = NULL
-  cf_renewal = cf_combi = id = yr_rep = NULL
+  mcf = crop_cover = crflt = time = cf_temp = W_TEMP_MEAN_MONTH = tsmdmax = NULL
+  tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = W_PREC_MEAN_MONTH = hv = acc_smd = acc_smd2 = cf_moist = cf_soilcover = NULL
+  cf_renewal = cf_combi = id = yr_rep =  NULL
   
   # check B_LU_BRP or crop table
   checkmate::assert_integerish(B_LU_BRP, any.missing = FALSE, null.ok = TRUE, min.len = 1)
   checkmate::assert_subset(B_LU_BRP, choices = unique(rotsee::rc_crops$crop_code), empty.ok = TRUE)
   checkmate::assert_data_table(dt,null.ok = TRUE)
+  checkmate::assert_data_table(dt.weather, null.ok = TRUE)
   checkmate::assert_true(!(is.null(dt) & is.null(B_LU_BRP)))
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   
@@ -36,12 +38,7 @@ rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, si
     dt <- rs$rotation
   }
   
-  # create a default weather database for Dutch conditions
-  dt.weather <- data.table(month = 1:12,
-                           temp = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
-                           prec = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-                           et_pot = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
-                           et_act = NA_real_)
+    
   
   # prepare makkink file
   rc.crops <- as.data.table(rotsee::rc_crops)
@@ -135,8 +132,8 @@ rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, si
   dt.cc[,month := round(12 * (dt$time - floor(dt$time)) + 1)]
   dt.cc[,mcf := pmin(2,mcf)]
   
-  # add correction factors for wheather
-  dt.weather[, cf_temp :=  47.9/(1+exp(106/(temp + 18.3)))]
+  # add correction factors for weather
+  dt.weather[, cf_temp :=  47.9/(1+exp(106/(W_TEMP_MEAN_MONTH + 18.3)))]
   
   # add maximal top soil moisture deficit (TSMD) and bare soil moisture deficit
   dt.weather[, tsmdmax := -(20 + 1.3 * A_CLAY_MI - 0.01 * (A_CLAY_MI^2)) * B_DEPTH / 0.23]
@@ -149,8 +146,8 @@ rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, si
   dt.cc[, tsmdmax_cor := fifelse(crop_cover==1,tsmdmax,tsmdmax/1.8)]
   
   # add actual evapo-transpiration and soil moisture deficit
-  dt.cc[is.na(et_act),et_act := et_pot * mcf]
-  dt.cc[,smd := prec- et_act]
+  dt.cc[is.na(W_ET_ACT_MONTH),W_ET_ACT_MONTH := W_ET_POT_MONTH * mcf]
+  dt.cc[,smd := W_PREC_MEAN_MONTH- W_ET_ACT_MONTH]
   
   # add accumulated soil moisture deficit, uncorrected
   dt.cc[, hv := pmin(1,cumsum(fifelse(smd<0,1,0))),by='year']
@@ -208,7 +205,6 @@ rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, si
   rothc.mf[,time := time + 1/12]
   
   # derive rate modifying factor for full simulation period
-  
   # calculate interpolation for correction factors
   abc <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$abc, method = "linear",rule=2)
   d <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$d, method = "constant",f=1,rule=2)
