@@ -17,9 +17,7 @@ cf_ind_importance <- function(x) {
 }
 
 
-
-
-#' Function to check weather table and derive default table when not given as input
+#' Function to check user weather table and, if not given, insert default weather
 #'
 #' @param dt (Data table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH.
 #' 
@@ -71,3 +69,100 @@ rc_update_weather <- function(dt){
 }
 
 
+
+#' Function to check user given RothC simulation parameters, or provide default if none are given
+#'
+#' @param parms (list) List containing the columns dec_rates, c_fractions, initialise, simyears, and unit
+#' @param M_TILLAGE_SYSTEM 
+#' 
+#' @returns
+#' @export
+#'
+#' 
+rc_update_parms <- function(parms, M_TILLAGE_SYSTEM){
+  # add checks on decomposition rates
+  if(is.na(parms$dec_rates)){
+    k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
+  } else {
+    rcp <-  c(names(parms$dec_rates),colnames(parms$dec_rates))
+    if('k1' %in% rcp){k1 <- parms$dec_rates[['k1']]}
+    if('k2' %in% rcp){k2 <- parms$dec_rates[['k2']]}
+    if('k3' %in% rcp){k3 <- parms$dec_rates[['k3']]}
+    if('k4' %in% rcp){k4 <- parms$dec_rates[['k4']]}
+  }
+  
+  # adapt decomposition rate of HUM fraction when ploughing is reduced
+  if('NT' %in% M_TILLAGE_SYSTEM){k4 = 0.8 * k4}
+  if('ST' %in% M_TILLAGE_SYSTEM){k4 = 0.9 * k4}
+
+
+  # Add checks on c_fractions
+  if(is.na(parms$c_fractions)){
+    fr_IOM = 0.049; fr_DPM = 0.015; fr_RPM = 0.125; fr_BIO = 0.015
+  }else{
+    rcp <-  c(names(parms$c_fractions),colnames(parms$c_fractions))
+    if('fr_IOM' %in% rcp){fr_IOM <- parms$c_fractions[['fr_IOM']]}
+    if('fr_DPM' %in% rcp){fr_DPM <- parms$c_fractions[['fr_DPM']]}
+    if('fr_RPM' %in% rcp){fr_RPM <- parms$c_fractions[['fr_RPM']]}
+    if('fr_BIO' %in% rcp){fr_BIO <- parms$c_fractions[['fr_BIO']]}
+  }
+  
+  # add checks on initialise
+  if(is.na(parms$initialize)){
+    initialize = TRUE
+   
+  }else{
+    initialize = parms$initialize
+    #checkmate::assert_logical(initialize,any.missing = FALSE, len = 1)
+  }
+  
+  # add checks on simyears
+  if(is.na(parms$simyears)){
+    simyears = 50
+    
+  }else{
+    simyears = parms$simyears
+    
+    # check input for the number of simulation year
+    checkmate::assert_integerish(parms$simyears, lower = 1)
+    
+  }
+  
+  if(is.na(parms$unit)){
+    unit = "A_SOM_LOI"
+    
+  }else{
+    unit = parms$unit
+    
+    # check output format
+    checkmate::assert_subset(unit,c('A_SOM_LOI','psoc','cstock','psomperfraction','omb'),empty.ok = FALSE)
+    checkmate::assert_character(unit,len=1)
+  }
+  
+  if(is.na(parms$method)){
+    method = "adams"
+  }else{
+    method = parms$method
+  }
+  
+  if(is.na(parms$poutput)){
+    poutput = 'year'
+  }else{
+    poutput = parms$poutput
+    
+    # Check output format
+    checkmate::assert_subset(poutput, c('year'), empty.ok = FALSE)
+    checkmate::assert_character(poutput, len=1)
+  }
+  
+  out = list(initialize = initialize,
+             dec_rates = c(k1 = k1, k2 = k2, k3 = k3, k4 = k4),
+             c_fractions = c(fr_IOM, fr_DPM, fr_RPM, fr_BIO),
+             simyears = simyears,
+             unit = unit,
+             method = method,
+             poutput = poutput)
+  
+  # return output
+  return(out)
+}

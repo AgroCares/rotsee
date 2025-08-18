@@ -65,7 +65,19 @@ rc_sim <- function(A_SOM_LOI,
   
   # Add missing data, check input (see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather)
+  rothc_parms <- rc_update_parms(parms = rothc_parms, M_TILLAGE_SYSTEM)
+ 
   
+  # Unpack variables of rothc_parms
+  list2env(rothc_parms, envir = environment())
+
+  
+  # Define decomposition rates
+  k1 <- dec_rates[["k1"]]
+  k2 <- dec_rates[["k2"]]
+  k3 <- dec_rates[["k3"]]
+  k4 <- dec_rates[["k4"]]
+
   # add checks
   checkmate::assert_numeric(A_SOM_LOI, lower = rcp[code == "A_SOM_LOI", value_min], upper = rcp[code == "A_SOM_LOI", value_max],len = 1)
   checkmate::assert_numeric(A_CLAY_MI, lower = 0, upper = 100, any.missing = FALSE, len = 1)
@@ -87,49 +99,7 @@ rc_sim <- function(A_SOM_LOI,
   dt.org <- rc_input_amendment(dt = rothc_amendment)
   
   # rothC model parameters
-  
-  # add check on method solver
-  if(is.null(rothc_parms$method)){method <- 'adams'} else {method <- 'adams'}
-  
-  # add check on initialise
-  if(is.null(rothc_parms$initialize)){initialize <- TRUE} else {initialize <- rothc_parms$initialize}
-  
-  # add checks on simulation years
-  if(is.null(rothc_parms$simyears)){simyears <- 50} else {simyears <- rothc_parms$simyears}
-  if(!is.null(rothc_parms$spinup)){simyears <- simyears + rothc_parms$spinup}
-  
-  # add checks on units and time scale output for RothC (use defaults)
-  if(is.null(rothc_parms$unit)){unit <- 'soc'} else {unit <- rothc_parms$unit}
-  poutput <- 'year'
-  
-  # add checks on decomposition rates
-  if(is.null(rothc_parms$dec_rates)){
-    k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
-  } else {
-    rcp <-  c(names(rothc_parms$dec_rates),colnames(rothc_parms$dec_rates))
-    if('k1' %in% rcp){k1 <- rothc_parms$dec_rates[['k1']]}
-    if('k2' %in% rcp){k2 <- rothc_parms$dec_rates[['k2']]}
-    if('k3' %in% rcp){k3 <- rothc_parms$dec_rates[['k3']]}
-    if('k4' %in% rcp){k4 <- rothc_parms$dec_rates[['k4']]}
-  }
-  
-  # adapt decomposition rate of HUM fraction when ploughing is reduced
-  if('NT' %in% M_TILLAGE_SYSTEM){k4 = 0.8 * k4}
-  if('ST' %in% M_TILLAGE_SYSTEM){k4 = 0.9 * k4}
-  
-  # add checks on C distribution over pools
-  
-  # Add check on c fractions input
-  if(is.null(rothc_parms$c_fractions)){
-    c_fractions <- list(fr_IOM = 0.049,fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015)
-  }else{
-    rcp <-  c(names(rothc_parms$c_fractions),colnames(rothc_parms$c_fractions))
-    if('fr_IOM' %in% rcp){c_fractions$fr_IOM <- rothc_parms$c_fractions[['fr_IOM']]}
-    if('fr_DPM' %in% rcp){c_fractions$fr_DPM <- rothc_parms$c_fractions[['fr_DPM']]}
-    if('fr_RPM' %in% rcp){c_fractions$fr_RPM <- rothc_parms$c_fractions[['fr_RPM']]}
-    if('fr_BIO' %in% rcp){c_fractions$fr_BIO <- rothc_parms$c_fractions[['fr_BIO']]}
-  }
-  
+
   # prepare the RothC model inputs
   # make rate modifying factors input database
   dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield, dt.weather = dt.weather)
@@ -138,7 +108,7 @@ rc_sim <- function(A_SOM_LOI,
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)
   
   # prepare EVENT database with all C inputs over time 
-  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = simyears)
+  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = rothc_parms$simyears)
   
   # initialize the RothC pools (kg C / ha)
   
