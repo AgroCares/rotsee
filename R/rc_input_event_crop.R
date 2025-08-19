@@ -35,9 +35,8 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   
   # add crop names and catch crop characteristics to table
   dt <- merge(dt,cc.crop,by = 'B_LU',all.x = TRUE)
-  
+ 
   # adjust crop rotation plan, and extend to months
-  
   # update input for mandatory catch crops (after maize and potato on sandy soils) and set never for grassland
   if(A_CLAY_MI <20){ dt[grepl('mais|aardappel',crop_name) & grepl('^nl_',B_LU), M_GREEN_TIMING := 'october'] }
   dt[grepl('gras|bieten, suiker|bieten, voeder|zetmeel',crop_name) & grepl('^nl_',B_LU), M_GREEN_TIMING := 'never']
@@ -46,6 +45,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   dt.green <- dt[,list(year,M_GREEN_TIMING)]
   dt.green[,year := year + 1]
   
+  
   # set crop carbon inputs from catch crops
   dt.green[M_GREEN_TIMING == 'august', green_eom := 900]
   dt.green[M_GREEN_TIMING == 'september', green_eom := 500]
@@ -53,6 +53,8 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   dt.green[M_GREEN_TIMING == 'november', green_eom := 0]
   dt.green[,M_GREEN_TIMING := NULL]
   
+  # select lowest input of catch crop, equal to latest implementation catch crop
+  dt.green <- dt.green[, .SD[which.min(green_eom)], by = year]
   
   # extend the crop table with months
   dt <- dt[rep(1:.N,12)]

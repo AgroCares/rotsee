@@ -47,7 +47,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   cc.crop[,B_LU := paste0('nl_',crop_code)]
   
   # merge table with amendment c input with crop name
-  dt <- merge(dt, crops[,list(B_LU,year)], by='year', allow.cartesian = TRUE)
+  dt <- merge(dt, crops[,list(B_LU,year)], by='year')
   dt <- merge(dt, cc.crop[,list(B_LU,B_LU_NAME=crop_name)],by='B_LU')
   
   # add manure category depending on eoc-to-p ratio
