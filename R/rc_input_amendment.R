@@ -24,6 +24,7 @@ rc_input_amendment <- function(dt = NULL,B_LU_BRP = NULL){
   checkmate::assert_data_table(dt,null.ok = TRUE)
   checkmate::assert_subset(colnames(dt),choices = c("P_NAME", "year","month","P_OM","P_HC","p_p2o5", "P_DOSE"), empty.ok = TRUE)
   checkmate::assert_true(!(is.null(dt) & is.null(B_LU_BRP)))
+  if(!is.null(dt$month)){checkmate::assert_integerish(dt$month)}
   
   # set default crop table in case that dt is missing
   if(is.null(dt) & !is.null(B_LU_BRP)){
@@ -52,7 +53,7 @@ rc_input_amendment <- function(dt = NULL,B_LU_BRP = NULL){
   dt.org[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
   
   # select only relevant columns
-  dt.org <- dt.org[,list(p_name = P_NAME, year, cin_tot, cin_hum, cin_dpm, cin_rpm, fr_eoc_p = P_OM * P_HC * 0.5 / p_p2o5)]
+  dt.org <- dt.org[,list(p_name = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm, fr_eoc_p = P_OM * P_HC * 0.5 / p_p2o5)]
   
   # return
   return(dt.org)

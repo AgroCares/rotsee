@@ -1,7 +1,7 @@
 # Test file for rc_sim 
 # Testing framework: testthat
 
-test_that("rc_sim can correctly run with valid inputs", {
+test_that("rc_sim correctly checks input validit", {
   A_SOM_LOI = 5
   
   A_CLAY_MI = 18
@@ -24,7 +24,7 @@ test_that("rc_sim can correctly run with valid inputs", {
  
   rothc_amendment <- data.table(
     year = c(2022, 2023),
-    month = c("April", "April"),
+    month = c(5, 5),
     P_NAME = c('cattle_slurry', 'cattle_slurry'),
     P_DOSE = c(63300, 63300),
     P_HC = c(0.7,0.7),
@@ -37,12 +37,46 @@ test_that("rc_sim can correctly run with valid inputs", {
                         W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                         W_ET_ACT_MONTH = NA_real_)
 
-  
-  result <- rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+  # All correct
+  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
-                   weather = weather)
+                   weather = weather))
+  
+  # No amendment table (not allowed)
+  expect_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+                         B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
+                         weather = weather))
+  
+  # No month in amendment table (allowed)
+  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+                      B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                      rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment[,.SD, .SDcols = !"month"], 
+                      weather = weather))
+  
+  # No crop table (not allowed)
+  expect_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+                   B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                   rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
+                   weather = weather))
+  
+
 })
 
 
-#test_that("rc_sim gives clear errors when input is not complete")
+test_that("multiple months of amendments input are possible", {
+  rothc_amendment <- data.table(
+    year = c(2022, 2022, 2023, 2023),
+    month = c(5, 10, 5, 10),
+    P_NAME = c('cattle_slurry', 'cattle_slurry', 'cattle_slurry', 'cattle_slurry'),
+    P_DOSE = c(63300, 63300, 63300, 63300),
+    P_HC = c(0.7,0.7, 0.7,0.7),
+    P_OM = c(7.1, 7.1, 7.1, 7.1),
+    p_p2o5 = c(0.15, 0.15, 0.15, 0.15))
+  
+  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+                         B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
+                         weather = weather))
+})

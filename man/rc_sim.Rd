@@ -13,8 +13,8 @@ rc_sim(
   M_TILLAGE_SYSTEM = "CT",
   rothc_rotation,
   rothc_amendment = NA_real_,
-  rothc_parms = list(simyears = 50, initialise = FALSE, c_fractions = FALSE, spinup = 10,
-    method = "adams"),
+  rothc_parms = list(simyears = 50, initialize = TRUE, c_fractions = NA_real_, dec_rates
+    = NA_real_, unit = "A_SOM_LOI", spinup = 10, method = "adams", poutput = NA_real_),
   weather = NA_real_
 )
 }
@@ -37,7 +37,7 @@ rc_sim(
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. Default is NULL. For more information, see details.}
 
-\item{weather}{(data.table) Table with following column names: month, temp, prec, et_pot, et_act. For more information, see details.}
+\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
 }
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
@@ -63,11 +63,10 @@ Table with possible parameters to adapt the calculations. May include the column
 * initialize: scenario to initialize the carbon pools. Options: spinup_simulation, spinup_analytical_heuvelink, or spinup_analytical_bodemcoolstof
 * c_fractions: Distribution over the different C pools 
 * dec_rates: Decomposition rates of the different pools
-* spinup: I do not know
 * simyears: Duration of simulation (years)
-* unit: Unit in which the output should be given. Options:
+* unit: Unit in which the output should be given. Options: 'A_SOM_LOI','psoc','cstock','psomperfraction','omb'
 
 weather: Average weather conditions
-Table containing columns month, temp (temperature in °C), prec (precipitation in mm), et_pot (potential evapotranspiration in mm), and et_act (actual evapotranspiration in mm).
+Table containing columns month, W_TEMP_MEAN_MONTH (temperature in °C), W_PREC_MEAN_MONTH (precipitation in mm), W_ET_POT_MONTH (potential evapotranspiration in mm), and W_ET_ACT_MONTH. (actual evapotranspiration in mm).
 If no table is given, average Dutch conditions are used
 }

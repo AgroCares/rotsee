@@ -11,7 +11,7 @@
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. Default is NULL. For more information, see details.
-#' @param weather (data.table) Table with following column names: month, temp, prec, et_pot, et_act. For more information, see details.
+#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.
 #'
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
@@ -35,7 +35,7 @@
 #' * c_fractions: Distribution over the different C pools 
 #' * dec_rates: Decomposition rates of the different pools
 #' * simyears: Duration of simulation (years)
-#' * unit: Unit in which the output should be given. Options:
+#' * unit: Unit in which the output should be given. Options: 'A_SOM_LOI','psoc','cstock','psomperfraction','omb'
 #' 
 #' weather: Average weather conditions
 #' Table containing columns month, W_TEMP_MEAN_MONTH (temperature in °C), W_PREC_MEAN_MONTH (precipitation in mm), W_ET_POT_MONTH (potential evapotranspiration in mm), and W_ET_ACT_MONTH. (actual evapotranspiration in mm).
@@ -52,7 +52,7 @@ rc_sim <- function(A_SOM_LOI,
                    M_TILLAGE_SYSTEM = 'CT',
                    rothc_rotation,
                    rothc_amendment = NA_real_,
-                   rothc_parms = list(simyears = 50, initialise = FALSE, c_fractions = FALSE, spinup = 10,method='adams'),
+                   rothc_parms = list(simyears = 50, initialize = TRUE, c_fractions = NA_real_, dec_rates = NA_real_, unit = "A_SOM_LOI", spinup = 10, method='adams', poutput = NA_real_),
                    weather = NA_real_){
   
   # add visual bindings
@@ -133,7 +133,7 @@ rc_sim <- function(A_SOM_LOI,
   dt.soc[,toc := A_SOM_LOI * 0.5 * bd * b_depth * 100 * 100 / 100]
   
   # set the default initialisation to the one used in BodemCoolstof
-  if(initialize == TRUE){
+  if(rothc_parms$initialize == TRUE){
     
     # set TOC to ton C / ha
     dt.soc[, toc := toc * 0.001]

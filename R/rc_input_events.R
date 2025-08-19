@@ -228,7 +228,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   # load internal tables
   cc.crop <- as.data.table(rotsee::rc_crops)
   cc.crop[,B_LU := paste0('nl_',crop_code)]
-  
+
   # merge table with amendment c input with crop name
   dt <- merge(dt, crops[,list(B_LU,year)], by='year')
   dt <- merge(dt, cc.crop[,list(B_LU,B_LU_NAME=crop_name)],by='B_LU')
@@ -239,8 +239,8 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # Sum C inputs over p_cat per year
   cols <- c('cin_hum','cin_dpm','cin_rpm')
-  dt <- dt[,lapply(.SD,function(x) sum(x)),.SDcols = cols,by = c('year','p_cat','B_LU','B_LU_NAME')]
-  
+  dt <- dt[,lapply(.SD,function(x) sum(x)),.SDcols = cols,by = c('year', 'month', 'p_cat','B_LU','B_LU_NAME')]
+ 
   # add monthly redistribution
   if(!'month' %in% colnames(dt)){
     
@@ -282,7 +282,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
     dt2[is.na(month),month := 4]
     
   }
-  
+browser()
   # sum all inputs per crop and year
   cols <- c('cin_hum','cin_dpm','cin_rpm')
   dt2 <- dt2[,lapply(.SD,function(x) sum(x * tcf)),

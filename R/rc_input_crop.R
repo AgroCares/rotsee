@@ -25,7 +25,7 @@ rc_input_crop <- function(dt = NULL,B_LU_BRP = NULL,cf_yield){
   checkmate::assert_integerish(B_LU_BRP, any.missing = FALSE, null.ok = TRUE, min.len = 1)
   checkmate::assert_subset(B_LU_BRP, choices = unique(rotsee::rc_crops$crop_code), empty.ok = TRUE)
   checkmate::assert_data_table(dt,null.ok = TRUE)
-  checkmate::assert_subset(colnames(dt),choices = c("year","B_LU_EOM","B_LU_EOM_RESIDUE", "B_LU_HC","M_GREEN_TIMING","M_CROPRESIDUE","B_LU"), empty.ok = TRUE)
+  checkmate::assert_subset(colnames(dt),choices = c("year","B_LU_EOM_CROP","B_LU_EOM_CROPRESIDUE", "B_LU_HC","M_GREEN_TIMING","M_CROPRESIDUE","B_LU", "B_LU_NAME"), empty.ok = TRUE)
   checkmate::assert_true(!(is.null(dt) & is.null(B_LU_BRP)))
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   
@@ -48,7 +48,7 @@ rc_input_crop <- function(dt = NULL,B_LU_BRP = NULL,cf_yield){
   # ensure that year always start with 1 to X, and sort
   dt.crop[,YEAR := year - min(year) + 1]
   setorder(dt.crop,YEAR)
-  
+
   # Update EOM input from temporary grassland
   dt.crop[,crft := fifelse(grepl('nl_266',B_LU),1,0)]
   

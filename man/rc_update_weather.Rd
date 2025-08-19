@@ -2,16 +2,16 @@
 % Please edit documentation in R/rc_helpers.R
 \name{rc_update_weather}
 \alias{rc_update_weather}
-\title{Function to check weather table and derive default table when not given as input}
+\title{Function to check user weather table and, if not given, insert default weather}
 \usage{
 rc_update_weather(dt)
 }
 \arguments{
-\item{dt}{(Data table) Table with following column names: month, temp, prec, et_pot, et_act.}
+\item{dt}{(Data table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH.}
 }
 \value{
 A data table containing monthly data of temperature, precipitation, and evapotranspiration.
 }
 \description{
-Function to check weather table and derive default table when not given as input
+Function to check user weather table and, if not given, insert default weather
 }
