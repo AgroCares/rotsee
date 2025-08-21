@@ -282,7 +282,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
     dt2[is.na(month),month := 4]
     
   }
-browser()
+
   # sum all inputs per crop and year
   cols <- c('cin_hum','cin_dpm','cin_rpm')
   dt2 <- dt2[,lapply(.SD,function(x) sum(x * tcf)),

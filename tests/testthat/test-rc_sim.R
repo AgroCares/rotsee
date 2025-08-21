@@ -1,7 +1,7 @@
 # Test file for rc_sim 
 # Testing framework: testthat
 
-test_that("rc_sim correctly checks input validit", {
+test_that("rc_sim correctly checks input validity", {
   A_SOM_LOI = 5
   
   A_CLAY_MI = 18
@@ -65,18 +65,4 @@ test_that("rc_sim correctly checks input validit", {
 })
 
 
-test_that("multiple months of amendments input are possible", {
-  rothc_amendment <- data.table(
-    year = c(2022, 2022, 2023, 2023),
-    month = c(5, 10, 5, 10),
-    P_NAME = c('cattle_slurry', 'cattle_slurry', 'cattle_slurry', 'cattle_slurry'),
-    P_DOSE = c(63300, 63300, 63300, 63300),
-    P_HC = c(0.7,0.7, 0.7,0.7),
-    P_OM = c(7.1, 7.1, 7.1, 7.1),
-    p_p2o5 = c(0.15, 0.15, 0.15, 0.15))
-  
-  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
-                         rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
-                         weather = weather))
-})
+

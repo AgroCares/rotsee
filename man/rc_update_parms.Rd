@@ -4,12 +4,15 @@
 \alias{rc_update_parms}
 \title{Function to check user given RothC simulation parameters, or provide default if none are given}
 \usage{
-rc_update_parms(parms, M_TILLAGE_SYSTEM)
+rc_update_parms(parms)
 }
 \arguments{
-\item{parms}{(list) List containing the columns dec_rates, c_fractions, initialise, simyears, and unit}
+\item{parms}{(list) List containing the columns dec_rates, c_fractions, initialize, simyears, unit, method, and poutput}
 
 \item{M_TILLAGE_SYSTEM}{}
+}
+\value{
+A data table containing parameters to run the RothC simulation, with columns dec_rates, C_fractions, initialize, simyear, unit, method and poutput
 }
 \description{
 Function to check user given RothC simulation parameters, or provide default if none are given

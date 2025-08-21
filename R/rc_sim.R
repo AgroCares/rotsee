@@ -65,8 +65,7 @@ rc_sim <- function(A_SOM_LOI,
   
   # Add missing data, check input (see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather)
-  rothc_parms <- rc_update_parms(parms = rothc_parms, M_TILLAGE_SYSTEM)
- 
+  rothc_parms <- rc_update_parms(parms = rothc_parms)
   
   # Unpack variables of rothc_parms
   list2env(rothc_parms, envir = environment())
