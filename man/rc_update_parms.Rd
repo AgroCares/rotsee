@@ -10,7 +10,7 @@ rc_update_parms(parms)
 \item{parms}{(list) List containing the columns dec_rates, c_fractions, initialize, simyears, unit, method, and poutput}
 }
 \value{
-A data table containing parameters to run the RothC simulation, with columns dec_rates, C_fractions, initialize, simyear, unit, method and poutput
+A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, simyears, unit, method and poutput
 }
 \description{
 Function to check user given RothC simulation parameters, or provide default if none are given

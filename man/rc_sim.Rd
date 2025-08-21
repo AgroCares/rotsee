@@ -12,10 +12,10 @@ rc_sim(
   cf_yield = 1,
   M_TILLAGE_SYSTEM = "CT",
   rothc_rotation,
-  rothc_amendment = NA_real_,
+  rothc_amendment = NULL,
   rothc_parms = list(simyears = 50, initialize = TRUE, c_fractions = NA_real_, dec_rates
     = NA_real_, unit = "A_SOM_LOI", spinup = 10, method = "adams", poutput = NA_real_),
-  weather = NA_real_
+  weather = NULL
 )
 }
 \arguments{
@@ -35,7 +35,7 @@ rc_sim(
 
 \item{rothc_amendment}{(data.table) A table with the following column names: year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.}
 
-\item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. Default is NULL. For more information, see details.}
+\item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
 \item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
 }
@@ -60,10 +60,10 @@ May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION
 
 rothc_parms: simulation parameters
 Table with possible parameters to adapt the calculations. May include the columns initialize, c_fractions, dec_rates, simyears and unit.
-* initialize: scenario to initialize the carbon pools. Options: spinup_simulation, spinup_analytical_heuvelink, or spinup_analytical_bodemcoolstof
-* c_fractions: Distribution over the different C pools 
+* initialize: scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
+* c_fractions: Distribution over the different C pools.
 * dec_rates: Decomposition rates of the different pools
-* simyears: Duration of simulation (years)
+* simyears: Duration of simulation (years), default is 50
 * unit: Unit in which the output should be given. Options: 'A_SOM_LOI','psoc','cstock','psomperfraction','omb'
 
 weather: Average weather conditions

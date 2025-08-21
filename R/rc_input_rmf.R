@@ -8,7 +8,7 @@
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #' @param cf_yield (numeric) A yield correction factor (fraction) if yield is higher than regional average
-#' @param dt.weather (data.table) Data table containing relative weather conditions. Default set to standard weather conditions of the Netherlands.
+#' @param dt.weather (data.table) Data table of monthly weather. If NULL, weather will be set to average Dutch conditions in \link{rc_update_weather}
 #'
 #' @details
 #' To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).

@@ -17,16 +17,22 @@ cf_ind_importance <- function(x) {
 }
 
 
-#' Function to check user weather table and, if not given, insert default weather
+#' Function to check user weather table and, if not supplied, insert default weather
 #'
-#' @param dt (Data table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH.
+#' @param dt (data.table) Monthly weather table with the following columns:
+#' *month (1 - 12)
+#' *W_TEMP_MEAN_MONTH (°C)
+#' *W_PREC_MEAN_MONTH (mm)
+#' *W_ET_POT_MONTH (mm)
+#' *W_ET_ACT_MONTH (mm; can be NA, will be derived based on W_ET_POT_MONTH)
+#' If not supplied, default monthly weather based on the Netherlands is added
 #' 
 #' @returns
 #' A data table containing monthly data of temperature, precipitation, and evapotranspiration.
 #' 
 #' @export
 #'
-rc_update_weather <- function(dt){
+rc_update_weather <- function(dt = NULL){
   if(is.null(dt)){
     # Set default weather for Dutch conditions
     dt <- data.table(month = 1:12,
@@ -50,20 +56,20 @@ rc_update_weather <- function(dt){
   checkmate::assert_numeric(dt$W_PREC_MEAN_MONTH, lower = 0, upper = 10000, any.missing = FALSE, len = 12)
 
   # Check if both potential and actual ET are provided
-  if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_act_MONTH" %in% colnames(dt)) {
+  if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
         checkmate::assert(
       !all(is.na(dt$W_ET_POT_MONTH)) || !all(is.na(dt$W_ET_act_MONTH)),
-      msg = "At least on of W_ET_POT_MONTH and W_ET_act_MONTH should not contain NA values."
+      msg = "At least one of W_ET_POT_MONTH and W_ET_ACT_MONTH should not contain NA values."
     )
     # Check ranges, allow NAs
     checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = TRUE)
-    checkmate::assertNumeric(dt$W_ET_act_MONTH, lower = 0, upper = 10000, any.missing = TRUE)
+    checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = TRUE)
   } else if ("W_ET_POT_MONTH" %in% colnames(dt)) {
     # Only potential ET provided: no NA allowed
     checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = FALSE)
   } else if ("W_ET_act_MONTH" %in% colnames(dt)) {
     # Only actual ET provided: no NA allowed
-    checkmate::assertNumeric(dt$W_ET_act_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
+    checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
   }
   return(dt)
 }
@@ -75,7 +81,7 @@ rc_update_weather <- function(dt){
 #' @param parms (list) List containing the columns dec_rates, c_fractions, initialize, simyears, unit, method, and poutput
 #' 
 #' @returns
-#' A data table containing parameters to run the RothC simulation, with columns dec_rates, C_fractions, initialize, simyear, unit, method and poutput
+#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, simyears, unit, method and poutput
 #' 
 #' 
 #' @export
@@ -170,7 +176,7 @@ rc_update_parms <- function(parms){
   
   out = list(initialize = initialize,
              dec_rates = c(k1 = k1, k2 = k2, k3 = k3, k4 = k4),
-             c_fractions = c(fr_IOM, fr_DPM, fr_RPM, fr_BIO),
+             c_fractions = c(fr_IOM = fr_IOM, fr_DPM = fr_DPM, fr_RPM = fr_RPM, fr_BIO = fr_BIO),
              simyears = simyears,
              unit = unit,
              method = method,
