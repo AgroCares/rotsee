@@ -86,15 +86,20 @@ rc_sim <- function(A_SOM_LOI,
   checkmate::assert_character(M_TILLAGE_SYSTEM, any.missing = FALSE,len=1)
   checkmate::assert_subset(M_TILLAGE_SYSTEM,choices = c('NT','ST','CT','DT'), empty.ok = FALSE)
   checkmate::assert_data_table(rothc_rotation)
-  checkmate::assert_data_table(rothc_amendment)
-  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year","B_LU_EOM_CROP","B_LU_EOM_CROPRESIDUE", "B_LU_HC","M_GREEN_TIMING","M_CROPRESIDUE","B_LU", "B_LU_NAME"), empty.ok = FALSE)
-  checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_NAME", "year","month","P_OM","P_HC","p_p2o5", "P_DOSE"), empty.ok = FALSE)
+  if(!is.null(rothc_amendment)){
+    checkmate::assert_data_table(rothc_amendment)
+  }
+  checkmate::assert_names(colnames(rothc_rotation),must.include = c("year","B_LU_EOM","B_LU_EOM_RESIDUE", "B_LU_HC","B_LU", "B_LU_NAME"))
+  if(!is.null(rothc_amendment)) {
+    checkmate::assert_names(colnames(rothc_amendment),must.include = c("P_NAME", "year","P_OM","P_HC","p_p2o5", "P_DOSE"))
+  }
   
   
   # create an internal crop rotation file
   dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
   
   # create an internal amendment file
+  
   dt.org <- rc_input_amendment(dt = rothc_amendment)
   
   # rothC model parameters
