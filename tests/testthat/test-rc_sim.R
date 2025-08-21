@@ -2,9 +2,12 @@
 # Testing framework: testthat
 
 test_that("rc_sim correctly checks input validity", {
-  A_SOM_LOI = 5
-  
-  A_CLAY_MI = 18
+  soil_properties <- list(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
   
   A_DEPTH = 0.3
   
@@ -38,25 +41,25 @@ test_that("rc_sim correctly checks input validity", {
                         W_ET_ACT_MONTH = NA_real_)
 
   # All correct
-  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+  expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                    weather = weather))
   
   # No amendment table (not allowed)
-  expect_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+  expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                          B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                          weather = weather))
   
   # No month in amendment table (allowed)
-  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+  expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                       B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                       rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment[,.SD, .SDcols = !"month"], 
                       weather = weather))
   
   # No crop table (not allowed)
-  expect_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+  expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                    weather = weather))

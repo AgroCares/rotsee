@@ -2,8 +2,7 @@
 #'
 #' This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
 #'
-#' @param A_SOM_LOI (numeric) The percentage organic matter in the soil (\%).
-#' @param A_CLAY_MI (numeric) The clay content of the soil (\%).
+#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param A_DEPTH (numeric) Depth for which soil sample is taken (m). Default set to 0.3.
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till).
@@ -44,8 +43,7 @@
 #' @import deSolve
 #'
 #' @export
-rc_sim <- function(A_SOM_LOI,
-                   A_CLAY_MI,
+rc_sim <- function(soil_properties,
                    A_DEPTH = 0.3,
                    B_DEPTH = 0.3,
                    cf_yield = 1,
@@ -69,6 +67,7 @@ rc_sim <- function(A_SOM_LOI,
   
   # Unpack variables of rothc_parms
   list2env(rothc_parms, envir = environment())
+  
 
   
   # Define decomposition rates
@@ -76,10 +75,11 @@ rc_sim <- function(A_SOM_LOI,
   k2 <- dec_rates[["k2"]]
   k3 <- dec_rates[["k3"]]
   k4 <- dec_rates[["k4"]]
+  
+  # Check and update soil properties
+  rc_check_inputs(soil_properties = soil_properties)
 
   # add checks
-  checkmate::assert_numeric(A_SOM_LOI, lower = rcp[code == "A_SOM_LOI", value_min], upper = rcp[code == "A_SOM_LOI", value_max],len = 1)
-  checkmate::assert_numeric(A_CLAY_MI, lower = 0, upper = 100, any.missing = FALSE, len = 1)
   checkmate::assert_numeric(A_DEPTH, lower = 0, upper = 0.6, any.missing = FALSE, len = 1)
   checkmate::assert_numeric(B_DEPTH, lower = 0, upper = 0.3, any.missing = FALSE, len = 1)
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
@@ -101,35 +101,39 @@ rc_sim <- function(A_SOM_LOI,
 
   # prepare the RothC model inputs
   # make rate modifying factors input database
-  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield, dt.weather = dt.weather)
+  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield, dt.weather = dt.weather)
   
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)
   
   # prepare EVENT database with all C inputs over time 
-  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = rothc_parms$simyears)
+  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = soil_properties$A_CLAY_MI,simyears = rothc_parms$simyears)
   
   # initialize the RothC pools (kg C / ha)
   
-  # make internal data.table
-  dt.soc <- data.table(A_SOM_LOI = A_SOM_LOI,A_CLAY_MI = A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH)
+  # make internal data.table (Dit gedeelte moven naar soil update?)
+  dt.soc <- data.table(A_C_OF = soil_properties$A_C_OF,B_C_ST03 = soil_properties$B_C_ST03, A_CLAY_MI = soil_properties$A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH)
   
-  # Correct A_SOM_LOI for sampling depth
-  dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
-  dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_SOM_LOI := A_SOM_LOI * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
+  # Correct A_SOM_LOI for sampling depth 
+  dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_C_OF := A_C_OF * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
+  dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_C_OF := A_C_OF * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
   
-  # calculate soil texture dependent density
-  dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
-  dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
+  # calculate soil texture dependent density (Dutch functions, require in pre-treatment but users should supply own bulk density
+  #dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
+  #dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
   
   # fraction clay correction
-  dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
+  #dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
   
   # clay dependent density
-  dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
+  #dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
   
   # calculate total organic carbon (kg C / ha)
-  dt.soc[,toc := A_SOM_LOI * 0.5 * bd * b_depth * 100 * 100 / 100]
+  if(length(dt.soc$B_C_ST03) != 0) {
+    dt.soc[,toc := B_C_ST03 * 1000]
+  }else{
+    dt.soc[,toc := A_C_OF / 1000 * A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100]
+  }
   
   # set the default initialisation to the one used in BodemCoolstof
   if(rothc_parms$initialize == TRUE){

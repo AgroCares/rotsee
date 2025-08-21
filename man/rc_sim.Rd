@@ -5,8 +5,7 @@
 \title{Simulate SOC evolution using Roth-C}
 \usage{
 rc_sim(
-  A_SOM_LOI,
-  A_CLAY_MI,
+  soil_properties,
   A_DEPTH = 0.3,
   B_DEPTH = 0.3,
   cf_yield = 1,
@@ -19,9 +18,7 @@ rc_sim(
 )
 }
 \arguments{
-\item{A_SOM_LOI}{(numeric) The percentage organic matter in the soil (\%).}
-
-\item{A_CLAY_MI}{(numeric) The clay content of the soil (\%).}
+\item{soil_properties}{(list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)}
 
 \item{A_DEPTH}{(numeric) Depth for which soil sample is taken (m). Default set to 0.3.}
 
