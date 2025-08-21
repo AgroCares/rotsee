@@ -18,8 +18,8 @@ test_that("rc_sim correctly checks input validity", {
     year = c(2022, 2023),
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
-    B_LU_EOM_CROP = c(170, 170),
-    B_LU_EOM_CROPRESIDUE = c(830, 830),
+    B_LU_EOM = c(170, 170),
+    B_LU_EOM_RESIDUE = c(830, 830),
     B_LU_HC = c(0.32, 0.32))
  
   rothc_amendment <- data.table(
@@ -58,7 +58,7 @@ test_that("rc_sim correctly checks input validity", {
   # No crop table (not allowed)
   expect_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
-                   rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
+                   rothc_rotation = NULL, rothc_amendment = rothc_amendment, 
                    weather = weather))
   
 

@@ -52,7 +52,7 @@ rc_sim <- function(A_SOM_LOI,
                    M_TILLAGE_SYSTEM = 'CT',
                    rothc_rotation,
                    rothc_amendment = NULL,
-                   rothc_parms = list(simyears = 50, initialize = TRUE, c_fractions = NA_real_, dec_rates = NA_real_, unit = "A_SOM_LOI", spinup = 10, method='adams', poutput = NA_real_),
+                   rothc_parms = NULL,
                    weather = NULL){
   
   # add visual bindings
@@ -67,15 +67,21 @@ rc_sim <- function(A_SOM_LOI,
   dt.weather <- rc_update_weather(dt = weather)
   rothc_parms <- rc_update_parms(parms = rothc_parms)
   
-  # Unpack variables of rothc_parms
-  list2env(rothc_parms, envir = environment())
-
-  
+  # Unpack rothc_parms for often used parameters
   # Define decomposition rates
-  k1 <- dec_rates[["k1"]]
-  k2 <- dec_rates[["k2"]]
-  k3 <- dec_rates[["k3"]]
-  k4 <- dec_rates[["k4"]]
+  k1 <- rothc_parms$dec_rates[["k1"]]
+  k2 <- rothc_parms$dec_rates[["k2"]]
+  k3 <- rothc_parms$dec_rates[["k3"]]
+  k4 <- rothc_parms$dec_rates[["k4"]]
+  
+  # Define C fractions
+  c_fractions <- rothc_parms$c_fractions
+  
+  # Define unit of output
+  unit <- rothc_parms$unit
+  
+  # Define simyears
+  simyears <- rothc_parms$simyears
 
   # add checks
   checkmate::assert_numeric(A_SOM_LOI, lower = rcp[code == "A_SOM_LOI", value_min], upper = rcp[code == "A_SOM_LOI", value_max],len = 1)
@@ -112,7 +118,7 @@ rc_sim <- function(A_SOM_LOI,
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)
   
   # prepare EVENT database with all C inputs over time 
-  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = rothc_parms$simyears)
+  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = A_CLAY_MI,simyears = simyears)
   
   # initialize the RothC pools (kg C / ha)
   
@@ -229,7 +235,7 @@ rc_sim <- function(A_SOM_LOI,
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   
   # get only the SOC values on the time scale of years
-  if(poutput=='year'){out <- out[time %in% 0:simyears]}
+  if(rothc_parms$poutput=='year'){out <- out[time %in% 0:simyears]}
   
   # select type output
   if(unit=='soc') {
