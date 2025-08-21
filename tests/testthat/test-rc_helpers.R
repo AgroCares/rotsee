@@ -48,7 +48,6 @@ test_that("rc_update_weather validates input data table", {
   
 })
 
-
 # context("cf_ind_importance")
 #
 # test_that("cf_ind_importance() works", {

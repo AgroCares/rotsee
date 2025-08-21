@@ -1,6 +1,8 @@
 # rotsee UNRELEASED
 ## Added
 * Add GitHub Action to run R-CMD-CHECK for PR's
+* Added helper functions to check input weather and parameter data, and insert default values when not supplied
+* Added unit tests for helper functions
 
 ## Changed
 * Expand README with some introductory text about the package
