@@ -58,7 +58,7 @@ rc_sim <- function(A_SOM_LOI,
   # add visual bindings
   code = value_min = value_max = a_depth = dens.sand = dens.clay = cf = bd = toc = NULL
   b_depth = var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
-  soc = CDPM = CRPM = CBIO = CHUM = CIOM = bd =  . = NULL
+  soc = dec_rates = simyears = c_fractions = method = poutput = unit = CDPM = CRPM = CBIO = CHUM = CIOM = bd =  . = NULL
   
   # add internal table
   rcp <- rotsee::rc_parms

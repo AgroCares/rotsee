@@ -8,8 +8,6 @@ rc_update_parms(parms)
 }
 \arguments{
 \item{parms}{(list) List containing the columns dec_rates, c_fractions, initialize, simyears, unit, method, and poutput}
-
-\item{M_TILLAGE_SYSTEM}{}
 }
 \value{
 A data table containing parameters to run the RothC simulation, with columns dec_rates, C_fractions, initialize, simyear, unit, method and poutput

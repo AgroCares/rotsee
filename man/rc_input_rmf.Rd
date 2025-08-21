@@ -27,7 +27,7 @@ rc_input_rmf(
 
 \item{cf_yield}{(numeric) A yield correction factor (fraction) if yield is higher than regional average}
 
-\item{weather}{(data.table) Data table containing relative weather conditions. Default set to standard weather conditions of the Netherlands.}
+\item{dt.weather}{(data.table) Data table containing relative weather conditions. Default set to standard weather conditions of the Netherlands.}
 }
 \description{
 This function prepares the rate modifying factors for RothC given crop cover

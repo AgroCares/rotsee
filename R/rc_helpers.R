@@ -73,7 +73,6 @@ rc_update_weather <- function(dt){
 #' Function to check user given RothC simulation parameters, or provide default if none are given
 #'
 #' @param parms (list) List containing the columns dec_rates, c_fractions, initialize, simyears, unit, method, and poutput
-#' @param M_TILLAGE_SYSTEM 
 #' 
 #' @returns
 #' A data table containing parameters to run the RothC simulation, with columns dec_rates, C_fractions, initialize, simyear, unit, method and poutput
@@ -83,6 +82,9 @@ rc_update_weather <- function(dt){
 #'
 #' 
 rc_update_parms <- function(parms){
+  # Add visible bindings
+  c_fractions = NULL
+  
   # add checks on decomposition rates
   if(is.na(parms$dec_rates)){
     k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
