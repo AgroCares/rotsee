@@ -22,7 +22,7 @@
 #' P_NAME is the fertilizer name, P_DOSE has units (kg / ha), P_HC is the humification coefficient (fraction), P_OM is the organic matter content (%) and p_p2o5 is the phosphate content (%)
 #'
 #' rothc_rotation: crop table
-#' Includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
+#' Includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coefficient,-).
 #' May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
 #' * M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
 #' * M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.
@@ -35,7 +35,7 @@
 #' * c_fractions: Distribution over the different C pools.
 #' * dec_rates: Decomposition rates of the different pools
 #' * simyears: Duration of simulation (years), default is 50
-#' * unit: Unit in which the output should be given. Options: 'all','soc', psomperfraction'
+#' * unit: Unit in which the output should be given. Options: 'all','soc', 'psomperfraction'
 #' 
 #' weather: Average weather conditions
 #' Table containing columns month, W_TEMP_MEAN_MONTH (temperature in °C), W_PREC_MEAN_MONTH (precipitation in mm), W_ET_POT_MONTH (potential evapotranspiration in mm), and W_ET_ACT_MONTH. (actual evapotranspiration in mm).
