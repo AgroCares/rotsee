@@ -82,6 +82,15 @@ rc_sim <- function(A_SOM_LOI,
   
   # Define simyears
   simyears <- rothc_parms$simyears
+  
+  # Define method
+  method <- rothc_parms$method
+  
+  # Define wanted output
+  poutput <- rothc_parms$poutput
+  
+  # Define initialize
+  initialize <- rothc_parms$initialize
 
   # add checks
   checkmate::assert_numeric(A_SOM_LOI, lower = rcp[code == "A_SOM_LOI", value_min], upper = rcp[code == "A_SOM_LOI", value_max],len = 1)
@@ -143,7 +152,7 @@ rc_sim <- function(A_SOM_LOI,
   dt.soc[,toc := A_SOM_LOI * 0.5 * bd * b_depth * 100 * 100 / 100]
   
   # set the default initialisation to the one used in BodemCoolstof
-  if(rothc_parms$initialize == TRUE){
+  if(initialize == TRUE){
     
     # set TOC to ton C / ha
     dt.soc[, toc := toc * 0.001]
@@ -235,7 +244,7 @@ rc_sim <- function(A_SOM_LOI,
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   
   # get only the SOC values on the time scale of years
-  if(rothc_parms$poutput=='year'){out <- out[time %in% 0:simyears]}
+  if(poutput=='year'){out <- out[time %in% 0:simyears]}
   
   # select type output
   if(unit=='soc') {
