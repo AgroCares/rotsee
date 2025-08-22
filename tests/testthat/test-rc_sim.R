@@ -43,8 +43,8 @@ test_that("rc_sim correctly checks input validity", {
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                    weather = weather))
   
-  # No amendment table (not allowed)
-  expect_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+  # No amendment table (allowed)
+  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
                          B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                          weather = weather))

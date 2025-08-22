@@ -114,8 +114,11 @@ rc_sim <- function(A_SOM_LOI,
   dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
   
   # create an internal amendment file
-  
-  dt.org <- rc_input_amendment(dt = rothc_amendment)
+  if (!is.null(rothc_amendment)) {
+       dt.org <- rc_input_amendment(dt = rothc_amendment)
+     } else {
+         dt.org <- NULL
+       }
   
   # rothC model parameters
 
