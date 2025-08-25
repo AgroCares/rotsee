@@ -23,7 +23,13 @@ test_that("rc_sim correctly checks input validity", {
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
     B_LU_EOM_CROP = c(170, 170),
     B_LU_EOM_CROPRESIDUE = c(830, 830),
-    B_LU_HC = c(0.32, 0.32))
+    B_LU_HC = c(0.32, 0.32),
+    B_LU_DM = c(500, 500),
+    B_LU_HI = c(0.50, 0.50),
+    B_LU_HI_RES = c(0.32, 0.32),
+    B_LU_YIELD = c(3000, 3000),
+    B_LU_RS_FR = c(0.7, 0.7)
+    )
  
   rothc_amendment <- data.table(
     year = c(2022, 2023),
@@ -39,6 +45,13 @@ test_that("rc_sim correctly checks input validity", {
                         W_PREC_MEAN_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
                         W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                         W_ET_ACT_MONTH = NA_real_)
+  parms <- data.table(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
+                      c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
+                      initialize = TRUE,
+                      simyears = 50,
+                      unit = "A_SOM_LOI",
+                      method = "adams",
+                      poutput = "year")
 
   # All correct
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
@@ -67,5 +80,6 @@ test_that("rc_sim correctly checks input validity", {
 
 })
 
-
-
+test_that("changes in rothc_parms are correctly calculated"){
+  
+}
