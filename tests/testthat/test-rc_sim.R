@@ -21,9 +21,7 @@ test_that("rc_sim correctly checks input validity", {
     year = c(2022, 2023),
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
-    B_LU_EOM = c(170, 170),
-    B_LU_EOM_RESIDUE = c(830, 830),
-    B_LU_HC = c(0.32, 0.32))
+    B_LU_HC = c(0.32, 0.32),
     B_LU_DM = c(500, 500),
     B_LU_HI = c(0.50, 0.50),
     B_LU_HI_RES = c(0.32, 0.32),
@@ -32,13 +30,16 @@ test_that("rc_sim correctly checks input validity", {
     )
  
   rothc_amendment <- data.table(
+    P_ID = c(1, 1),
     year = c(2022, 2023),
     month = c(5, 5),
     P_NAME = c('cattle_slurry', 'cattle_slurry'),
     P_DOSE = c(63300, 63300),
     P_HC = c(0.7,0.7),
-    P_OM = c(7.1, 7.1),
+    P_C_OF = c(35, 35),
     p_p2o5 = c(0.15, 0.15))
+  
+
       
   weather <- data.table(month = 1:12,
                         W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
@@ -60,7 +61,7 @@ test_that("rc_sim correctly checks input validity", {
                    weather = weather))
   
   # No amendment table (allowed)
-  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
+  expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                          B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                          weather = weather))
