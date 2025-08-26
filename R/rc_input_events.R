@@ -4,10 +4,10 @@
 #'
 #' @param crops (data.table) Table containing carbon inputs of DPM and RPM from crops, calculated in rc_input_event_crop
 #' @param amendment (data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments, calculated in rc_input_event_amendment
-#' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
+#' @param simyears (numeric) Amount of years for which the simulation should run, Default: 50 years
 #'
 #' @export
-rc_input_events <- function(crops,amendment, simyears){
+rc_input_events <- function(crops, amendment, simyears = 50){
   
   # add visual bindings
   id = time = yr_rep = NULL
@@ -15,9 +15,9 @@ rc_input_events <- function(crops,amendment, simyears){
   # check parameters
   checkmate::assert_numeric(simyears,lower = 0.1,  any.missing = FALSE)
   checkmate::assert_data_table(crops, any.missing = FALSE)
-  checkmate::assert_subset(colnames(crops), choices = c("time", "var", "value", "method"))
+  checkmate::assert_names(colnames(crops), must.include = c("time", "var", "value", "method"))
   checkmate::assert_data_table(amendment, any.missing = FALSE)
-  checkmate::assert_subset(colnames(amendment), choices = c("time", "var", "value", "method"))
+  checkmate::assert_names(colnames(amendment), must.include = c("time", "var", "value", "method"))
   
   
   # create event
