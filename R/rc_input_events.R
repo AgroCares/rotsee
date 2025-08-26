@@ -202,7 +202,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # make default crop amendment data.table when dt = NULL
   if(is.null(dt)){dt <- data.table(year = crops[1,year], month = 1, cin_tot = 0, cin_hum = 0,
-                                   cin_dpm = 0, cin_rpm = 0, fr_eoc_p = 10)}
+                                   cin_dpm = 0, cin_rpm = 0)}
   
   # do checks on the crop list
   checkmate::assert_data_table(crops)
@@ -212,13 +212,12 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
   checkmate::assert_subset(colnames(dt),
-                           c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'),
+                           c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p', 'p_ID'),
                            empty.ok = FALSE)
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt))
-  checkmate::assert_numeric(dt$fr_eoc_p,lower = 0, upper = 250,len = nrow(dt))
   checkmate::assert_integerish(dt$year,len = nrow(dt))
   
   # load internal tables
@@ -228,57 +227,17 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   # merge table with amendment c input with crop name
   dt <- merge(dt, crops[,list(B_LU,year)], by='year')
   dt <- merge(dt, cc.crop[,list(B_LU,B_LU_NAME=crop_name)],by='B_LU')
-  
-  # add manure category depending on eoc-to-p ratio
-  # assuming that soil improving products (high ratio) are incorporated in autumn, and others in spring
-  dt[,p_cat := fifelse(fr_eoc_p > 20, 'autumn','spring')]
-  
-  # Sum C inputs over p_cat per year
+
+  # Sum C inputs for each amendment addition
   cols <- c('cin_hum','cin_dpm','cin_rpm')
-  dt <- dt[,lapply(.SD,function(x) sum(x)),.SDcols = cols,by = c('year', 'p_cat','B_LU','B_LU_NAME')]
+  dt <- dt[,lapply(.SD,function(x) sum(x)),.SDcols = cols,by = c('year', 'month', 'B_LU','B_LU_NAME')]
  
-  # add monthly redistribution
-  if(!'month' %in% colnames(dt)){
-    
-    # extend the crop table with months
-    dt2 <- copy(dt)
-    dt2 <- dt2[rep(1:.N,12)]
-    dt2[,month := 1:.N,by=c('year','p_cat')]
-    
-    # add timings for grassland for three kind of amendments
-    dt2[grepl('^nl_',B_LU) & grepl('gras',B_LU_NAME) & p_cat == 'spring', crflt := 1]
-    dt2[crflt == 1, tcf := 0]
-    dt2[crflt == 1 & month == 2, tcf := 0.35]
-    dt2[crflt == 1 & month == 5, tcf := 0.25]
-    dt2[crflt == 1 & month == 6, tcf := 0.10]
-    dt2[crflt == 1 & month == 7, tcf := 0.10]
-    dt2[crflt == 1 & month == 9, tcf := 0.20]
-    dt2[,crflt := NULL]
-    dt2[grepl('^nl_',B_LU) & grepl('gras',B_LU_NAME) & p_cat == 'autumn', tcf := fifelse(month==10,1,0)]
-    
-    # add timings for grassland not in the Netherlands
-    dt2[grepl('gras',B_LU_NAME) & !grepl('nl_',B_LU), tcf := fifelse(month %in% c(4,6,8),1/3,0)]
-    
-    # add timings for non grassland systems
-    dt2[!grepl('gras',B_LU_NAME) & p_cat == 'spring', tcf := fifelse(month == 4, 1, 0)]
-    dt2[!grepl('gras',B_LU_NAME) & p_cat == 'autumn', tcf := fifelse(month == 10,1, 0)]
-    
-    # add timings for winter cereal
-    dt2[grepl('^nl_',B_LU) & grepl('tarwe|Wheat',B_LU_NAME) & grepl('winter|wheat',B_LU_NAME), tcf := fifelse(month == 9,1,0)]
-    
-    # all other crops, assume amendment month is April
-    dt2[is.na(tcf), tcf := fifelse(month == 3,1,0)]
-    
-  } else {
-    
     # make a copy if month is already given
     dt2 <- copy(dt)[,tcf := 1]
     
     # when month is unknown, assume that month is April
     dt2[is.na(month),month := 4]
     
-  }
-
   # sum all inputs per crop and year
   cols <- c('cin_hum','cin_dpm','cin_rpm')
   dt2 <- dt2[,lapply(.SD,function(x) sum(x * tcf)),

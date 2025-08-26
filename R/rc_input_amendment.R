@@ -28,14 +28,12 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   
 
   # add visual bindings
-  fr_dpm_rpm = P_HC = cin_tot = P_DOSE = P_OM = cin_hum = cin_dpm = P_NAME = p_p2o5 = cin_rpm = NULL
+  fr_dpm_rpm = P_HC = cin_tot = P_DOSE = P_OM = cin_hum = cin_dpm = P_NAME = cin_rpm = NULL
   
   # check B_LU_BRP or crop table
   checkmate::assert_data_table(dt, null.ok = TRUE)
   checkmate::assert_subset(colnames(dt),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "year", "month", "P_OM", "p_p2o5"), empty.ok = TRUE)
   if(!is.null(dt$month)){checkmate::assert_integerish(dt$month, lower = 1, upper = 12, any.missing = TRUE)}
-  checkmate::assert_numeric(dt$p_p2o5, lower = 0, any.missing = FALSE)
-  checkmate::assert_true(all(dt$p_p2o5 >0))
   
   checkmate::assert_integerish(B_LU_BRP, any.missing = FALSE, null.ok = TRUE, min.len = 1)
   checkmate::assert_subset(B_LU_BRP, choices = unique(rotsee::rc_crops$crop_code), empty.ok = TRUE)
@@ -50,10 +48,10 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   } else {
     dt.org <- copy(dt)
   }
-  
+ 
   # Set years to 1:x
   dt.org[,year := year - min(year) + 1]
-  
+ 
   # add month = NA when no input given
   if(!'month' %in% colnames(dt.org)){dt.org[,month := NA_real_]}
   
@@ -73,10 +71,10 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   dt.org[, cin_hum := 0.02 * cin_tot]
   dt.org[, cin_dpm := (1 - 0.02) * cin_tot * fr_dpm_rpm/ (1 + fr_dpm_rpm)]
   dt.org[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
-  
+ 
   # select only relevant columns
-  dt.org <- dt.org[,list(p_name = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm, fr_eoc_p = P_OM * P_HC * 0.5 / p_p2o5)]
-  
+  dt.org <- dt.org[,list(p_ID = P_ID, p_name = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
+
   # return
   return(dt.org)
 }
