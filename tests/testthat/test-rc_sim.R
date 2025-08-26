@@ -21,9 +21,9 @@ test_that("rc_sim correctly checks input validity", {
     year = c(2022, 2023),
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
-    B_LU_EOM_CROP = c(170, 170),
-    B_LU_EOM_CROPRESIDUE = c(830, 830),
-    B_LU_HC = c(0.32, 0.32),
+    B_LU_EOM = c(170, 170),
+    B_LU_EOM_RESIDUE = c(830, 830),
+    B_LU_HC = c(0.32, 0.32))
     B_LU_DM = c(500, 500),
     B_LU_HI = c(0.50, 0.50),
     B_LU_HI_RES = c(0.32, 0.32),
@@ -59,8 +59,8 @@ test_that("rc_sim correctly checks input validity", {
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                    weather = weather))
   
-  # No amendment table (not allowed)
-  expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
+  # No amendment table (allowed)
+  expect_no_error(rc_sim(A_SOM_LOI = A_SOM_LOI, A_CLAY_MI = A_CLAY_MI, A_DEPTH = A_DEPTH,
                          B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                          weather = weather))
@@ -74,7 +74,7 @@ test_that("rc_sim correctly checks input validity", {
   # No crop table (not allowed)
   expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
-                   rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
+                   rothc_rotation = NULL, rothc_amendment = rothc_amendment, 
                    weather = weather))
   
 

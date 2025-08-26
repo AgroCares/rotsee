@@ -13,8 +13,9 @@
 #' if dt is NULL, then the amendment input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 #'
 #' @export
-rc_input_amendment <- function(dt = NULL,B_LU_BRP = NULL){
+rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   
+
   # add visual bindings
   fr_dpm_rpm = P_HC = cin_tot = P_DOSE = P_OM = cin_hum = cin_dpm = P_NAME = p_p2o5 = cin_rpm = NULL
   
@@ -23,10 +24,12 @@ rc_input_amendment <- function(dt = NULL,B_LU_BRP = NULL){
   checkmate::assert_subset(B_LU_BRP, choices = unique(rotsee::rc_crops$crop_code), empty.ok = TRUE)
   checkmate::assert_data_table(dt,null.ok = TRUE)
   checkmate::assert_subset(colnames(dt),choices = c("P_NAME", "year","month","P_OM","P_HC","p_p2o5", "P_DOSE"), empty.ok = TRUE)
-  checkmate::assert_true(!(is.null(dt) & is.null(B_LU_BRP)))
-  if(!is.null(dt$month)){checkmate::assert_integerish(dt$month)}
+  checkmate::assert_true(!is.null(dt) || !is.null(B_LU_BRP))
+  if(!is.null(dt$month)){checkmate::assert_integerish(dt$month, lower = 1, upper = 12, any.missing = TRUE)}
+  checkmate::assert_numeric(dt$p_p2o5, lower = 0, any.missing = FALSE)
+  checkmate::assert_true(all(dt$p_p2o5 >0))
+
   
-  # set default crop table in case that dt is missing
   if(is.null(dt) & !is.null(B_LU_BRP)){
     
     rs <- rc_input_scenario(B_LU_BRP = B_LU_BRP, scen = 'BAU')
@@ -34,6 +37,7 @@ rc_input_amendment <- function(dt = NULL,B_LU_BRP = NULL){
   } else {
     dt.org <- copy(dt)
   }
+  
   
   # Set years to 1:x
   dt.org[,year := year - min(year) + 1]

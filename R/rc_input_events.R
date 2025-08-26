@@ -235,7 +235,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # Sum C inputs over p_cat per year
   cols <- c('cin_hum','cin_dpm','cin_rpm')
-  dt <- dt[,lapply(.SD,function(x) sum(x)),.SDcols = cols,by = c('year', 'month', 'p_cat','B_LU','B_LU_NAME')]
+  dt <- dt[,lapply(.SD,function(x) sum(x)),.SDcols = cols,by = c('year', 'p_cat','B_LU','B_LU_NAME')]
  
   # add monthly redistribution
   if(!'month' %in% colnames(dt)){

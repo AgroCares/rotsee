@@ -8,14 +8,14 @@
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #' @param cf_yield (numeric) A yield correction factor (fraction) if yield is higher than regional average
-#' @param dt.weather (data.table) Data table containing relative weather conditions. Default set to standard weather conditions of the Netherlands.
+#' @param dt.weather (data.table) Data table of monthly weather
 #'
 #' @details
 #' To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
 #' if dt is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 #'
 #' @export
-rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, simyears,cf_yield, dt.weather =  NULL){
+rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, simyears,cf_yield, dt.weather){
   
   # add visual bindings
   B_LU = crop_name = M_RENEWAL = B_LU_MAKKINK = B_LU_NAME = M_GREEN_TIMING = NULL
@@ -27,7 +27,7 @@ rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, si
   checkmate::assert_integerish(B_LU_BRP, any.missing = FALSE, null.ok = TRUE, min.len = 1)
   checkmate::assert_subset(B_LU_BRP, choices = unique(rotsee::rc_crops$crop_code), empty.ok = TRUE)
   checkmate::assert_data_table(dt,null.ok = TRUE)
-  checkmate::assert_data_table(dt.weather, null.ok = TRUE)
+  checkmate::assert_data_table(dt.weather, null.ok = FALSE)
   checkmate::assert_true(!(is.null(dt) & is.null(B_LU_BRP)))
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   
