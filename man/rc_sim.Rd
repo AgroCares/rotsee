@@ -11,9 +11,10 @@ rc_sim(
   B_DEPTH = 0.3,
   cf_yield = 1,
   M_TILLAGE_SYSTEM = "CT",
-  rothc_rotation = NULL,
+  rothc_rotation,
   rothc_amendment = NULL,
-  rothc_parms = list(simyears = 50, init = FALSE, spinup = 10, method = "adams")
+  rothc_parms = NULL,
+  weather = NULL
 )
 }
 \arguments{
@@ -33,7 +34,9 @@ rc_sim(
 
 \item{rothc_amendment}{(data.table) A table with the following column names: year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.}
 
-\item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. Default is NULL. For more information, see details.}
+\item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
+
+\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
 }
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
@@ -43,16 +46,26 @@ This function simulates the fate of SOC given the impact of soil properties, wea
 The following inputs are mandatory: rothc_rotation, A_SOM_LOI (\%), and A_CLAY_MI (\%). All other data is optional.
 When no weather inputs are given, these are estimated from long-term average weather conditions in the Netherlands.
 
-The organic amendment table includes the columns year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.
+rothc_amendment: amendment table
 P_NAME is the fertilizer name, P_DOSE has units (kg / ha), P_HC is the humification coefficient (fraction), P_OM is the organic matter content (%) and p_p2o5 is the phosphate content (%)
 
-The crop table includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM_CROP (the effective organic matter content, kg/ha), B_LU_EOM_CROPRESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
-The crop table might include the measures M_GREEN, M_GREEN_PROPERLY, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
+rothc_rotation: crop table
+Includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coefficient,-).
+May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
 * M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
-* M_CROPRESIDUE (boolean) gives whether crop residues are amended to the soil after harvest.
-* M_IRRIGATION (boolean) gives whether the crop is irrigated.
-* M_RENEWAL (boolean) gives whether the grassland is renewed (only applicable for grassland)
+* M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.
+* M_IRRIGATION (boolean) whether the crop is irrigated.
+* M_RENEWAL (boolean) whether the grassland is renewed (only applicable for grassland)
 
-The simulation of C via the RothC model can be adapted by the following parameters: initialize, c_fractions, dec_rates, simyears and unit.
-These have to be in a list called 'rothc_parms'.
+rothc_parms: simulation parameters
+Table with possible parameters to adapt the calculations. May include the columns initialize, c_fractions, dec_rates, simyears and unit.
+* initialize: scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
+* c_fractions: Distribution over the different C pools.
+* dec_rates: Decomposition rates of the different pools
+* simyears: Duration of simulation (years), default is 50
+* unit: Unit in which the output should be given. Options: 'all','soc', 'psomperfraction'
+
+weather: Average weather conditions
+Table containing columns month, W_TEMP_MEAN_MONTH (temperature in °C), W_PREC_MEAN_MONTH (precipitation in mm), W_ET_POT_MONTH (potential evapotranspiration in mm), and W_ET_ACT_MONTH. (actual evapotranspiration in mm).
+If no table is given, average Dutch conditions are used
 }

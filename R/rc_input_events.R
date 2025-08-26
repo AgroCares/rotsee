@@ -51,3 +51,4 @@ rc_input_events <- function(crops,amendment, simyears){
   # return output
   return(rothc.event)
 }
+
