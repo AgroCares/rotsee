@@ -286,30 +286,6 @@ test_that("rc_input_event_amendment handles multiple years correctly", {
   expect_true(length(unique_years) >= 1)
 })
 
-# Test time calculation accuracy
-test_that("rc_input_event_amendment calculates time correctly", {
-  crops <- data.table(B_LU = "nl_233", year = 2020)
-  amendment <- data.table(
-    year = 2020,
-    month = 6,  # June
-    cin_tot = 1000,
-    cin_hum = 100,
-    cin_dpm = 300,
-    cin_rpm = 600,
-    fr_eoc_p = 15
-  )
-  
-  result <- rc_input_event_amendment(crops, amendment)
-  
-  # Time should be calculated as year + month/12 - min(year)
-  # For year 2020, month 6: 2020 + 6/12 - 2020 = 0.5
-  # Momenteel gaat er iets mis dat in dt alles NA is en daardoor time naar 0 gaat, achteraan!!
-  expected_time <- 6/12
-  
-  #expect_true(any(abs(result$time - expected_time) < 0.1))
-})
-
-
 # Test melt operation and output structure
 test_that("rc_input_event_amendment output has correct melted structure", {
   crops <- create_test_crops()

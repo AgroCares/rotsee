@@ -36,7 +36,8 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
     must.include = c('year','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'),
     subset.of    = c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p'))
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))
-  checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))
+  if("cin_tot" %in% names(dt)){
+  checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))}
   checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$fr_eoc_p,lower = 0, upper = 250,len = nrow(dt))

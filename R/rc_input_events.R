@@ -14,6 +14,11 @@ rc_input_events <- function(crops,amendment, simyears){
   
   # check parameters
   checkmate::assert_numeric(simyears,lower = 0.1,  any.missing = FALSE)
+  checkmate::assert_data_table(crops, any.missing = FALSE)
+  checkmate::assert_subset(colnames(crops), choices = c("time", "var", "value", "method"))
+  checkmate::assert_data_table(amendment, any.missing = FALSE)
+  checkmate::assert_subset(colnames(amendment), choices = c("time", "var", "value", "method"))
+  
   
   # create event
   rothc.event <- rbind(crops,amendment)
