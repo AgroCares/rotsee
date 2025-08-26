@@ -21,7 +21,17 @@
 #' P_NAME is the fertilizer name, P_DOSE has units (kg / ha), P_HC is the humification coefficient (fraction), P_OM is the organic matter content (%) and p_p2o5 is the phosphate content (%)
 #'
 #' rothc_rotation: crop table
-#' Includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM_CROP (the effective organic matter content, kg/ha), B_LU_EOM_CROPRESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
+#' Includes the columns: 
+#' * year,
+#' * B_LU (a crop id), 
+#' * B_LU_NAME (a crop name, optional),
+#' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
+#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+#' * B_LU_YIELD, the fresh weight yield of the crop (kg/ha), required when B_C_OF_INPUT is not supplied
+#' * B_LU_DM, dry matter content of the crop (g/kg), required when B_C_OF_INPUT is not supplied
+#' * B_LU_HI, the harvest index of the crop, required when B_C_OF_INPUT is not supplied
+#' * B_LU_HI_RES, the fraction of crop residue, required when B_C_OF_INPUT is not supplied
+#' * B_LU_RS_FR, the fraction root biomass, required when B_C_OF_INPUT is not supplied
 #' May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
 #' * M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
 #' * M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.
@@ -54,22 +64,27 @@ rc_sim <- function(soil_properties,
                    weather = NA_real_){
   
   # add visual bindings
-  code = value_min = value_max = a_depth = dens.sand = dens.clay = cf = bd = toc = NULL
+  code = value_min = value_max = a_depth = dens.sand = dens.clay = cf = bd = toc = A_CLAY_MI = A_C_OF= NULL
   b_depth = var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
   soc = dec_rates = simyears = c_fractions = method = poutput = unit = CDPM = CRPM = CBIO = CHUM = CIOM = bd =  . = NULL
+  B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = NULL
   
   # add internal table
   rcp <- rotsee::rc_parms
+  
+  # create an internal crop rotation file
+  dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
   
   # Add missing data, check input (see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather)
   rothc_parms <- rc_update_parms(parms = rothc_parms)
   
+
+  
   # Unpack variables of rothc_parms
   list2env(rothc_parms, envir = environment())
   
 
-  
   # Define decomposition rates
   k1 <- dec_rates[["k1"]]
   k2 <- dec_rates[["k2"]]
@@ -87,12 +102,8 @@ rc_sim <- function(soil_properties,
   checkmate::assert_subset(M_TILLAGE_SYSTEM,choices = c('NT','ST','CT','DT'), empty.ok = FALSE)
   checkmate::assert_data_table(rothc_rotation)
   checkmate::assert_data_table(rothc_amendment)
-  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year","B_LU_EOM_CROP","B_LU_EOM_CROPRESIDUE", "B_LU_HC","M_GREEN_TIMING","M_CROPRESIDUE","B_LU", "B_LU_NAME"), empty.ok = FALSE)
+  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year","B_LU_EOM_CROP","B_LU_EOM_CROPRESIDUE", "B_LU_HC","B_C_OF_INPUT","B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE","B_LU", "B_LU_NAME"), empty.ok = FALSE)
   checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_NAME", "year","month","P_OM","P_HC","p_p2o5", "P_DOSE"), empty.ok = FALSE)
-  
-  
-  # create an internal crop rotation file
-  dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
   
   # create an internal amendment file
   dt.org <- rc_input_amendment(dt = rothc_amendment)
@@ -111,10 +122,10 @@ rc_sim <- function(soil_properties,
   
   # initialize the RothC pools (kg C / ha)
   
-  # make internal data.table (Dit gedeelte moven naar soil update?)
-  dt.soc <- data.table(A_C_OF = soil_properties$A_C_OF,B_C_ST03 = soil_properties$B_C_ST03, A_CLAY_MI = soil_properties$A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH)
+  # make internal data.table 
+  dt.soc <- data.table(A_C_OF = soil_properties$A_C_OF,B_C_ST03 = soil_properties$B_C_ST03, A_CLAY_MI = soil_properties$A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH, A_DENSITY_SA = soil_properties$A_DENSITY_SA)
   
-  # Correct A_SOM_LOI for sampling depth 
+  # Correct A_SOM_LOI for sampling depth (Dit gedeelte + bulk density correction moven naar soil update?)
   dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_C_OF := A_C_OF * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
   dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_C_OF := A_C_OF * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
   
@@ -180,10 +191,9 @@ rc_sim <- function(soil_properties,
     dt.soc[,CRPM0 := crpm.ini * 1000]
     dt.soc[,CBIO0 := cbio.ini * 1000]
     dt.soc[,CHUM0 := chum.ini * 1000]
-    
   } else {
     
-    # Calculate carbon pools based on default distribution (kg C / ha)
+    # Calculate carbon pools based on provided or default distribution (kg C / ha)
     dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
     dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
     dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
@@ -237,12 +247,12 @@ rc_sim <- function(soil_properties,
     rothc.soc <- out[,list(year=time,soc)]
     
     # estimate bulk density
-    rothc.soc[,bd := mean(dt.soc$bd)]
+    rothc.soc[,A_DENSITY_SA := mean(dt.soc$A_DENSITY_SA)]
     rothc.soc[,A_CLAY_MI := mean(dt.soc$A_CLAY_MI)]
     rothc.soc[,A_DEPTH := A_DEPTH]
     
     # set C stocks back to OS%
-    rothc.soc[,A_SOM_LOI := soc * 100 * 2 / (bd * B_DEPTH * 100 * 100)]
+    rothc.soc[,A_SOM_LOI := soc * 100 * 2 / (A_DENSITY_SA * B_DEPTH * 100 * 100)]
     
     # Correct A_SOM_LOI for sampling depth
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI / (1 - 0.19 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
@@ -257,14 +267,14 @@ rc_sim <- function(soil_properties,
     rothc.soc <- copy(out)
     
     # estimate bulk density
-    rothc.soc[,bd := mean(dt.soc$bd)]
+    rothc.soc[,A_DENSITY_SA := mean(dt.soc$A_DENSITY_SA)]
     rothc.soc[,A_CLAY_MI := mean(dt.soc$A_CLAY_MI)]
     rothc.soc[,A_DEPTH := A_DEPTH]
     rothc.soc[,CIOM := dt.soc$CIOM0]
     
     # do unit conversion for all pools, convert to %SOM
     cols <- c('soc','CDPM','CRPM','CBIO','CHUM','CIOM')
-    rothc.soc[,c(cols) := lapply(.SD,function(x) x * 100 * 2 / (bd * B_DEPTH * 100 * 100)),.SDcols = cols]
+    rothc.soc[,c(cols) := lapply(.SD,function(x) x * 100 * 2 / (A_DENSITY_SA * B_DEPTH * 100 * 100)),.SDcols = cols]
     
     # Correct soc for sampling depth
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI <= 10, soc := soc / (1 - 0.19 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]

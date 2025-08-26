@@ -48,7 +48,17 @@ rothc_amendment: amendment table
 P_NAME is the fertilizer name, P_DOSE has units (kg / ha), P_HC is the humification coefficient (fraction), P_OM is the organic matter content (%) and p_p2o5 is the phosphate content (%)
 
 rothc_rotation: crop table
-Includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM_CROP (the effective organic matter content, kg/ha), B_LU_EOM_CROPRESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
+Includes the columns: 
+* year,
+* B_LU (a crop id), 
+* B_LU_NAME (a crop name, optional),
+* B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
+* B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+* B_LU_YIELD, the fresh weight yield of the crop (kg/ha), required when B_C_OF_INPUT is not supplied
+* B_LU_DM, dry matter content of the crop (g/kg), required when B_C_OF_INPUT is not supplied
+* B_LU_HI, the harvest index of the crop, required when B_C_OF_INPUT is not supplied
+* B_LU_HI_RES, the fraction of crop residue, required when B_C_OF_INPUT is not supplied
+* B_LU_RS_FR, the fraction root biomass, required when B_C_OF_INPUT is not supplied
 May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
 * M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
 * M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.

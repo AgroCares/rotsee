@@ -148,7 +148,7 @@ rc_update_parms <- function(parms){
     unit = parms$unit
     
     # check output format
-    checkmate::assert_subset(unit,c('A_SOM_LOI','psoc','cstock','psomperfraction','omb'),empty.ok = FALSE)
+    checkmate::assert_subset(unit,c('A_SOM_LOI','soc','cstock','psomperfraction','omb'),empty.ok = FALSE)
     checkmate::assert_character(unit,len=1)
   }
   
@@ -186,10 +186,10 @@ rc_check_inputs <- function(soil_properties){
   
   # Check soil properties
   checkmate::assert_list(soil_properties, min.len = 3)
-  if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = pandex::get_minval('A_C_OF'), upper = pandex::get_maxval('A_C_OF'), any.missing = TRUE, len = 1)
-  if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = pandex::get_minval('B_C_ST03'), upper = pandex::get_maxval('B_C_ST03'), any.missing = TRUE, len = 1)
+  if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = 0.1, upper = 600, any.missing = TRUE, len = 1)
+  if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = 0.1, upper = 3000, any.missing = TRUE, len = 1)
   if(all(length(soil_properties$A_C_OF) == 0,length(soil_properties$B_C_ST03) == 0)) stop('Both A_C_OF and B_C_ST03 are missing in soil_properties')
-  checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = pandex::get_minval('A_CLAY_MI'), upper = pandex::get_maxval('A_CLAY_MI'), len = 1)
-  checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = pandex::get_minval('A_DENSITY_SA'), upper = pandex::get_maxval('A_DENSITY_SA'), len = 1)
+  checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = 0.1, upper = 75, len = 1)
+  checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = 0.5, upper = 3, len = 1)
   
 }

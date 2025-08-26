@@ -80,6 +80,3 @@ test_that("rc_sim correctly checks input validity", {
 
 })
 
-test_that("changes in rothc_parms are correctly calculated"){
-  
-}

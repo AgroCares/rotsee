@@ -126,17 +126,13 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   dt[,crflt := NULL]
   
   # estimate total EOC input
-  
-  # add total crop EOC input (kg C/ ha) for the RothC pools, uncorrected for cf_yield
-  dt[,cin_dpm := cin_crop_dpm + fifelse(M_CROPRESIDUE==TRUE, cin_res_dpm, 0)]
-  dt[,cin_rpm := cin_crop_rpm + fifelse(M_CROPRESIDUE==TRUE, cin_res_rpm, 0)]
-  
+
   # the carbon input from crop and crop residue is only input at harvest for arable crops(assume month = 9) and grassland during cuts
   dt[grepl('^nl_',B_LU) & !grepl('grasland',crop_name) ,cin_dpm := fifelse(month == 9,cin_dpm,0)]
   dt[grepl('^nl_',B_LU) & !grepl('grasland',crop_name) ,cin_rpm := fifelse(month == 9,cin_rpm,0)]
   dt[grepl('^nl_',B_LU) & grepl('grasland',crop_name) ,cin_dpm := fifelse(month  %in% c(4,5,6,7,9),cin_dpm/5,0)]
   dt[grepl('^nl_',B_LU) & grepl('grasland',crop_name) ,cin_rpm := fifelse(month  %in% c(4,5,6,7,9),cin_rpm/5,0)]
-  
+ 
   # add yield correction
   dt[,cin_dpm := cf_yield * cin_dpm]
   dt[,cin_rpm := cf_yield * cin_rpm]
