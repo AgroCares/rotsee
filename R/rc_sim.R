@@ -17,11 +17,37 @@
 #' The following inputs are mandatory: rothc_rotation, A_SOM_LOI (\%), and A_CLAY_MI (\%). All other data is optional.
 #' When no weather inputs are given, these are estimated from long-term average weather conditions in the Netherlands.
 #'
+#' soil_properties: soil properties table
+#' Includes the columns:
+#' * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
+#' * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
+#' * A_CLAY_MI (numeric), clay fraction (\%)
+#' * A_DENSITY_SA (numeric), dry soil bulk density(g/cm3)
+#' 
 #' rothc_amendment: amendment table
-#' P_NAME is the fertilizer name, P_DOSE has units (kg / ha), P_HC is the humification coefficient (fraction), P_OM is the organic matter content (%) and p_p2o5 is the phosphate content (%)
-#'
+#' Includes the columns:
+#' * P_ID (character), ID of the soil amendment product
+#' * P_NAME (character), name of the soil amendment product, optional
+#' * P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
+#' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
+#' * year (date), year of fertilizer application
+#' * month (numeric), month of fertilizer application, optional
+#' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+#' 
 #' rothc_rotation: crop table
 #' Includes the columns: 
+#' * year,
+#' * B_LU (a crop id), 
+#' * B_LU_NAME (a crop name, optional),
+#' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
+#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+#' * B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha), required when B_C_OF_INPUT is not supplied
+#' * B_LU_DM, dry matter content of the crop (g/kg), required when B_C_OF_INPUT is not supplied
+#' * B_LU_HI, the harvest index of the crop, required when B_C_OF_INPUT is not supplied
+#' * B_LU_HI_RES, the fraction of crop residue, required when B_C_OF_INPUT is not supplied
+#' * B_LU_RS_FR, the fraction root biomass, required when B_C_OF_INPUT is not supplied
 #' May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
 #' * M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
 #' * M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.
@@ -59,11 +85,21 @@ rc_sim <- function(soil_properties,
   soc = dec_rates = simyears = c_fractions = method = poutput = unit = CDPM = CRPM = CBIO = CHUM = CIOM = bd =  . = NULL
   B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = NULL
   
-  # add internal table
-  rcp <- rotsee::rc_parms
+
+  # Check input data and create defaults when necessary
   
-  # create an internal crop rotation file
+   # create an internal crop rotation file
   dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
+  
+  # create an internal amendment file
+  if (!is.null(rothc_amendment)) {
+    dt.org <- rc_input_amendment(dt = rothc_amendment)
+  } else {
+    dt.org <- NULL
+  }
+  
+  # Check and update soil properties
+  rc_check_inputs(soil_properties = soil_properties)
   
   # Add missing data, check input (see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather)
@@ -94,8 +130,7 @@ rc_sim <- function(soil_properties,
   # Define initialize
   initialize <- rothc_parms$initialize
   
-  # Check and update soil properties
-  rc_check_inputs(soil_properties = soil_properties)
+
 
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = 0, upper = 0.6, any.missing = FALSE, len = 1)
@@ -103,22 +138,7 @@ rc_sim <- function(soil_properties,
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   checkmate::assert_character(M_TILLAGE_SYSTEM, any.missing = FALSE,len=1)
   checkmate::assert_subset(M_TILLAGE_SYSTEM,choices = c('NT','ST','CT','DT'), empty.ok = FALSE)
-  checkmate::assert_data_table(rothc_rotation)
-  if(!is.null(rothc_amendment)){
-    checkmate::assert_data_table(rothc_amendment)
-  }
-  checkmate::assert_names(colnames(rothc_rotation),must.include = c("year","B_LU_EOM","B_LU_EOM_RESIDUE", "B_LU_HC","B_LU", "B_LU_NAME"))
-  if(!is.null(rothc_amendment)) {
-    checkmate::assert_names(colnames(rothc_amendment),must.include = c("P_NAME", "year","P_OM","P_HC","p_p2o5", "P_DOSE"))
-  }
-  
-  # create an internal amendment file
-  if (!is.null(rothc_amendment)) {
-       dt.org <- rc_input_amendment(dt = rothc_amendment)
-     } else {
-         dt.org <- NULL
-       }
-  
+
   # rothC model parameters
 
   # prepare the RothC model inputs
