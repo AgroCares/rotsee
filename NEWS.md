@@ -1,4 +1,13 @@
+# rotsee v0.0.2 2025-08-28
+## Added
+* function rc_check_inputs to check input data
+
+## changed
+* Input data of crops and amendments to be optional
+* Option to input total crop C input or general crop management data
+
 # rotsee UNRELEASED
+
 ## Added
 * Add GitHub Action to run R-CMD-CHECK for PR's
 * Added helper functions to check input weather and parameter data, and insert default values when not supplied

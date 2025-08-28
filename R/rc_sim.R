@@ -74,7 +74,7 @@ rc_sim <- function(soil_properties,
                    B_DEPTH = 0.3,
                    cf_yield = 1,
                    M_TILLAGE_SYSTEM = 'CT',
-                   rothc_rotation,
+                   rothc_rotation = NULL,
                    rothc_amendment = NULL,
                    rothc_parms = NULL,
                    weather = NULL){
@@ -137,12 +137,27 @@ rc_sim <- function(soil_properties,
   # rothC model parameters
 
   # prepare the RothC model inputs
+  # create an internal crop rotation file
+  if(!is.null(rothc_rotation)){
+    dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
+  } else {
+    dt.crop = NULL
+  }
+  
+  
+  # create an internal amendment file
+  if (!is.null(rothc_amendment)) {
+    dt.org <- rc_input_amendment(dt = rothc_amendment)
+  } else {
+    dt.org <- NULL
+  }
+  
   # make rate modifying factors input database
   dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield, dt.weather = dt.weather)
   
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)
-  
+
   # prepare EVENT database with all C inputs over time 
   rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = soil_properties$A_CLAY_MI,simyears = rothc_parms$simyears)
   

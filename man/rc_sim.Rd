@@ -10,7 +10,7 @@ rc_sim(
   B_DEPTH = 0.3,
   cf_yield = 1,
   M_TILLAGE_SYSTEM = "CT",
-  rothc_rotation,
+  rothc_rotation = NULL,
   rothc_amendment = NULL,
   rothc_parms = NULL,
   weather = NULL

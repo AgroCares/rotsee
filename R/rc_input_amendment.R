@@ -29,6 +29,7 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
 
   # add visual bindings
   fr_dpm_rpm = P_HC = cin_tot = P_DOSE = P_OM = cin_hum = cin_dpm = P_NAME = cin_rpm = NULL
+  P_C_OF_INPUT = P_ID = P_C_OF = NULL
   
   # check B_LU_BRP or crop table
   checkmate::assert_data_table(dt, null.ok = TRUE)
