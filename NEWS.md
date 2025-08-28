@@ -1,6 +1,8 @@
-# rotsee v0.0.2 2025-08-28
+# rotsee v0.0.3 2025-08-28
 ## Added
 * function rc_check_inputs to check input data
+* Helper function rc_calculate_bd to estimate dry soil bulk density based on soil properties
+* Helper function rc_calculate_B_C_OF to calculate crop C inputs based on crop management
 
 ## changed
 * Input data of crops and amendments to be optional

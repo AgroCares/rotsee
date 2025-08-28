@@ -4,12 +4,10 @@
 \alias{rc_input_crop}
 \title{Do check and expand crop input table for RothC for the Netherlands}
 \usage{
-rc_input_crop(dt = NULL, B_LU_BRP = NULL, cf_yield)
+rc_input_crop(dt = NULL, cf_yield)
 }
 \arguments{
 \item{dt}{(data.table) Table with crop rotation and related crop properties for Carbon input.}
-
-\item{B_LU_BRP}{(numeric) The crop code}
 
 \item{cf_yield}{(numeric) A yield correction factor (fraction) if yield is higher than regional average}
 }

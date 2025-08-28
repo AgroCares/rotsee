@@ -22,11 +22,7 @@ test_that("rc_sim correctly checks input validity", {
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
     B_LU_HC = c(0.32, 0.32),
-    B_LU_DM = c(500, 500),
-    B_LU_HI = c(0.50, 0.50),
-    B_LU_HI_RES = c(0.32, 0.32),
-    B_LU_YIELD = c(3000, 3000),
-    B_LU_RS_FR = c(0.7, 0.7)
+    B_C_OF_INPUT = c(1500, 1500)
     )
  
   rothc_amendment <- data.table(
