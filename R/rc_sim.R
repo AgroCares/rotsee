@@ -162,20 +162,11 @@ rc_sim <- function(soil_properties,
   # make internal data.table 
   dt.soc <- data.table(A_C_OF = soil_properties$A_C_OF,B_C_ST03 = soil_properties$B_C_ST03, A_CLAY_MI = soil_properties$A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH, A_DENSITY_SA = soil_properties$A_DENSITY_SA)
   
-  # Correct A_SOM_LOI for sampling depth (Dit gedeelte + bulk density correction moven naar soil update?)
+  # Correct A_C_OF for sampling depth 
   dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_C_OF := A_C_OF * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
   dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_C_OF := A_C_OF * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
   
-  # calculate soil texture dependent density (Dutch functions, require in pre-treatment but users should supply own bulk density
-  #dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
-  #dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
-  
-  # fraction clay correction
-  #dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
-  
-  # clay dependent density
-  #dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
-  
+
   # calculate total organic carbon (kg C / ha)
   if(length(dt.soc$B_C_ST03) != 0) {
     dt.soc[,toc := B_C_ST03 * 1000]
