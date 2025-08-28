@@ -88,24 +88,20 @@ rc_sim <- function(soil_properties,
 
   # Check input data and create defaults when necessary
   
-   # create an internal crop rotation file
-  dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
+  # create an internal crop rotation file
+
+  # Check input data for soil, crop, and amendment data
+  rc_check_inputs(soil_properties = soil_properties,
+                  rothc_rotation = rothc_rotation,
+                  rothc_amendment = rothc_amendment)
   
-  # create an internal amendment file
-  if (!is.null(rothc_amendment)) {
-    dt.org <- rc_input_amendment(dt = rothc_amendment)
-  } else {
-    dt.org <- NULL
-  }
-  
-  # Check and update soil properties
-  rc_check_inputs(soil_properties = soil_properties)
-  
-  # Add missing data, check input (see rc_helpers)
+  # Check and update weather data(see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather)
+  
+  # Check and update parameters
   rothc_parms <- rc_update_parms(parms = rothc_parms)
   
-  # Define rothc_parms parameters
+ 
   # Define decomposition rates
   k1 <- rothc_parms$dec_rates[["k1"]]
   k2 <- rothc_parms$dec_rates[["k2"]]
@@ -130,7 +126,6 @@ rc_sim <- function(soil_properties,
   # Define initialize
   initialize <- rothc_parms$initialize
   
-
 
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = 0, upper = 0.6, any.missing = FALSE, len = 1)

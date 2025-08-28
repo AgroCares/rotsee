@@ -36,8 +36,7 @@ test_that("rc_sim correctly checks input validity", {
     P_NAME = c('cattle_slurry', 'cattle_slurry'),
     P_DOSE = c(63300, 63300),
     P_HC = c(0.7,0.7),
-    P_C_OF = c(35, 35),
-    p_p2o5 = c(0.15, 0.15))
+    P_C_OF = c(35, 35))
   
 
       

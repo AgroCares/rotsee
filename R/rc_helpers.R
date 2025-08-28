@@ -207,7 +207,20 @@ rc_update_parms <- function(parms = NULL){
   return(out)
 }
 
-rc_check_inputs <- function(soil_properties){
+#' Function to check input tables of soil, crop, and amendment data
+#'
+#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
+#' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
+#' @param rothc_amendment (data.table) A table with the following column names: year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.
+#'
+#' @returns
+#' Error messages indicating if input data is not in order
+#' 
+#' @export
+#'
+rc_check_inputs <- function(soil_properties,
+                            rothc_rotation,
+                            rothc_amendment){
   
   # Add visual bindings
   
@@ -219,4 +232,31 @@ rc_check_inputs <- function(soil_properties){
   checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = 0.1, upper = 75, len = 1)
   checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = 0.5, upper = 3, len = 1)
   
+  # Check crop properties if supplied
+  if(!is.null(rothc_rotation)){
+  checkmate::assert_data_table(rothc_rotation,null.ok = TRUE)
+  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year", "B_LU", "B_LU_NAME", "B_LU_HC","P_C_OF", "B_C_OF_INPUT", "B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
+  checkmate::assert_character(rothc_rotation$B_LU_NAME, any.missing = F)
+  checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = F)
+  if(!is.null(rothc_rotation$B_C_OF_INPUT)){
+    checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = F)
+  }else{
+    checkmate::assert_numeric(rothc_rotation$B_LU_YIELD, lower = 0, upper = 150000, any.missing = F)
+    checkmate::assert_numeric(rothc_rotation$B_LU_DM, lower = 0, upper = 1000, any.missing = F)
+    checkmate::assert_numeric(rothc_rotation$B_LU_HI, lower = 0.01, upper = 1, any.missing = F)
+    checkmate::assert_numeric(rothc_rotation$B_LU_HI_RES, lower = 0, upper = 1, any.missing = F)
+    }
+    }
+  
+  # Check amendment properties if supplied
+  if(!is.null(rothc_amendment)){
+    checkmate::assert_data_table(rothc_amendment, null.ok = TRUE)
+    checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "year", "month"), empty.ok = TRUE)
+    checkmate::assert_character(rothc_amendment$P_NAME, any.missing = T)
+    checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = F)
+    checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = F)
+    checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = F)
+    if(!is.null(rothc_amendment$month)){
+      checkmate::assert_integerish(rothc_amendment$month, lower = 1, upper = 12, any.missing = TRUE)}
+  }
 }
