@@ -260,3 +260,79 @@ rc_check_inputs <- function(soil_properties,
       checkmate::assert_integerish(rothc_amendment$month, lower = 1, upper = 12, any.missing = TRUE)}
   }
 }
+
+
+#' Function to calculate the dry soil bulk density based on Dutch pedotransfer functions
+#'
+#' @param dt (data table) Contains the columns A_SOM_LOI (organic matter content, \%) and A_CLAY_MI (clay content \%)
+#'
+#' @returns
+#' Data table with the dry soil bulk density (g/cm3)
+#' 
+#' @export
+rc_calculate_bd <- function(dt){
+  # add visible bindings
+  dens.sand = A_SOM_LOI = dens.clay = cf = A_CLAY_MI = A_DENSITY_SA = NULL
+  # Check input data
+  checkmate::assert_subset(colnames(dt), choices = c("A_SOM_LOI", "A_CLAY_MI"))
+  checkmate::assert_numeric(dt$A_SOM_LOI, lower = 0.5, upper = 75, any.missing = F)
+  checkmate::assert_numeric(dt$A_SOM_LOI, lower = 0.5, upper = 75, any.missing = F)
+  
+  # calculate soil texture dependent density 
+  dt[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
+  dt[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
+  
+  # fraction clay correction
+  dt[, cf := pmin(1, A_CLAY_MI/25)]
+  
+  # clay dependent density
+  dt[, A_DENSITY_SA := cf * dens.clay + (1-cf) * dens.sand]
+  
+  return(dt)
+}
+
+#' Function to calculate the C input of your crop
+#'
+#' @param dt (data table) Table with crop rotation details and crop management actions that have been taken. For more information see details.
+#'
+#' @returns
+#' Data table with total C input from crops
+#' 
+#' @details
+#' Crop data table
+#' Contains the following columns:
+#' * B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
+#' * B_LU_DM (numeric), dry matter content of the crop (g/kg)
+#' * B_LU_HI (numeric), the harvest index of the crop
+#' * B_LU_HI_RES (numeric), fraction of biomass that is harvested
+#' * B_LU_RS_FR (numeric), fraction of biomass that remains as residue
+#' * M_CROP_RESIDUE (logical), indicator of whether crop residue is incorporated into the soil
+#' 
+#' @export
+
+rc_calculate_B_C_OF <- function(dt){
+  # Add visible bindings
+  cin_aboveground = B_LU_YIELD = B_LU_DM = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
+  cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_INPUT = NULL
+  
+  # Check input data
+  checkmate::assert_subset(colnames(dt), choices = c("B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE"))
+  checkmate::assert_numeric(dt$B_LU_YIELD, lower = 0, upper = 150000, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_DM, lower = 0, upper = 1000, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_HI, lower = 0.01, upper = 1, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_HI_RES, lower = 0, upper = 1, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = 0.01, upper = 1, any.missing = F)
+  checkmate::assert_logical(dt$M_CROPRESIDUE)
+  
+  # Make copy of input table
+  dt.crop <- copy(dt)
+  
+  # Calculate C inputs from roots and crop residue (kg C/ha)
+  dt.crop[, cin_aboveground := B_LU_YIELD * B_LU_DM * 0.001 / B_LU_HI * 0.5]
+  dt.crop[, cin_roots := cin_aboveground * B_LU_RS_FR]
+  dt.crop[, cin_residue := fifelse(M_CROPRESIDUE, cin_aboveground * B_LU_HI_RES, 0)]
+  dt.crop[, B_C_OF_INPUT := cin_roots + cin_residue]
+  
+return(dt.crop)
+}
+
