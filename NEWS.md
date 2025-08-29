@@ -1,15 +1,13 @@
-# rotsee UNRELEASED
+# rotsee V0.0.2 2025-08-28
 ## Changed
 * Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
 * Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
+* Expand README with some introductory text about the package
   
 ## Added
 * Add GitHub Action to run R-CMD-CHECK for PR's
 * Added helper functions to check input weather and parameter data, and insert default values when not supplied
 * Added unit tests for helper functions
-
-## Changed
-* Expand README with some introductory text about the package
 
 ## Fixed
 * Add missing dependencies for `roxygen2`, `devtools` and `usethis`
