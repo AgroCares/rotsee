@@ -22,7 +22,7 @@ rc_input_crop <- function(dt = NULL,cf_yield){
   
   # check crop table
   checkmate::assert_data_table(dt,null.ok = TRUE)
-  checkmate::assert_subset(colnames(dt),choices = c("year", "B_LU", "B_LU_NAME", "B_LU_HC","B_C_OF_INPUT","B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
+  checkmate::assert_subset(colnames(dt),choices = c("year", "month", "B_LU", "B_LU_NAME", "B_LU_HC","B_C_OF_INPUT","B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   
   # create a copy of the crop table
@@ -54,7 +54,7 @@ rc_input_crop <- function(dt = NULL,cf_yield){
   
 
   # select only relevant columns with C input (kg C/ ha)
-  dt.crop <- dt.crop[,list(year = YEAR,B_LU,cin_dpm, cin_rpm,
+  dt.crop <- dt.crop[,list(year = YEAR, month = month, B_LU,cin_dpm, cin_rpm,
                            M_GREEN_TIMING,M_IRRIGATION,M_CROPRESIDUE,M_RENEWAL,
                            cf_yield = CF_YIELD)]
   

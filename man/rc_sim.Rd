@@ -60,6 +60,7 @@ Includes the columns:
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * year (date), year of fertilizer application
 * month (numeric), month of fertilizer application, optional
+* P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
 rothc_rotation: crop table
 Includes the columns: 

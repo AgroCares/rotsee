@@ -82,81 +82,9 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   # make internal copy
   dt <- copy(crops)
   
-  # get internal copies of tables
-  cc.crop <- as.data.table(rotsee::rc_crops)
-  cc.crop[,B_LU := paste0('nl_',crop_code)]
-  
-  # add crop names and catch crop characteristics to table
-  dt <- merge(dt,cc.crop,by = 'B_LU',all.x = TRUE)
-  
-  # adjust crop rotation plan, and extend to months
-  
-  # update input for mandatory catch crops (after maize and potato on sandy soils) and set never for grassland
-  if(A_CLAY_MI <20){ dt[grepl('mais|aardappel',crop_name) & grepl('^nl_',B_LU), M_GREEN_TIMING := 'october'] }
-  dt[grepl('gras|bieten, suiker|bieten, voeder|zetmeel',crop_name) & grepl('^nl_',B_LU), M_GREEN_TIMING := 'never']
-  
-  # make table with catch crops and update year, as catch crops will be incorporated next year
-  dt.green <- dt[,list(year,M_GREEN_TIMING)]
-  dt.green[,year := year + 1]
-  
-  # set crop carbon inputs from catch crops
-  dt.green[M_GREEN_TIMING == 'august', green_eom := 900]
-  dt.green[M_GREEN_TIMING == 'septmber', green_eom := 500]
-  dt.green[M_GREEN_TIMING == 'october', green_eom := 300]
-  dt.green[M_GREEN_TIMING == 'november', green_eom := 0]
-  dt.green[,M_GREEN_TIMING := NULL]
-  
-  
-  # extend the crop table with months
-  dt <- dt[rep(1:.N,12)]
-  dt[,month := 1:.N,by='year']
-  
-  # select the years before winter cereals are grown as main crop or when catch crops grown in spring
-  year_wc <- dt[grepl('^nl_',B_LU) & grepl('winter',crop_name) & grepl('tarwe|gerst',crop_name),
-                unique(pmax(1,year - 1))]
-  year_cc <- dt[grepl('^nl_',B_LU) & !grepl('never',M_GREEN_TIMING),
-                unique(pmin(year + 1,max(1,year)))]
-  
-  # update crop_name for winter crops and catch crops
-  dt[grepl('^nl_',B_LU) & year %in% year_wc & month >= 10, crop_name := "winter cereal"]
-  dt[grepl('^nl_',B_LU) & !grepl('never',M_GREEN_TIMING), crflt := 1]
-  dt[crflt == 1 & month >= 10, crop_name := "catch crop"]
-  # if main crop is winter cereal then first months are the winter crop
-  dt[grepl('^nl_',B_LU) & month < 4 & year %in% year_cc, crop_name := "catch crop"]
-  dt[,crflt := NULL]
-  
-  # estimate total EOC input
+  # If month is not supplied, set to 9
+  dt[is.na(month), month := 9]
 
-  # the carbon input from crop and crop residue is only input at harvest for arable crops(assume month = 9) and grassland during cuts
-  dt[grepl('^nl_',B_LU) & !grepl('grasland',crop_name) ,cin_dpm := fifelse(month == 9,cin_dpm,0)]
-  dt[grepl('^nl_',B_LU) & !grepl('grasland',crop_name) ,cin_rpm := fifelse(month == 9,cin_rpm,0)]
-  dt[grepl('^nl_',B_LU) & grepl('grasland',crop_name) ,cin_dpm := fifelse(month  %in% c(4,5,6,7,9),cin_dpm/5,0)]
-  dt[grepl('^nl_',B_LU) & grepl('grasland',crop_name) ,cin_rpm := fifelse(month  %in% c(4,5,6,7,9),cin_rpm/5,0)]
- 
-  # add yield correction
-  dt[,cin_dpm := cf_yield * cin_dpm]
-  dt[,cin_rpm := cf_yield * cin_rpm]
-  
-  # add relevant timings for grassland clippings (10% from DM yield)
-  dt[grepl('^nl_',B_LU) & grepl('grasland',crop_name),crflt := 1]
-  dt[crflt == 1 & month == 4, cin_crop := 4000 * 0.5 * 0.1]
-  dt[crflt == 1 & month == 5, cin_crop := 2500 * 0.5 * 0.1]
-  dt[crflt == 1 & month == 6, cin_crop := 1750 * 0.5 * 0.1]
-  dt[crflt == 1 & month == 7, cin_crop := 1750 * 0.5 * 0.1]
-  dt[crflt == 1 & month == 9, cin_crop := 2500 * 0.5 * 0.1]
-  
-  # update DPM and RPM inputs for grassland clippings estimate inputs for DPM and RDM
-  dt[crflt == 1,cin_dpm := cin_dpm + cin_crop * cf_yield * 1.2591 / (1 + 1.2591)]
-  dt[crflt == 1,cin_rpm := cin_rpm + cin_crop * cf_yield * 1 / (1 + 1.2591)]
-  dt[,crflt := NULL]
-  
-  # add carbon crop residue from catch crops
-  dt <- merge(dt,dt.green, by = 'year', all.x = TRUE)
-  dt[grepl('^nl_',B_LU) & grepl('catch crop',crop_name) & month == 3,crflt := 1]
-  dt[crflt == 1, cin_dpm := (green_eom * 0.5 / 0.31) * cf_yield * 1.35 / (1 + 1.35)]
-  dt[crflt == 1, cin_rpm := (green_eom * 0.5 / 0.31) * cf_yield * 1 / (1 + 1.35)]
-  dt[,crflt := NULL]
-  
   # setorder
   setorder(dt,year,month)
   
@@ -220,44 +148,20 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_integerish(dt$year,len = nrow(dt))
   
-  # load internal tables
-  cc.crop <- as.data.table(rotsee::rc_crops)
-  cc.crop[,B_LU := paste0('nl_',crop_code)]
-
-  # merge table with amendment c input with crop name
-  dt <- merge(dt, crops[,list(B_LU,year)], by='year')
-  dt <- merge(dt, cc.crop[,list(B_LU,B_LU_NAME=crop_name)],by='B_LU')
-
-  # Sum C inputs for each amendment addition
-  cols <- c('cin_hum','cin_dpm','cin_rpm')
-  dt <- dt[,lapply(.SD,function(x) sum(x)),.SDcols = cols,by = c('year', 'month', 'B_LU','B_LU_NAME')]
- 
-    # make a copy if month is already given
-    dt2 <- copy(dt)[,tcf := 1]
-    
-    # when month is unknown, assume that month is April
-    dt2[is.na(month),month := 4]
-    
-  # sum all inputs per crop and year
-  cols <- c('cin_hum','cin_dpm','cin_rpm')
-  dt2 <- dt2[,lapply(.SD,function(x) sum(x * tcf)),
-             .SDcols = cols,
-             by = c('B_LU','B_LU_NAME','year','month')]
-  
-  # setorder datatable
-  setorder(dt2,year,month)
+  # If month is na, set to 9
+ dt[is.na(month), month := 9]
   
   # add cumulative time vector
-  dt2[,time := year + month / 12 - min(year)]
+  dt[,time := year + month / 12 - min(year)]
   
   # select only those events that manure input occurs
-  dt2 <- dt2[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
+  dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
   
   # add one row to ensure that there is always an input
-  if(nrow(dt2) == 0){dt2 <- data.table(time = 1, cin_dpm = 0, cin_rpm = 0, cin_hum = 0.01)}
+  if(nrow(dt) == 0){dt <- data.table(time = 1, cin_dpm = 0, cin_rpm = 0, cin_hum = 0.01)}
   
   # select only relevant columns, rename them
-  out <- dt2[,list(CDPM = cin_dpm,CRPM = cin_rpm,CHUM = cin_hum,time = time)]
+  out <- dt[,list(CDPM = cin_dpm,CRPM = cin_rpm,CHUM = cin_hum,time = time)]
   
   # melt the output table
   out <- melt(out,id.vars = "time", variable.name = "var")

@@ -19,6 +19,7 @@ test_that("rc_sim correctly checks input validity", {
   
   rothc_rotation <- data.table(
     year = c(2022, 2023),
+    month = c(7, 7),
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
     B_LU_HC = c(0.32, 0.32),

@@ -342,7 +342,7 @@ rc_sim <- function(soil_properties,
     
   } else if (unit=='Cstock'){
     # Output in kg C/ha
-    rothc.soc <- out[,list(year = time,soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
+    out <- rothc.soc[,list(year = time,soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
     
   }
   
