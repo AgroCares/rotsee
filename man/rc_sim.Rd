@@ -60,7 +60,6 @@ Includes the columns:
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * year (date), year of fertilizer application
 * month (numeric), month of fertilizer application, optional
-* P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
 rothc_rotation: crop table
 Includes the columns: 
@@ -81,9 +80,13 @@ Table with possible parameters to adapt the calculations. May include the column
 * c_fractions: Distribution over the different C pools.
 * dec_rates: Decomposition rates of the different pools
 * simyears: Duration of simulation (years), default is 50
-* unit: Unit in which the output should be given. Options: 'all','soc', 'psomperfraction'
+* unit: Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
 
-weather: Average weather conditions
-Table containing columns month, W_TEMP_MEAN_MONTH (temperature in °C), W_PREC_MEAN_MONTH (precipitation in mm), W_ET_POT_MONTH (potential evapotranspiration in mm), and W_ET_ACT_MONTH. (actual evapotranspiration in mm).
-If no table is given, average Dutch conditions are used
+weather: Weather table. If no table is given, average Dutch conditions are used
+Includes the columns:
+* month
+* W_TEMP_MEAN_MONTH (temperature in °C)
+* W_PREC_MEAN_MONTH (precipitation in mm)
+* W_ET_POT_MONTH (potential evapotranspiration in mm)
+* W_ET_ACT_MONTH (actual evapotranspiration in mm)
 }

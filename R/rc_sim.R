@@ -56,11 +56,15 @@
 #' * c_fractions: Distribution over the different C pools.
 #' * dec_rates: Decomposition rates of the different pools
 #' * simyears: Duration of simulation (years), default is 50
-#' * unit: Unit in which the output should be given. Options: 'all','soc', 'psomperfraction'
+#' * unit: Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
 #' 
-#' weather: Average weather conditions
-#' Table containing columns month, W_TEMP_MEAN_MONTH (temperature in °C), W_PREC_MEAN_MONTH (precipitation in mm), W_ET_POT_MONTH (potential evapotranspiration in mm), and W_ET_ACT_MONTH. (actual evapotranspiration in mm).
-#' If no table is given, average Dutch conditions are used
+#' weather: Weather table. If no table is given, average Dutch conditions are used
+#' Includes the columns:
+#' * month
+#' * W_TEMP_MEAN_MONTH (temperature in °C)
+#' * W_PREC_MEAN_MONTH (precipitation in mm)
+#' * W_ET_POT_MONTH (potential evapotranspiration in mm)
+#' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 #'
 #' @import deSolve
 #'
@@ -262,34 +266,59 @@ rc_sim <- function(soil_properties,
   # set to data.table
   out <- as.data.table(out)
   
-  # estimate total SOC
+  # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   
   # get only the SOC values on the time scale of years
   if(poutput=='year'){out <- out[time %in% 0:simyears]}
   
   # select type output
-  if(unit=='soc') {
+  if(unit=='A_SOM_LOI') {
+    # Output in organic matter content [\%]
     
     # subset the RothC simulation result
     rothc.soc <- out[,list(year=time,soc)]
     
-    # estimate bulk density
+    # Set required soil parameters
     rothc.soc[,A_DENSITY_SA := mean(dt.soc$A_DENSITY_SA)]
     rothc.soc[,A_CLAY_MI := mean(dt.soc$A_CLAY_MI)]
-    rothc.soc[,A_DEPTH := A_DEPTH]
+    rothc.soc[,A_DEPTH := dt.soc$a_depth]
+    rothc.soc[,B_DEPTH := dt.soc$b_depth]
     
-    # set C stocks back to OS%
-    rothc.soc[,A_SOM_LOI := soc * 100 * 2 / (A_DENSITY_SA * B_DEPTH * 100 * 100)]
+    # set C stocks (kg C/ha) to organic matter content (\%)
+    rothc.soc[,A_SOM_LOI := soc * 100 * 2 / (A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100)]
     
     # Correct A_SOM_LOI for sampling depth
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI / (1 - 0.19 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, A_SOM_LOI := A_SOM_LOI / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     
     # select output variables
-    out <- rothc.soc[,list(year,A_SOM_LOI)]
+    out <- rothc.soc[,]
+    
+  } else if (unit == 'psoc') {
+    # Output in organic carbon content [g C/kg]
+    
+    # subset the RothC simulation result
+    rothc.soc <- out[,list(year = time,soc)]
+    
+    # Set required soil parameters
+    rothc.soc[,A_DENSITY_SA := mean(dt.soc$A_DENSITY_SA)]
+    rothc.soc[,A_CLAY_MI := mean(dt.soc$A_CLAY_MI)]
+    rothc.soc[,A_DEPTH := dt.soc$a_depth]
+    rothc.soc[,B_DEPTH := dt.soc$b_depth]
+    
+    # set C stocks (kg C/ha) to organic carbon content (g C/kg)
+    rothc.soc[,psoc := soc * 1000 / (A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100)]
+    
+    # Correct A_SOM_LOI for sampling depth
+    rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI <= 10, psoc := psoc / (1 - 0.19 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
+    rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, psoc := psoc / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
+    
+    # select output variables
+    out <- rothc.soc[,]
     
   } else if (unit == 'psomperfraction'){
+    # Output in %SOM per rothc pool
     
     # subset the RothC simulation result
     rothc.soc <- copy(out)
@@ -299,10 +328,10 @@ rc_sim <- function(soil_properties,
     rothc.soc[,A_CLAY_MI := mean(dt.soc$A_CLAY_MI)]
     rothc.soc[,A_DEPTH := A_DEPTH]
     rothc.soc[,CIOM := dt.soc$CIOM0]
-    
+   
     # do unit conversion for all pools, convert to %SOM
     cols <- c('soc','CDPM','CRPM','CBIO','CHUM','CIOM')
-    rothc.soc[,c(cols) := lapply(.SD,function(x) x * 100 * 2 / (A_DENSITY_SA * B_DEPTH * 100 * 100)),.SDcols = cols]
+    rothc.soc[,c(cols) := lapply(.SD,function(x) x * 100 * 2 / (A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100)),.SDcols = cols]
     
     # Correct soc for sampling depth
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI <= 10, soc := soc / (1 - 0.19 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
@@ -311,8 +340,8 @@ rc_sim <- function(soil_properties,
     # select output variables
     out <- rothc.soc[,.(year = time,A_SOM_LOI = soc,CDPM,CRPM,CBIO,CHUM,CIOM)]
     
-  } else if (unit=='all'){
-    
+  } else if (unit=='Cstock'){
+    # Output in kg C/ha
     rothc.soc <- out[,list(year = time,soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
     
   }
