@@ -48,13 +48,13 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   cc.crop[,B_LU := paste0('nl_',crop_code)]
   
   # merge table with amendment c input with crop name
-  dt <- merge(dt, crops[,list(B_LU,year)], by='year')
-  dt <- merge(dt, cc.crop[,list(B_LU,B_LU_NAME=crop_name)],by='B_LU')
+  dt <- merge(dt, crops[,list(B_LU,year)], by='year', all.x = TRUE)
+  dt <- merge(dt, cc.crop[,list(B_LU,B_LU_NAME=crop_name)],by='B_LU', all.x = TRUE)
   
   # add manure category depending on eoc-to-p ratio
   # assuming that soil improving products (high ratio) are incorporated in autumn, and others in spring
   dt[,p_cat := fifelse(fr_eoc_p > 20, 'autumn','spring')]
-  
+ 
   # Sum C inputs over p_cat per year
   cols <- c('cin_hum','cin_dpm','cin_rpm')
   dt <- dt[,lapply(.SD,function(x) sum(x)),.SDcols = cols,by = c('year','p_cat','B_LU','B_LU_NAME')]

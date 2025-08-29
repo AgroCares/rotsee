@@ -1,17 +1,17 @@
 # test functions for rc_input_events
 test_that("rc_input_events combines crops and amendment data correctly", {
   crops <- data.table(
-    time = c(1, 2),
-    var = c("DPM", "RPM"), 
-    method = c("crop1", "crop2"),
-    value = c(100, 200)
+    time = c(1, 1, 2, 2),
+    var = c("DPM", "RPM", "DPM", "RPM"), 
+    method = c("add", "add", "add", "add"),
+    value = c(100, 200, 75, 150)
   )
   
   amendment <- data.table(
-    time = c(1, 3),
-    var = c("DPM", "HUM"),
-    method = c("amendment1", "amendment2"), 
-    value = c(50, 75)
+    time = c(1, 1, 2, 2),
+    var = c("DPM", "RPM", "DPM", "RPM"), 
+    method = c("add", "add", "add", "add"),
+    value = c(50, 75, 60, 80)
   )
   
   result <- rc_input_events(crops, amendment, simyears = 5)
@@ -26,20 +26,20 @@ test_that("rc_input_events sums multiple additives at same time/var/method", {
   crops <- data.table(
     time = c(1, 1),
     var = c("DPM", "DPM"), 
-    method = c("crop1", "crop1"),
+    method = c("add", "add"),
     value = c(100, 50)
   )
   
   amendment <- data.table(
     time = c(1),
     var = c("DPM"),
-    method = c("crop1"), 
+    method = c("add"), 
     value = c(25)
   )
   
   result <- rc_input_events(crops, amendment, simyears = 2)
   
-  summed_row <- result[time == 1 & var == "DPM" & method == "crop1"]
+  summed_row <- result[time == 1 & var == "DPM" & method == "add"]
   expect_equal(nrow(summed_row), 1)
   expect_equal(summed_row$value, 175)
 })
@@ -48,7 +48,7 @@ test_that("rc_input_events repetition logic works correctly", {
   crops <- data.table(
     time = c(1, 3),
     var = c("DPM", "RPM"), 
-    method = c("crop1", "crop2"),
+    method = c("add", "add"),
     value = c(100, 200)
   )
   
@@ -78,7 +78,7 @@ test_that("rc_input_events year calculation works correctly", {
   crops <- data.table(
     time = c(1, 2),
     var = c("DPM", "RPM"), 
-    method = c("crop1", "crop2"),
+    method = c("add", "add"),
     value = c(100, 200)
   )
   
@@ -108,7 +108,7 @@ test_that("rc_input_events filters by simyears correctly using round function", 
   crops <- data.table(
     time = c(1.4, 1.6),
     var = c("DPM", "RPM"), 
-    method = c("crop1", "crop2"),
+    method = c("add", "add"),
     value = c(100, 200)
   )
   
@@ -132,14 +132,14 @@ test_that("rc_input_events removes helper columns correctly", {
   crops <- data.table(
     time = c(1, 2),
     var = c("DPM", "RPM"), 
-    method = c("crop1", "crop2"),
+    method = c("add", "add"),
     value = c(100, 200)
   )
   
   amendment <- data.table(
     time = c(3),
     var = c("HUM"),
-    method = c("amendment1"), 
+    method = c("add"), 
     value = c(50)
   )
   
@@ -155,14 +155,14 @@ test_that("rc_input_events orders output by time correctly", {
   crops <- data.table(
     time = c(3, 1, 2),
     var = c("DPM", "RPM", "HUM"), 
-    method = c("crop1", "crop2", "crop3"),
+    method = c("add", "add", "add"),
     value = c(100, 200, 150)
   )
   
   amendment <- data.table(
     time = c(4, 0.5),
     var = c("BIO", "DPM"),
-    method = c("amendment1", "amendment2"), 
+    method = c("add", "add"), 
     value = c(50, 75)
   )
   
@@ -182,7 +182,7 @@ test_that("rc_input_events handles empty datasets", {
   amendment <- data.table(
     time = c(1),
     var = c("HUM"),
-    method = c("amendment1"), 
+    method = c("add"), 
     value = c(50)
   )
   
@@ -193,7 +193,7 @@ test_that("rc_input_events handles empty datasets", {
   crops <- data.table(
     time = c(1),
     var = c("DPM"), 
-    method = c("crop1"),
+    method = c("add"),
     value = c(100)
   )
   
@@ -213,14 +213,14 @@ test_that("rc_input_events validates zero simyears correctly", {
     crops <- data.table(
     time = c(1),
     var = c("DPM"), 
-    method = c("crop1"),
+    method = c("add"),
     value = c(100)
   )
   
   amendment <- data.table(
     time = c(1),
     var = c("HUM"),
-    method = c("amendment1"), 
+    method = c("add"), 
     value = c(50)
   )
   
@@ -233,14 +233,14 @@ test_that("rc_input_events handles fractional simyears", {
   crops <- data.table(
     time = c(1),
     var = c("DPM"), 
-    method = c("crop1"),
+    method = c("add"),
     value = c(100)
   )
   
   amendment <- data.table(
     time = c(1),
     var = c("HUM"),
-    method = c("amendment1"), 
+    method = c("add"), 
     value = c(50)
   )
   
@@ -257,7 +257,7 @@ test_that("rc_input_events handles identical entries summation", {
   identical_entry <- data.table(
     time = c(1),
     var = c("DPM"), 
-    method = c("method1"),
+    method = c("add"),
     value = c(100)
   )
   
@@ -273,14 +273,14 @@ test_that("rc_input_events preserves decimal precision", {
   crops <- data.table(
     time = c(1.123),
     var = c("DPM"), 
-    method = c("crop1"),
+    method = c("add"),
     value = c(100.456789)
   )
   
   amendment <- data.table(
     time = c(2.789),
     var = c("HUM"),
-    method = c("amendment1"), 
+    method = c("add"), 
     value = c(50.123456)
   )
   
@@ -294,14 +294,14 @@ test_that("rc_input_events handles different variable types correctly", {
   crops <- data.table(
     time = c(1, 2),
     var = c("DPM", "RPM"), 
-    method = c("crop1", "crop2"),
+    method = c("add", "add"),
     value = c(100.5, 200.7)
   )
   
   amendment <- data.table(
     time = c(1, 3),
     var = c("HUM", "BIO"),
-    method = c("amendment1", "amendment2"), 
+    method = c("add", "add"), 
     value = c(50.2, 75.8)
   )
   
@@ -318,7 +318,7 @@ test_that("rc_input_events ceiling calculation edge cases", {
   crops <- data.table(
     time = c(1, 3),
     var = c("DPM", "RPM"), 
-    method = c("crop1", "crop2"),
+    method = c("add", "add"),
     value = c(100, 200)
   )
   
@@ -344,7 +344,7 @@ test_that("rc_input_events handles large repetition counts", {
   crops <- data.table(
     time = c(1, 2),
     var = c("DPM", "RPM"), 
-    method = c("crop1", "crop2"),
+    method = c("add", "add"),
     value = c(100, 200)
   )
   
@@ -370,7 +370,7 @@ test_that("rc_input_events handles mixed fractional and integer times", {
   crops <- data.table(
     time = c(0.5, 1.5, 2),
     var = c("DPM", "RPM", "HUM"), 
-    method = c("crop1", "crop2", "crop3"),
+    method = c("add", "add", "add"),
     value = c(100, 200, 150)
   )
   
@@ -392,14 +392,14 @@ test_that("rc_input_events rbind preserves column structure", {
   crops <- data.table(
     time = c(1),
     var = c("DPM"), 
-    method = c("crop1"),
+    method = c("add"),
     value = c(100)
   )
   
   amendment <- data.table(
     time = c(2),
     var = c("HUM"),
-    method = c("amendment1"), 
+    method = c("add"), 
     value = c(50)
   )
   
@@ -408,6 +408,6 @@ test_that("rc_input_events rbind preserves column structure", {
   # Should contain data from both sources
   expect_true("DPM" %in% result$var)
   expect_true("HUM" %in% result$var)
-  expect_true("crop1" %in% result$method)
-  expect_true("amendment1" %in% result$method)
+  expect_true("add" %in% result$method)
+  expect_true("add" %in% result$method)
 })
