@@ -257,7 +257,7 @@ rc_check_inputs <- function(soil_properties,
 
 #' Function to calculate the dry soil bulk density based on Dutch pedotransfer functions
 #'
-#' @param dt (data table) Contains the columns A_SOM_LOI (organic matter content, \%) and A_CLAY_MI (clay content \%)
+#' @param dt (data table) Contains the columns A_CLAY_MI (clay content \%) and at least one of A_SOM_LOI (organic matter content, \%) and A_C_OF (organic carbon content, g C/kg)
 #'
 #' @returns
 #' Data table with the dry soil bulk density (g/cm3)
@@ -265,22 +265,34 @@ rc_check_inputs <- function(soil_properties,
 #' @export
 rc_calculate_bd <- function(dt){
   # add visible bindings
-  dens.sand = A_SOM_LOI = dens.clay = cf = A_CLAY_MI = A_DENSITY_SA = NULL
+  dens.sand = A_SOM_LOI = A_C_OF = dens.clay = cf = A_CLAY_MI = A_DENSITY_SA = NULL
+
   # Check input data
-  checkmate::assert_subset(colnames(dt), choices = c("A_SOM_LOI", "A_CLAY_MI"))
+  checkmate::assert_subset(colnames(dt), choices = c("A_SOM_LOI", "A_CLAY_MI", "A_C_OF"))
+  if(is.null(dt$A_SOM_LOI)){
+    checkmate::assert_numeric(dt$A_C_OF, lower = 0.1, upper = 600, any.missing = F)
+  }else{
   checkmate::assert_numeric(dt$A_SOM_LOI, lower = 0.5, upper = 75, any.missing = F)
-  checkmate::assert_numeric(dt$A_SOM_LOI, lower = 0.5, upper = 75, any.missing = F)
+  }
+  checkmate::assert_numeric(dt$A_CLAY_MI, lower = 0.1, upper = 75, any.missing = F)
   
-  # calculate soil texture dependent density 
-  dt[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541)) * 1000]
-  dt[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206) * 1000]
+  # Add copy of data table
+  dt <- copy(dt)
+  
+  # calculate soil texture dependent density (BCAV 2019?)
+  if(!is.null(dt$A_SOM_LOI)){
+  dt[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541))]
+  dt[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206)]
+  }else{
+    dt[, dens.sand := (1 / (0.02525 * (A_C_OF*2/10) + 0.6541))]
+    dt[, dens.clay :=  (0.00000067*(A_C_OF*2/10)^4 - 0.00007792*(A_C_OF*2/10)^3 + 0.00314712*(A_C_OF*2/10)^2 - 0.06039523*(A_C_OF*2/10) + 1.33932206)]
+  }
   
   # fraction clay correction
   dt[, cf := pmin(1, A_CLAY_MI/25)]
   
   # clay dependent density
   dt[, A_DENSITY_SA := cf * dens.clay + (1-cf) * dens.sand]
-  
   return(dt)
 }
 
