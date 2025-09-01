@@ -18,8 +18,8 @@ test_that("rc_sim correctly checks input validity", {
   M_TILLAGE_SYSTEM = 'CT'
   
   rothc_rotation <- data.table(
-    year = c(2022, 2023),
-    month = c(7, 7),
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
     B_LU_HC = c(0.32, 0.32),

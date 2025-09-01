@@ -235,10 +235,12 @@ rc_check_inputs <- function(soil_properties,
   # Check crop properties if supplied
   if(!is.null(rothc_rotation)){
   checkmate::assert_data_table(rothc_rotation,null.ok = TRUE)
-  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year", "month", "B_LU", "B_LU_NAME", "B_LU_HC","P_C_OF", "B_C_OF_INPUT", "B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
+  checkmate::assert_subset(colnames(rothc_rotation),choices = c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC","P_C_OF", "B_C_OF_INPUT", "B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
   checkmate::assert_character(rothc_rotation$B_LU_NAME, any.missing = F)
   checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = F)
   checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = F)
+  checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
+  checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
     }
   
   # Check amendment properties if supplied
