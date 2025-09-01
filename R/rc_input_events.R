@@ -7,7 +7,7 @@
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #'
 #' @export
-rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears){
+rc_input_events <- function(crops,amendment, simyears){
   
   # add visual bindings
   id = time = yr_rep = NULL

@@ -4,7 +4,7 @@
 \alias{rc_input_crop}
 \title{Do check and expand crop input table for RothC for the Netherlands}
 \usage{
-rc_input_crop(dt = NULL, cf_yield = 1)
+rc_input_crop(dt, cf_yield = 1)
 }
 \arguments{
 \item{dt}{(data.table) Table with crop rotation and related crop properties for Carbon input. See details for information.}
