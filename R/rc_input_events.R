@@ -3,7 +3,7 @@
 #' This function combines required inputs into a data.table that is needed as input for the RothC model.
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm. 
+#' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm. 
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #'
 #' @export
@@ -134,7 +134,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   # make default crop amendment data.table when dt = NULL
   if(is.null(dt)){dt <- data.table(year = crops[1,year], month = 1, cin_tot = 0, cin_hum = 0,
                                    cin_dpm = 0, cin_rpm = 0)}
-  
+ 
   # do checks on the crop list
   checkmate::assert_data_table(crops)
   checkmate::assert_true('B_LU' %in% colnames(crops))
@@ -142,9 +142,11 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
-  checkmate::assert_subset(colnames(dt),
-                           c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p', 'p_ID'),
-                           empty.ok = FALSE)
+  
+  allowed <- c('year','month','p_ID','p_name','P_ID','P_NAME',
+               'cin_tot','cin_hum','cin_dpm','cin_rpm',
+                'P_DOSE','P_HC','P_C_OF','P_DATE_FERTILIZATION')
+  checkmate::assert_subset(colnames(dt), allowed, empty.ok = FALSE)
   
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))
@@ -153,7 +155,8 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   checkmate::assert_integerish(dt$year,len = nrow(dt))
   
   # If month is na, set to 9
- dt[is.na(month), month := 9]
+  if (!"month" %in% names(dt)) dt[, month := NA_real_]
+  dt[is.na(month), month := 9]
 
   # add cumulative time vector
   dt[,time := year + month / 12 - min(year)]

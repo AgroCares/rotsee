@@ -226,31 +226,52 @@ rc_check_inputs <- function(soil_properties,
   
   # Check soil properties
   checkmate::assert_list(soil_properties, min.len = 3)
-  if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = 0.1, upper = 600, any.missing = TRUE, len = 1)
-  if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = 0.1, upper = 3000, any.missing = TRUE, len = 1)
-  if(all(length(soil_properties$A_C_OF) == 0,length(soil_properties$B_C_ST03) == 0)) stop('Both A_C_OF and B_C_ST03 are missing in soil_properties')
+  if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = 0.1, upper = 600, any.missing = FALSE, len = 1)
+  if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = 0.1, upper = 3000, any.missing = FALSE, len = 1)
+  if((length(soil_properties$A_C_OF) == 0 || is.na(soil_properties$A_C_OF)) &&
+     (length(soil_properties$B_C_ST03) == 0 || is.na(soil_properties$B_C_ST03))){
+       stop('Both A_C_OF and B_C_ST03 are missing in soil_properties')}
   checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = 0.1, upper = 75, len = 1)
   checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = 0.5, upper = 3, len = 1)
   
   # Check crop properties if supplied
   if(!is.null(rothc_rotation)){
-  checkmate::assert_data_table(rothc_rotation,null.ok = TRUE)
-  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year", "month", "B_LU", "B_LU_NAME", "B_LU_HC","P_C_OF", "B_C_OF_INPUT", "B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
-  checkmate::assert_character(rothc_rotation$B_LU_NAME, any.missing = F)
-  checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = F)
-  checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = F)
+    checkmate::assert_data_table(rothc_rotation, null.ok = TRUE, min.rows = 1)
+    
+    allowed <- c("year","month","B_LU","B_LU_NAME","B_LU_HC","P_C_OF","B_C_OF_INPUT",
+                 "B_LU_YIELD","B_LU_DM","B_LU_HI","B_LU_HI_RES","B_LU_RS_FR",
+                 "M_GREEN_TIMING","M_CROPRESIDUE","M_IRRIGATION","M_RENEWAL")
+    checkmate::assert_subset(names(rothc_rotation), choices = allowed, empty.ok = FALSE)
+    
+    req <- c("year","B_LU","B_LU_HC","B_C_OF_INPUT")
+    checkmate::assert_true(all(req %in% names(rothc_rotation)))
+    
+    checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = FALSE)
+    checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = FALSE)
+    if ("B_LU_NAME" %in% names(rothc_rotation))
+      checkmate::assert_character(rothc_rotation$B_LU_NAME, any.missing = FALSE)
     }
   
   # Check amendment properties if supplied
   if(!is.null(rothc_amendment)){
-    checkmate::assert_data_table(rothc_amendment, null.ok = TRUE)
-    checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "P_DATE_FERTILIZATION"), empty.ok = TRUE)
-    checkmate::assert_character(rothc_amendment$P_NAME, any.missing = T)
-    checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = F)
-    checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = F)
-    checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = F)
-    if(!is.null(rothc_amendment$month)){
-      checkmate::assert_integerish(rothc_amendment$month, lower = 1, upper = 12, any.missing = TRUE)}
+    checkmate::assert_data_table(rothc_amendment, null.ok = TRUE, min.rows = 1)
+    
+    allowed <- c("P_ID","P_NAME","P_C_OF_INPUT","P_DOSE","P_C_OF","P_HC","P_DATE_FERTILIZATION","month")
+    checkmate::assert_subset(names(rothc_amendment), choices = allowed, empty.ok = FALSE)
+    
+    checkmate::assert_true("P_DATE_FERTILIZATION" %in% names(rothc_amendment))
+    checkmate::assert_date(as.Date(rothc_amendment$P_DATE_FERTILIZATION), any.missing = FALSE)
+    if ("P_NAME" %in% names(rothc_amendment))
+      checkmate::assert_character(rothc_amendment$P_NAME, any.missing = TRUE)
+    if ("P_DOSE" %in% names(rothc_amendment))
+       checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = FALSE)
+    if ("P_C_OF" %in% names(rothc_amendment))
+      checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = FALSE)
+    if ("P_C_OF_INPUT" %in% names(rothc_amendment))
+      checkmate::assert_numeric(rothc_amendment$P_C_OF_INPUT, lower = 0, upper = 250000, any.missing = FALSE)
+    checkmate::assert_true("P_HC" %in% names(rothc_amendment))
+    checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = FALSE)
+    
   }
 }
 
@@ -339,4 +360,3 @@ rc_calculate_B_C_OF <- function(dt){
   
 return(dt.crop)
 }
-
