@@ -4,7 +4,6 @@
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
 #' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm. 
-#' @param A_CLAY_MI (numeric) The clay content of the soil (\%).
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #'
 #' @export
@@ -14,7 +13,7 @@ rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears){
   id = time = yr_rep = NULL
   
   # estimate default crop rotation plan, the building block
-  event.crop <- rc_input_event_crop(crops = crops, A_CLAY_MI)
+  event.crop <- rc_input_event_crop(crops = crops)
   
   # estimate Carbon input via manure, compost and organic residues
   event.man <- rc_input_event_amendment(crops = crops,amendment = amendment)
@@ -31,7 +30,8 @@ rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears){
   rothc.event[,id := .I]
   
   ## extend crop table for the number of years
-  rothc.event <- rothc.event[rep(id, each = ceiling(simyears / max(time)))]
+  period <- max(1, ceiling(max(rothc.event$time))) 
+  rothc.event <- rothc.event[rep(id, each = ceiling(simyears / period))]
   
   ## update the time for all repetitions of rotation block
   rothc.event[,yr_rep := 1:.N, by = id]
@@ -56,11 +56,9 @@ rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears){
 #' This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
 #'
 #' @param crops (data.table) Table with crop rotation, crop management measures, year and potential Carbon inputs.
-#' @param A_CLAY_MI (numeric) The clay content of the soil (\%).
-#'
+#' 
 #' @export
-rc_input_event_crop <- function(crops,A_CLAY_MI){
-  
+rc_input_event_crop <- function(crops){
   # add visual bindings
   crop_name = B_LU = NULL
   M_GREEN_TIMING = M_CROPRESIDUE = green_eom = NULL
@@ -73,6 +71,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   # check crops input data.table
   checkmate::assert_data_table(crops,nrows = arg.length)
   checkmate::assert_true(sum(c('M_GREEN_TIMING','M_CROPRESIDUE','cf_yield') %in% colnames(crops)) == 3)
+  checkmate::assert_true(all(c('cin_dpm','cin_rpm') %in% colnames(crops)))
   checkmate::assert_numeric(crops$cf_yield,lower = 0, upper = 2.0, any.missing = FALSE, len = arg.length)
   checkmate::assert_character(crops$M_GREEN_TIMING, any.missing = FALSE, len = arg.length)
   checkmate::assert_subset(crops$M_GREEN_TIMING, choices = c("august","september", "october","november","never"))

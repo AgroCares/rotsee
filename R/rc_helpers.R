@@ -211,7 +211,7 @@ rc_update_parms <- function(parms = NULL){
 #'
 #' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.
+#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, P_C_OF_INPUT, and P_HC.
 #'
 #' @returns
 #' Error messages indicating if input data is not in order
@@ -307,7 +307,6 @@ rc_calculate_bd <- function(dt){
 #' Crop data table
 #' Contains the following columns:
 #' * B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
-#' * B_LU_DM (numeric), dry matter content of the crop (g/kg)
 #' * B_LU_HI (numeric), the harvest index of the crop
 #' * B_LU_HI_RES (numeric), fraction of biomass that is harvested
 #' * B_LU_RS_FR (numeric), fraction of biomass that remains as residue
@@ -317,11 +316,11 @@ rc_calculate_bd <- function(dt){
 
 rc_calculate_B_C_OF <- function(dt){
   # Add visible bindings
-  cin_aboveground = B_LU_YIELD = B_LU_DM = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
+  cin_aboveground = B_LU_YIELD = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
   cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_INPUT = NULL
   
   # Check input data
-  checkmate::assert_subset(colnames(dt), choices = c("B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE"))
+  checkmate::assert_subset(colnames(dt), choices = c("B_LU_YIELD", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE"))
   checkmate::assert_numeric(dt$B_LU_YIELD, lower = 0, upper = 150000, any.missing = F)
   checkmate::assert_numeric(dt$B_LU_DM, lower = 0, upper = 1000, any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI, lower = 0.01, upper = 1, any.missing = F)
@@ -333,7 +332,7 @@ rc_calculate_B_C_OF <- function(dt){
   dt.crop <- copy(dt)
   
   # Calculate C inputs from roots and crop residue (kg C/ha)
-  dt.crop[, cin_aboveground := B_LU_YIELD * B_LU_DM * 0.001 / B_LU_HI * 0.5]
+  dt.crop[, cin_aboveground := B_LU_YIELD * 0.001 / B_LU_HI * 0.5]
   dt.crop[, cin_roots := cin_aboveground * B_LU_RS_FR]
   dt.crop[, cin_residue := fifelse(M_CROPRESIDUE, cin_aboveground * B_LU_HI_RES, 0)]
   dt.crop[, B_C_OF_INPUT := cin_roots + cin_residue]

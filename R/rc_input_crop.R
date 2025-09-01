@@ -2,19 +2,21 @@
 #'
 #' Helper function to check the content and format of the crop input table.
 #'
-#' @param dt (data.table) Table with crop rotation and related crop properties for Carbon input.
+#' @param dt (data.table) Table with crop rotation and related crop properties for Carbon input. See details for information.
 #' @param cf_yield (numeric) A yield correction factor (fraction) if yield is higher than regional average
 #'
 #' @details
 #' The crop table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
-#' This helper function assists the checking and controlling of crop properties involved.
-#'
-#' To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
-#' if dt is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
+#' To run this function, the dt should contain the following columns:
+#' * year
+#' * month
+#' * B_LU (a crop id)
+#' * B_LU_NAME (a crop name, optional):
+#' * B_LU_HC (the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used)
+#' * B_C_OF_INPUT (the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF})
 #'
 #' @export
-rc_input_crop <- function(dt = NULL,cf_yield){
-  
+rc_input_crop <- function(dt = NULL,cf_yield = 1){
   # add visual bindings
   M_GREEN_TIMING = M_CROPRESIDUE = M_IRRIGATION = M_RENEWAL = cin_dpm = B_C_OF_INPUT = cin_rpm = NULL
   CF_YIELD = YEAR = crft = B_LU  = fr_dpm_rpm = B_LU_HC = B_LU_HI_RES = NULL
@@ -27,6 +29,11 @@ rc_input_crop <- function(dt = NULL,cf_yield){
   
   # create a copy of the crop table
   dt.crop <- copy(dt)
+  
+  # Add month column when not supplied
+  if(!"month" %in% colnames(dt.crop)) {
+    dt.crop[, month := NA_integer_]}
+    
   
   # update crop basic properties
   if(!'M_GREEN_TIMING' %in% colnames(dt.crop)){dt.crop[,M_GREEN_TIMING := 'never']}

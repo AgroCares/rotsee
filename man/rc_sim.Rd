@@ -29,7 +29,7 @@ rc_sim(
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
-\item{rothc_amendment}{(data.table) A table with the following column names: year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.}
+\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_HC, and P_C_OF. See details for desired format.}
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
@@ -40,7 +40,7 @@ This function calculates the change in carbon stock or C pools (in kg C per ha) 
 }
 \details{
 This function simulates the fate of SOC given the impact of soil properties, weather and management.
-The following inputs are mandatory: rothc_rotation, A_SOM_LOI (\%), and A_CLAY_MI (\%). All other data is optional.
+The soil_properties table is required. 
 When no weather inputs are given, these are estimated from long-term average weather conditions in the Netherlands.
 
 soil_properties: soil properties table
@@ -48,7 +48,7 @@ Includes the columns:
 * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
 * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
 * A_CLAY_MI (numeric), clay fraction (\%)
-* A_DENSITY_SA (numeric), dry soil bulk density(g/cm3)
+* A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
 
 rothc_amendment: amendment table
 Includes the columns:
@@ -66,7 +66,7 @@ Includes the columns:
 * B_LU (a crop id), 
 * B_LU_NAME (a crop name, optional),
 * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-* B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+* B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
 May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
 * M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
 * M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.
