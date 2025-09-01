@@ -62,7 +62,8 @@ Includes the columns:
 
 rothc_rotation: crop table
 Includes the columns: 
-* year,
+* B_LU_START (start of crop rotation),
+* B_LU_END (end of crop rotation),
 * B_LU (a crop id), 
 * B_LU_NAME (a crop name, optional),
 * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used

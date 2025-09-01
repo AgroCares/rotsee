@@ -9,17 +9,18 @@
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #' @param cf_yield (numeric) A yield correction factor (fraction) if yield is higher than regional average
 #' @param dt.weather (data.table) Data table of monthly weather
+#' @param rothc_parms (data.table) Data table with the rothc run parameters
 #'
 #' @details
 #' To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
 #' if dt is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 #'
 #' @export
-rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, simyears,cf_yield, dt.weather){
+rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, simyears,cf_yield, dt.weather, rothc_parms){
   
   # add visual bindings
-  B_LU = crop_name = M_RENEWAL = B_LU_MAKKINK = B_LU_NAME = M_GREEN_TIMING = NULL
-  mcf = crop_cover = crflt = time = cf_temp = W_TEMP_MEAN_MONTH = tsmdmax = NULL
+  B_LU = crop_name = M_RENEWAL = B_LU_MAKKINK = B_LU_NAME = M_GREEN_TIMING = B_LU_START = NULL
+  mcf = crop_cover = crflt = time = cf_temp = W_TEMP_MEAN_MONTH = tsmdmax = B_LU_END = NULL
   tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = W_PREC_MEAN_MONTH = hv = acc_smd = acc_smd2 = cf_moist = cf_soilcover = NULL
   cf_renewal = cf_combi = id = yr_rep =  NULL
   
@@ -38,7 +39,54 @@ rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, si
     dt <- rs$rotation
   }
   
+  # Determine crop cover based on start and end of crop rotation
+  dt.growth <- dt[, {
+    # Create a sequence of year-month combinations
+    seq_dates <- seq.Date(as.Date(B_LU_START), as.Date(B_LU_END), by = 'month')
     
+    # Extract year and month
+    list(year = year(seq_dates), month = month(seq_dates), crop_cover = 1)
+  }, by = list(B_LU_START,B_LU_END)] 
+
+  
+  # Create a complete set of year-month combinations
+  dt.full_year <- CJ(year = min(year(rothc_parms$start_date)):max(year(rothc_parms$end_date)), month = 1:12)
+ 
+  # Merge and fill missing crop_cover values with 0
+  dt.crop_cover <- merge(dt.full_year, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
+  dt.crop_cover <- unique(dt.crop_cover[,list(year,month,crop_cover)])
+  
+  # Make selection of dates between start and end date
+  dt.time <-  dt.full_year[,date := as.Date(paste(year, month, "01", sep = "-"))]
+    
+  dt.time <- dt.time[date >= as.Date(paste(year(rothc_parms$start_date), month(rothc_parms$start_date), "01", sep = "-")) &
+                        date <= as.Date(paste(year(rothc_parms$end_date), month(rothc_parms$end_date), "01", sep = "-"))]
+  dt.time[,date := NULL]
+  
+  # Format time
+  dt.time[, time := .I / 12 - 1/12]
+  
+  # Select relevant rows for crop cover and weather
+  dt.crop_cover <- merge(dt.time, dt.crop_cover, by = c('year','month'))
+
+  weather <- merge(dt.time, dt.weather, by = 'month', all.x=TRUE)
+  
+  setorder(weather, year, month)
+  
+  # Add soil data to weather table for rmf calculation
+  weather[, B_DEPTH := B_DEPTH]
+  weather[, A_CLAY_MI := A_CLAY_MI]
+ 
+  browser()
+  # Add rate modifying factors
+  # add correction factors for weather
+  dt.weather[, cf_temp :=  47.9/(1+exp(106/(W_TEMP_MEAN_MONTH + 18.3)))]
+  
+  # add maximal top soil moisture deficit (TSMD) and bare soil moisture deficit
+  dt.weather[, tsmdmax := -(20 + 1.3 * A_CLAY_MI - 0.01 * (A_CLAY_MI^2)) * B_DEPTH / 0.23]
+  
+  
+  
   
   # prepare makkink file
   rc.crops <- as.data.table(rotsee::rc_crops)

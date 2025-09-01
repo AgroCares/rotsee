@@ -11,7 +11,8 @@ rc_input_rmf(
   A_CLAY_MI,
   simyears,
   cf_yield,
-  dt.weather
+  dt.weather,
+  rothc_parms
 )
 }
 \arguments{

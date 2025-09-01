@@ -17,7 +17,7 @@ rc_input_crop <- function(dt = NULL,cf_yield){
   
   # add visual bindings
   M_GREEN_TIMING = M_CROPRESIDUE = M_IRRIGATION = M_RENEWAL = cin_dpm = B_C_OF_INPUT = cin_rpm = NULL
-  CF_YIELD = YEAR = crft = B_LU  = fr_dpm_rpm = B_LU_HC = B_LU_HI_RES = B_LU_END = NULL
+  CF_YIELD = YEAR = crft = B_LU  = fr_dpm_rpm = B_LU_HC = B_LU_HI_RES = B_LU_START = B_LU_END = NULL
   cin_aboveground = B_LU_YIELD =B_LU_DM = B_LU_HI = cin_roots = B_LU_RS_FR = cin_residue = NULL
   
   # check crop table
@@ -54,11 +54,10 @@ rc_input_crop <- function(dt = NULL,cf_yield){
     # Estimate averaged C input for DPM and RDM pool (kg C / ha)
     dt.crop[,cin_dpm := B_C_OF_INPUT * fr_dpm_rpm / (1 + fr_dpm_rpm)]
     dt.crop[,cin_rpm := B_C_OF_INPUT * 1 / (1 + fr_dpm_rpm)]
-    
-  browser()
+
 
   # select only relevant columns with C input (kg C/ ha)
-  dt.crop <- dt.crop[,list(year = YEAR, month = month, B_LU,cin_dpm, cin_rpm,
+  dt.crop <- dt.crop[,list(year = YEAR, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm,
                            M_GREEN_TIMING,M_IRRIGATION,M_CROPRESIDUE,M_RENEWAL,
                            cf_yield = CF_YIELD)]
   

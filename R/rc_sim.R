@@ -36,7 +36,8 @@
 #' 
 #' rothc_rotation: crop table
 #' Includes the columns: 
-#' * year,
+#' * B_LU_START (start of crop rotation),
+#' * B_LU_END (end of crop rotation),
 #' * B_LU (a crop id), 
 #' * B_LU_NAME (a crop name, optional),
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
@@ -146,8 +147,17 @@ rc_sim <- function(soil_properties,
     dt.org <- NULL
   }
   
+  # Determine the start and end date if not present in rothc_parms and check order
+  dates <- data.table(date = c(dt.crop$B_LU_START,dt.crop$B_LU_END,dt.org$P_DATE_FERTILIZATION))
+  dates[, year := year(date)][, month := month(date)]
+  setorder(dates,year,month)
+  
+  if(is.null(rothc_parms$start_date)) rothc_parms$start_date <- dates[1,date]
+  if(is.null(rothc_parms$end_date)) rothc_parms$end_date <- dates[nrow(dates),date]
+  if(as.Date(rothc_parms$start_date) > as.Date(rothc_parms$end_date)) stop('Start_date is not before end_date')
+  
   # make rate modifying factors input database
-  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield, dt.weather = dt.weather)
+  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, rothc_parms = rothc_parms, cf_yield = cf_yield, dt.weather = dt.weather)
   
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)
