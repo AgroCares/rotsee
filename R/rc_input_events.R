@@ -114,7 +114,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL, dt.time){
   # make default crop amendment data.table when dt = NULL
   if(is.null(dt)){dt <- data.table(year = crops[1,year], month = 1, cin_tot = 0, cin_hum = 0,
                                    cin_dpm = 0, cin_rpm = 0)}
-  
+ 
   # do checks on the crop list
   checkmate::assert_data_table(crops)
   checkmate::assert_true('B_LU' %in% colnames(crops))
@@ -122,9 +122,11 @@ rc_input_event_amendment <- function(crops,amendment = NULL, dt.time){
   
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
-  checkmate::assert_subset(colnames(dt),
-                           c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p', 'p_ID'),
-                           empty.ok = FALSE)
+  
+  allowed <- c('year','month','p_ID','p_name','P_ID','P_NAME',
+               'cin_tot','cin_hum','cin_dpm','cin_rpm',
+                'P_DOSE','P_HC','P_C_OF','P_DATE_FERTILIZATION')
+  checkmate::assert_subset(colnames(dt), allowed, empty.ok = FALSE)
   
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))

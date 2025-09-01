@@ -28,6 +28,18 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   P_ID = P_NAME = cin_dpm = cin_hum = cin_rpm = cin_tot = fr_dpm_rpm = NULL
   
   # Check amendment table
+  checkmate::assert_data_table(dt, null.ok = FALSE, min.rows = 1)
+  
+    allowed <- c("P_ID","P_NAME","P_C_OF_INPUT","P_DOSE","P_C_OF","P_HC","P_DATE_FERTILIZATION")
+    checkmate::assert_subset(names(dt), choices = allowed, empty.ok = FALSE)
+  
+    checkmate::assert_true("P_DATE_FERTILIZATION" %in% names(dt))
+    checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
+    checkmate::assert_true("P_HC" %in% names(dt))
+    checkmate::assert(
+        "P_C_OF_INPUT" %in% names(dt) || all(c("P_DOSE","P_C_OF") %in% names(dt))
+      )
+  
   checkmate::assert_data_table(dt, null.ok = FALSE)
   checkmate::assert_subset(colnames(dt),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "P_DATE_FERTILIZATION"), empty.ok = TRUE)
   checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = F)
@@ -45,6 +57,10 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
  
   # add dpm-rmp ratio
   dt.org[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
+  
+  # add default ratio if no humification coefficient is supplied
+  dt.org[is.na(fr_dpm_rpm), fr_dpm_rpm := 1.44]
+  
   
   # estimate total Carbon input per crop and year (kg C/ha)
   if(!is.null(dt.org$P_C_OF_INPUT)){

@@ -16,7 +16,7 @@
 #' * B_C_OF_INPUT (the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF})
 #'
 #' @export
-rc_input_crop <- function(dt = NULL,cf_yield = 1){
+rc_input_crop <- function(dt, cf_yield = 1){
   # add visual bindings
   M_GREEN_TIMING =  M_IRRIGATION = M_CROPRESIDUE = cin_dpm = B_C_OF_INPUT = cin_rpm = NULL
   CF_YIELD = YEAR = crft = B_LU  = fr_dpm_rpm = B_LU_HC = B_LU_HI_RES = B_LU_START = B_LU_END = NULL
