@@ -4,12 +4,10 @@
 \alias{rc_input_event_crop}
 \title{Calculate the crop rotation related C inputs of a field on monthly basis}
 \usage{
-rc_input_event_crop(crops, A_CLAY_MI)
+rc_input_event_crop(crops)
 }
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, crop management measures, year and potential Carbon inputs.}
-
-\item{A_CLAY_MI}{(numeric) The clay content of the soil (\%).}
 }
 \description{
 This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.

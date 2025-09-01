@@ -48,6 +48,22 @@ test_that("rc_update_weather validates input data table", {
   
 })
 
+
+test_that("rc_calculate_bd correctly calculates bulk density",{
+  dt <- data.table(A_CLAY_MI = 12,
+                                A_SOM_LOI = 3)
+  
+  expect_no_error(rc_calculate_bd(dt = dt))
+  
+  # Test for highly organic soil
+  high_OM_dt <- dt[,A_SOM_LOI:= 25]
+    expect_no_error(rc_calculate_bd(dt = dt))
+  
+  # Test with C concent as input
+    C_dt <- dt[, A_SOM_LOI := NULL]
+    C_dt <- dt[, A_C_OF := 80]
+    expect_no_error(rc_calculate_bd(dt = dt))
+})
 # context("cf_ind_importance")
 #
 # test_that("cf_ind_importance() works", {

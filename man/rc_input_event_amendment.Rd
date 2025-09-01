@@ -9,7 +9,7 @@ rc_input_event_amendment(crops, amendment = NULL)
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, year and potential Carbon inputs.}
 
-\item{amendment}{(data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.}
+\item{amendment}{(data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.}
 }
 \description{
 This function calculates the timing of carbon inputs (kg C per ha) based on type of organic matter amendments and land use.
