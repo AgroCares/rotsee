@@ -84,8 +84,6 @@ rc_sim <- function(soil_properties,
   B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
   
   # Check input data and create defaults when necessary
-  
-  # create an internal crop rotation file
 
   # Check input data for soil, crop, and amendment data
   rc_check_inputs(soil_properties = soil_properties,
@@ -95,7 +93,7 @@ rc_sim <- function(soil_properties,
   # Check and update weather data(see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather)
   
-  # Check and update parameters
+  # Check and update parameter tabel rothc_parms
   rothc_parms <- rc_update_parms(parms = rothc_parms)
   
  
@@ -140,7 +138,6 @@ rc_sim <- function(soil_properties,
   } else {
     dt.crop = NULL
   }
-  
   
   # create an internal amendment file
   if (!is.null(rothc_amendment)) {

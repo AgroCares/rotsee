@@ -3,7 +3,7 @@
 #' This function combines required inputs into a data.table that is needed as input for the RothC model.
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.
+#' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm. 
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%).
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #'
@@ -78,6 +78,10 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   checkmate::assert_subset(crops$M_GREEN_TIMING, choices = c("august","september", "october","november","never"))
   checkmate::assert_logical(crops$M_CROPRESIDUE,any.missing = FALSE, len = arg.length)
   checkmate::assert_integerish(crops$year,any.missing = FALSE, len = arg.length)
+  if(!"month" %in% colnames(crops)){
+    crops[, month := NA_real_]
+  }
+  
   
   # make internal copy
   dt <- copy(crops)
@@ -110,7 +114,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
 #' This function calculates the timing of carbon inputs (kg C per ha) based on type of organic matter amendments and land use.
 #'
 #' @param crops (data.table) Table with crop rotation, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.
+#' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
 #' The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
@@ -123,7 +127,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   # add visual bindings
   B_LU = B_LU_NAME = p_cat = fre_eoc_p = crflt = tcf = NULL
   cin_hum = cin_rpm = cin_dpm = method = crop_code = crop_name = NULL
-  fr_eoc_p = time = NULL
+  time = NULL
   
   # make local copy
   dt <- copy(amendment)
@@ -142,6 +146,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   checkmate::assert_subset(colnames(dt),
                            c('year','month','p_name','cin_tot','cin_hum','cin_dpm','cin_rpm','fr_eoc_p', 'p_ID'),
                            empty.ok = FALSE)
+  
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt))
@@ -150,7 +155,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   
   # If month is na, set to 9
  dt[is.na(month), month := 9]
-  
+
   # add cumulative time vector
   dt[,time := year + month / 12 - min(year)]
   
