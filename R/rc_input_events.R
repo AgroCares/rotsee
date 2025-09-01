@@ -53,6 +53,7 @@ rc_input_event_crop <- function(crops,dt.time){
   # check crops input data.table
   checkmate::assert_data_table(crops,nrows = arg.length)
   checkmate::assert_true(sum(c('M_GREEN_TIMING','M_CROPRESIDUE','cf_yield') %in% colnames(crops)) == 3)
+  checkmate::assert_true(all(c('cin_dpm','cin_rpm') %in% colnames(crops)))
   checkmate::assert_numeric(crops$cf_yield,lower = 0, upper = 2.0, any.missing = FALSE, len = arg.length)
   checkmate::assert_character(crops$M_GREEN_TIMING, any.missing = FALSE, len = arg.length)
   checkmate::assert_subset(crops$M_GREEN_TIMING, choices = c("august","september", "october","november","never"))

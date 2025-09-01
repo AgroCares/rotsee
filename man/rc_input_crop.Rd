@@ -4,10 +4,10 @@
 \alias{rc_input_crop}
 \title{Do check and expand crop input table for RothC for the Netherlands}
 \usage{
-rc_input_crop(dt = NULL, cf_yield)
+rc_input_crop(dt = NULL, cf_yield = 1)
 }
 \arguments{
-\item{dt}{(data.table) Table with crop rotation and related crop properties for Carbon input.}
+\item{dt}{(data.table) Table with crop rotation and related crop properties for Carbon input. See details for information.}
 
 \item{cf_yield}{(numeric) A yield correction factor (fraction) if yield is higher than regional average}
 }
@@ -16,8 +16,11 @@ Helper function to check the content and format of the crop input table.
 }
 \details{
 The crop table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
-This helper function assists the checking and controlling of crop properties involved.
-
-To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
-if dt is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
+To run this function, the dt should contain the following columns:
+* year
+* month
+* B_LU (a crop id)
+* B_LU_NAME (a crop name, optional):
+* B_LU_HC (the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used)
+* B_C_OF_INPUT (the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF})
 }

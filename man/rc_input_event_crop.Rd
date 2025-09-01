@@ -8,8 +8,8 @@ rc_input_event_crop(crops, dt.time)
 }
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, crop management measures, year and potential Carbon inputs.}
-
 \item{dt.time}{(data.table) Table containing all combinations of months and years in the simulation period}
+
 }
 \description{
 This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
