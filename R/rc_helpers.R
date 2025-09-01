@@ -244,7 +244,7 @@ rc_check_inputs <- function(soil_properties,
   # Check amendment properties if supplied
   if(!is.null(rothc_amendment)){
     checkmate::assert_data_table(rothc_amendment, null.ok = TRUE)
-    checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "year", "month"), empty.ok = TRUE)
+    checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "P_DATE_FERTILIZATION"), empty.ok = TRUE)
     checkmate::assert_character(rothc_amendment$P_NAME, any.missing = T)
     checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = F)
     checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = F)

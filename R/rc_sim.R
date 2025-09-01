@@ -32,8 +32,6 @@
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
 #' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
-#' * year (date), year of fertilizer application
-#' * month (numeric), month of fertilizer application, optional
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #' 
 #' rothc_rotation: crop table
@@ -83,9 +81,8 @@ rc_sim <- function(soil_properties,
   code = value_min = value_max = a_depth = dens.sand = dens.clay = cf = bd = toc = A_CLAY_MI = A_C_OF= NULL
   b_depth = var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
   soc = dec_rates = simyears = c_fractions = method = poutput = unit = CDPM = CRPM = CBIO = CHUM = CIOM = bd =  . = NULL
-  B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = NULL
+  B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
   
-
   # Check input data and create defaults when necessary
   
   # create an internal crop rotation file

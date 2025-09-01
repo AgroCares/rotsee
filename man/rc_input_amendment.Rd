@@ -26,9 +26,5 @@ Includes the columns:
 * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
 * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
-* year (date), year of fertilizer application
-* month (numeric), month of fertilizer application, optional
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
-To run this function, the dt requires as input:"P_NAME", "year","month","P_OM","P_HC","p_p2o5", and "P_DOSE"
-if dt is NULL, then the amendment input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 }

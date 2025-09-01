@@ -28,12 +28,11 @@ test_that("rc_sim correctly checks input validity", {
  
   rothc_amendment <- data.table(
     P_ID = c(1, 1),
-    year = c(2022, 2023),
-    month = c(5, 5),
     P_NAME = c('cattle_slurry', 'cattle_slurry'),
     P_DOSE = c(63300, 63300),
     P_HC = c(0.7,0.7),
-    P_C_OF = c(35, 35))
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
   
 
       
@@ -62,13 +61,7 @@ test_that("rc_sim correctly checks input validity", {
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                          weather = weather))
   
-  # No month in amendment table (allowed)
-  expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                      B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
-                      rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment[,.SD, .SDcols = !"month"], 
-                      weather = weather))
-  
-  # No crop table (not allowed)
+    # No crop table (not allowed)
   expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = NULL, rothc_amendment = rothc_amendment, 
