@@ -51,17 +51,11 @@ rc_input_event_crop <- function(crops,dt.time){
   arg.length <- nrow(crops)
   
   # check crops input data.table
-  checkmate::assert_data_table(crops,nrows = arg.length)
-  checkmate::assert_true(sum(c('M_GREEN_TIMING','M_CROPRESIDUE','cf_yield') %in% colnames(crops)) == 3)
-  checkmate::assert_true(all(c('cin_dpm','cin_rpm') %in% colnames(crops)))
-  checkmate::assert_numeric(crops$cf_yield,lower = 0, upper = 2.0, any.missing = FALSE, len = arg.length)
-  checkmate::assert_character(crops$M_GREEN_TIMING, any.missing = FALSE, len = arg.length)
-  checkmate::assert_subset(crops$M_GREEN_TIMING, choices = c("august","september", "october","november","never"))
-  checkmate::assert_logical(crops$M_CROPRESIDUE,any.missing = FALSE, len = arg.length)
-  checkmate::assert_integerish(crops$year,any.missing = FALSE, len = arg.length)
-  if(!"month" %in% colnames(crops)){
-    crops[, month := NA_real_]
-  }
+  checkmate::assert_data_table(crops, nrows = arg.length)
+  checkmate::assert_true(all(c('year','cin_dpm','cin_rpm') %in% names(crops)))
+  checkmate::assert_integerish(crops$year, any.missing = FALSE, len = arg.length)
+  if (!"month" %in% names(crops)) crops[, month := NA_real_]
+  
   
   
   # make internal copy
@@ -75,8 +69,8 @@ rc_input_event_crop <- function(crops,dt.time){
   
   # select only relevant columns as output for EVENT crop residue input
   # and select only those time steps where C input is bigger than zero
-  out1 <- dt[cin_dpm > 0 | cin_rpm >0 ,list(CDPM = cin_dpm,CRPM = cin_rpm ,time = time)]
- 
+  out1 <- dt[cin_dpm > 0 | cin_rpm > 0,list(CDPM = cin_dpm,CRPM = cin_rpm,time = time)]
+  
   # melt the output table
   out1 <- melt(out1,id.vars = "time", variable.name = "var")
   
@@ -114,7 +108,7 @@ rc_input_event_amendment <- function(crops,amendment = NULL, dt.time){
   # make default crop amendment data.table when dt = NULL
   if(is.null(dt)){dt <- data.table(year = crops[1,year], month = 1, cin_tot = 0, cin_hum = 0,
                                    cin_dpm = 0, cin_rpm = 0)}
- 
+
   # do checks on the crop list
   checkmate::assert_data_table(crops)
   checkmate::assert_true('B_LU' %in% colnames(crops))
@@ -123,9 +117,8 @@ rc_input_event_amendment <- function(crops,amendment = NULL, dt.time){
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
   
-  allowed <- c('year','month','p_ID','p_name','P_ID','P_NAME',
-               'cin_tot','cin_hum','cin_dpm','cin_rpm',
-                'P_DOSE','P_HC','P_C_OF','P_DATE_FERTILIZATION')
+  allowed <- c('year','month','p_ID','p_name','cin_tot','cin_hum',
+               'cin_dpm','cin_rpm')
   checkmate::assert_subset(colnames(dt), allowed, empty.ok = FALSE)
   
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))

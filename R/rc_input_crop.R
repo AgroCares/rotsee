@@ -51,7 +51,7 @@ rc_input_crop <- function(dt, cf_yield = 1){
   # add dpm-rmp ratio
   dt.crop[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
   
-  # replace dpm-rmp ratio with defaults when information hc is missing
+  # replace dpm-rpm ratio with defaults when hc is missing
   dt.crop[is.na(fr_dpm_rpm), fr_dpm_rpm := 1.44]
   
   # estimate total Carbon input per crop and year (kg C / ha)
