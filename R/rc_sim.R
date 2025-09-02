@@ -157,7 +157,7 @@ rc_sim <- function(soil_properties,
   if(as.Date(rothc_parms$start_date) > as.Date(rothc_parms$end_date)) stop('Start_date is not before end_date')
   
   # make rate modifying factors input database
-  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, rothc_parms = rothc_parms, cf_yield = cf_yield, dt.weather = dt.weather)
+  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, rothc_parms = rothc_parms, dt.weather = dt.weather)
   
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)

@@ -3,11 +3,8 @@
 #' This function prepares the rate modifying factors for RothC given crop cover
 #'
 #' @param dt (data.table) Table with crop rotation and related crop properties for Carbon input.
-#' @param B_LU_BRP (numeric) The crop code
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
-#' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
-#' @param cf_yield (numeric) A yield correction factor (fraction) if yield is higher than regional average
 #' @param dt.weather (data.table) Data table of monthly weather
 #' @param rothc_parms (data.table) Data table with the rothc run parameters
 #'
@@ -16,31 +13,20 @@
 #' if dt is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 #'
 #' @export
-rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, simyears,cf_yield, dt.weather, rothc_parms){
+rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc_parms){
   
   # add visual bindings
-  B_LU = crop_name = M_RENEWAL = B_LU_MAKKINK = B_LU_NAME = M_GREEN_TIMING = B_LU_START = NULL
-  mcf = crop_cover = crflt = time = cf_temp = W_TEMP_MEAN_MONTH = tsmdmax = B_LU_END = NULL
-  tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = W_PREC_MEAN_MONTH = hv = acc_smd = acc_smd2 = cf_moist = cf_soilcover = NULL
-  cf_renewal = cf_combi = id = yr_rep =  NULL
+  B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
+  tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = acc_smd = NULL
+  W_PREC_SUM_MONTH = cf_moist = cf_soilcover = M_RENEWAL = cf_renewal = cf_combi = NULL
   
-  # check B_LU_BRP or crop table
-  checkmate::assert_integerish(B_LU_BRP, any.missing = FALSE, null.ok = TRUE, min.len = 1)
-  checkmate::assert_subset(B_LU_BRP, choices = unique(rotsee::rc_crops$crop_code), empty.ok = TRUE)
+  # Input tables
   checkmate::assert_data_table(dt,null.ok = TRUE)
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
-  checkmate::assert_true(!(is.null(dt) & is.null(B_LU_BRP)))
-  checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
-  
-  # set default crop table in case that dt is missing
-  if(is.null(dt) & !is.null(B_LU_BRP)){
-    
-    rs <- rc_input_scenario(B_LU_BRP = B_LU_BRP, scen = 'BAU')
-    dt <- rs$rotation
-  }
-  
+
   # Determine crop cover based on start and end of crop rotation
   dt.growth <- dt[, {
+    
     # Create a sequence of year-month combinations
     seq_dates <- seq.Date(as.Date(B_LU_START), as.Date(B_LU_END), by = 'month')
     
@@ -76,181 +62,68 @@ rc_input_rmf <- function(dt = NULL,B_LU_BRP = NULL, B_DEPTH = 0.3, A_CLAY_MI, si
   # Add soil data to weather table for rmf calculation
   weather[, B_DEPTH := B_DEPTH]
   weather[, A_CLAY_MI := A_CLAY_MI]
- 
-  browser()
+  
+  # combine weather and crop cover data
+  dt <- merge(weather, dt.crop_cover, by = c('time', 'year', 'month'))
+
   # Add rate modifying factors
-  # add correction factors for weather
-  dt.weather[, cf_temp :=  47.9/(1+exp(106/(W_TEMP_MEAN_MONTH + 18.3)))]
   
-  # add maximal top soil moisture deficit (TSMD) and bare soil moisture deficit
-  dt.weather[, tsmdmax := -(20 + 1.3 * A_CLAY_MI - 0.01 * (A_CLAY_MI^2)) * B_DEPTH / 0.23]
+  # add correction factor for temperature
+  dt[, cf_temp :=  47.9/(1+exp(106/(W_TEMP_MEAN_MONTH + 18.3)))]
   
+  # add correction factor for top soil moisture deficit
+  # Calculate maximum top soil moisture deficit
+  dt[, tsmdmax := -(20 + 1.3 * A_CLAY_MI - 0.01 * (A_CLAY_MI^2)) * B_DEPTH / 0.23]
+
+  # correct maximum top soil moisture deficit for bare soil
+  dt[, tsmdmax_cor := fifelse(crop_cover==1,tsmdmax,tsmdmax/1.8)]
+
+  # Calculate actual evapotranspiration for months where only potential is provided (general rothc calculation)
+  dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_POT_MONTH * 0.75]
+
+  # Calculate the monthly soil moisture deficit
+  dt[,smd := W_PREC_SUM_MONTH - W_ET_ACT_MONTH]
+ 
   
-  
-  
-  # prepare makkink file
-  rc.crops <- as.data.table(rotsee::rc_crops)
-  
-  dt.mak <- as.data.table(rotsee::rc_makkink)
-  dt.mak <- melt(dt.mak,id.vars = 'B_LU_MAKKINK', variable.name = 'month',value.name = "mcf",variable.factor = FALSE)
-  dt.mak[,month := as.integer(month)]
-  
-  # check crops input data
-  checkmate::assert_data_table(dt)
-  checkmate::assert_true(sum(c('M_GREEN_TIMING','M_IRRIGATION','M_CROPRESIDUE') %in% colnames(dt)) == 3)
-  checkmate::assert_numeric(dt$cf_yield,lower = 0, upper = 2.0, any.missing = FALSE)
-  checkmate::assert_character(dt$M_GREEN_TIMING, any.missing = FALSE)
-  checkmate::assert_subset(dt$M_GREEN_TIMING,c('august','september','october','november','never'))
-  checkmate::assert_logical(dt$M_CROPRESIDUE,any.missing = FALSE)
-  checkmate::assert_logical(dt$M_IRRIGATION,any.missing = FALSE)
-  
-  # add crop name to input
-  dt <- merge(dt,
-              rc.crops[, list(B_LU, B_LU_NAME = crop_name, B_LU_MAKKINK)],
-              by = 'B_LU',
-              all.x = TRUE)
-  
-  # update input for mandatory catch crops (after maize and potato on sandy soils) and set NA for grassland
-  if(A_CLAY_MI <20){ dt[grepl('mais|aardappel',B_LU_NAME) & grepl('^nl_',B_LU), M_GREEN_TIMING := 'october'] }
-  dt[grepl('gras|bieten, suiker|bieten, voeder',B_LU_NAME) & grepl('^nl_',B_LU), M_GREEN_TIMING := 'never']
-  
-  # add crop cover and makkink correction factor
-  
-  # extend the crop table with months
-  dt <- dt[rep(1:.N,12)]
-  dt[,month := 1:.N,by='year']
-  
-  # add makkink correction factor
-  dt <- merge(dt,dt.mak, by = c('B_LU_MAKKINK','month'),all.x = TRUE)
-  
-  # add median Makkink correction factor for non-Dutch crops
-  dt[is.na(mcf) & month %in% c(1:3,10:12), mcf := 0.36]
-  dt[is.na(mcf) & month == 4, mcf := 0.4]
-  dt[is.na(mcf) & month == 5, mcf := 0.66]
-  dt[is.na(mcf) & month %in% 6:7, mcf := 1.0]
-  dt[is.na(mcf) & month == 8, mcf := 1.06]
-  dt[is.na(mcf) & month == 9, mcf := 0.95]
-  
-  # add crop cover (crops crowing = 1, no crop = 0)
-  dt[,crop_cover := fifelse(mcf>0.36,1,0)]
-  
-  # column names to be updated
-  cols <- c("B_LU_NAME","crop_cover","mcf")
-  
-  # select the years before winter cereals are grown as main crop or when catch crop grown in spring
-  year_wc <- dt[grepl('winter',B_LU_NAME) & grepl('tarwe|gerst',B_LU_NAME),unique(pmax(1,year - 1))]
-  year_cc <- dt[M_GREEN_TIMING != 'never',unique(pmin(year + 1,max(1,year)))]
-  
-  # update B_LU_NAME, crop_cover and mcf for winter crops and catch crops
-  
-  # update winter crop in winter months
-  dt[year %in% year_wc & month == 10, c(cols) := list("winter cereal", 1, 0.5)]
-  dt[year %in% year_wc & month > 10, c(cols) := list("winter cereal", 1, 0.6)]
-  
-  # update catch crop in winter months
-  dt[M_GREEN_TIMING != 'never', crflt := 1]
-  dt[crflt == 1 & month == 10, c(cols):=list("catch crop",1,0.74)]
-  dt[crflt == 1 & month == 11, c(cols):=list("catch crop",1,0.64)]
-  dt[crflt == 1 & month == 12, c(cols):=list("catch crop",1,0.60)]
-  dt[,crflt := NULL]
-  
-  # update catch crop in next year
-  dt[month < 4 & year %in% year_cc,c(cols) := list("catch crop",1,0.6)]
-  
-  # adapt mcf when crop yield is different than average
-  dt[!grepl('catch crop',B_LU_NAME), mcf := mcf * cf_yield]
-  
-  # sort dt on the original order
-  setorder(dt,year,month)
-  
-  # add time
-  dt[, time := year + (month - 1) / 12 - 1]
-  
-  # select relevant outputs
-  dt <- dt[,list(time,mcf,crop_cover,M_RENEWAL)]
-  
-  
-  # add rate modifiying factors
-  
-  # select crop cover and Makkink correction factor
-  dt.cc <- copy(dt)
-  
-  # combine rotation data in one table with monthly means, and ensure that mcf is smaller than 2
-  dt.cc[,year := floor(time)]
-  dt.cc[,month := round(12 * (dt$time - floor(dt$time)) + 1)]
-  dt.cc[,mcf := pmin(2,mcf)]
-  
-  # add correction factors for weather
-  dt.weather[, cf_temp :=  47.9/(1+exp(106/(W_TEMP_MEAN_MONTH + 18.3)))]
-  
-  # add maximal top soil moisture deficit (TSMD) and bare soil moisture deficit
-  dt.weather[, tsmdmax := -(20 + 1.3 * A_CLAY_MI - 0.01 * (A_CLAY_MI^2)) * B_DEPTH / 0.23]
-  
-  # add weather data and reorder on time
-  dt.cc <- merge(dt.cc,dt.weather,by='month')
-  setorder(dt.cc,time)
-  
-  # correct for bare SMD when there is no crop growing
-  dt.cc[, tsmdmax_cor := fifelse(crop_cover==1,tsmdmax,tsmdmax/1.8)]
-  
-  # add actual evapo-transpiration and soil moisture deficit
-  dt.cc[is.na(W_ET_ACT_MONTH),W_ET_ACT_MONTH := W_ET_POT_MONTH * mcf]
-  dt.cc[,smd := W_PREC_MEAN_MONTH- W_ET_ACT_MONTH]
-  
-  # add accumulated soil moisture deficit, uncorrected
-  dt.cc[, hv := pmin(1,cumsum(fifelse(smd<0,1,0))),by='year']
-  dt.cc[, acc_smd := hv * smd]
-  
-  # helper function to estimate soil moisture deficit per year
-  hfun <- function(x,xmax){o=x;for(i in 2:length(x)){o[i] <- min(0,max(xmax[i], x[i] + x[i-1]))};return(abs(o))}
-  
-  # estimate soil moisture deficit, corrected
-  dt.cc[,acc_smd2 := hfun(acc_smd,tsmdmax_cor),by='year']
-  dt.cc[,tsmdmax := abs(tsmdmax)]
-  
+  # Calculate the accumulated soil moisture deficit
+  dt[, acc_smd := {
+    # Create filler column of the length of the data table
+    x = numeric(length(smd))
+    
+    # set initial value to first soil moisture deficit
+    x[1] = smd[1]
+    
+    # Apply constraints to initial value
+    x[1] = pmin(0, pmax(x[1], tsmdmax_cor[1]))
+    
+    # Loop through remaining values
+    for (i in 2:.N) {
+      x[i] = x[i-1] + smd[i]
+      x[i] = pmin(0, pmax(x[i], tsmdmax_cor[i]))
+    }
+    # return output
+    return(x)
+  }]
+ 
   # add rate modifying factor for moisture
-  dt.cc[,cf_moist := fifelse(acc_smd2 < 0.444 * tsmdmax,1, pmax(0.2,1 - 0.8 * (acc_smd2 - 0.44*tsmdmax)/ (tsmdmax - 0.444*tsmdmax)))]
+  dt[,cf_moist := fifelse(acc_smd > 0.444 * tsmdmax_cor,1, pmax(0.2, 0.2 + (1 - 0.2) * (tsmdmax_cor - acc_smd)/ (tsmdmax_cor - 0.444*tsmdmax_cor)))]
+ 
   
   # add rate modifying factor for soil cover
-  dt.cc[,cf_soilcover := fifelse(crop_cover==1,0.6,1)]
+  dt[,cf_soilcover := fifelse(crop_cover==1,0.6,1)]
   
   # add rate modifying factor for grassland renewal
-  renew.year <- unique(floor(dt.cc[M_RENEWAL == TRUE, time])) + 1
-  dt.cc[,cf_renewal := fifelse(year %in% renew.year & month == 1,1,0)]
+  renew.year <- unique(floor(dt[M_RENEWAL == TRUE, time])) + 1
+  dt[,cf_renewal := fifelse(year %in% renew.year & month == 1,1,0)]
   
   # add combined rate modifying factor
-  dt.cc[,cf_combi := cf_temp * cf_moist * cf_soilcover]
+  dt[,cf_combi := cf_temp * cf_moist * cf_soilcover]
   
   # order the output on time
-  setorder(dt.cc,time)
+  setorder(dt,time)
   
   # select only relevant variables for rate modifying factors
-  rothc.mf <- dt.cc[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, d = cf_renewal, abc = cf_combi)]
-  
-  # expand the input file
-  
-  # add an unique ID
-  rothc.mf[,id := .I]
-  
-  ## extend crop table for the number of years
-  rothc.mf <- rothc.mf[rep(id, each = ceiling(simyears / max(time)))]
-  
-  ## update the time for all repetitions of rotation block
-  rothc.mf[,yr_rep := 1:.N, by = id]
-  rothc.mf[,year := (yr_rep - 1) * ceiling(max(time)), by = yr_rep]
-  rothc.mf[,time := year + time]
-  
-  # filter only the years for simulation
-  rothc.mf <- rothc.mf[round(time) <= simyears]
-  
-  # remove helper columns
-  rothc.mf[,c('id','year','yr_rep') := NULL]
-  
-  # order
-  setorder(rothc.mf,time)
-  
-  # Update time to match events
-  rothc.mf[,time := time + 1/12]
+  rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, d = cf_renewal, abc = cf_combi)]
   
   # derive rate modifying factor for full simulation period
   # calculate interpolation for correction factors
