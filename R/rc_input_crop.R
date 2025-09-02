@@ -16,13 +16,13 @@
 rc_input_crop <- function(dt = NULL,cf_yield){
   
   # add visual bindings
-  M_GREEN_TIMING = M_CROPRESIDUE = M_IRRIGATION = M_RENEWAL = cin_dpm = B_C_OF_INPUT = cin_rpm = NULL
+  M_GREEN_TIMING =  M_IRRIGATION = M_CROPRESIDUE = cin_dpm = B_C_OF_INPUT = cin_rpm = NULL
   CF_YIELD = YEAR = crft = B_LU  = fr_dpm_rpm = B_LU_HC = B_LU_HI_RES = B_LU_START = B_LU_END = NULL
   cin_aboveground = B_LU_YIELD =B_LU_DM = B_LU_HI = cin_roots = B_LU_RS_FR = cin_residue = NULL
   
   # check crop table
   checkmate::assert_data_table(dt,null.ok = TRUE)
-  checkmate::assert_subset(colnames(dt),choices = c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC","B_C_OF_INPUT","B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
+  checkmate::assert_subset(colnames(dt),choices = c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC","B_C_OF_INPUT","B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION"), empty.ok = TRUE)
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   
   # create a copy of the crop table
@@ -32,7 +32,6 @@ rc_input_crop <- function(dt = NULL,cf_yield){
   if(!'M_GREEN_TIMING' %in% colnames(dt.crop)){dt.crop[,M_GREEN_TIMING := 'never']}
   if(!'M_CROPRESIDUE' %in% colnames(dt.crop)){dt.crop[,M_CROPRESIDUE := FALSE]}
   if(!'M_IRRIGATION' %in% colnames(dt.crop)){dt.crop[,M_IRRIGATION := FALSE]}
-  if(!'M_RENEWAL' %in% colnames(dt.crop)){dt.crop[,M_RENEWAL := FALSE]}
   if(!'CF_YIELD' %in% colnames(dt.crop)){dt.crop[,CF_YIELD := cf_yield[1]]}
   
   # Get year and month for the end of crop rotation
@@ -58,7 +57,7 @@ rc_input_crop <- function(dt = NULL,cf_yield){
 
   # select only relevant columns with C input (kg C/ ha)
   dt.crop <- dt.crop[,list(year = YEAR, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm,
-                           M_GREEN_TIMING,M_IRRIGATION,M_CROPRESIDUE,M_RENEWAL,
+                           M_GREEN_TIMING,M_IRRIGATION,M_CROPRESIDUE,
                            cf_yield = CF_YIELD)]
   
   # return

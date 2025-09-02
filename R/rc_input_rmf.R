@@ -9,8 +9,19 @@
 #' @param rothc_parms (data.table) Data table with the rothc run parameters
 #'
 #' @details
-#' To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
-#' if dt is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
+#' dt: crop rotation table
+#' contains at least the following columns:
+#' * B_LU_START (date), start of crop growth
+#' * B_LU_END (DATE), end of crop growth
+#' 
+#' dt.weather: weather table
+#' contains the following columns:
+#' * year (optional)
+#' * month
+#' * W_TEMP_MEAN_MONTH
+#' * W_PREC_SUM_MONTH
+#' * W_ET_POT_MONTH
+#' * W_ET_ACT_MONTH
 #'
 #' @export
 rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc_parms){
@@ -18,16 +29,20 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc
   # add visual bindings
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
   tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = acc_smd = NULL
-  W_PREC_SUM_MONTH = cf_moist = cf_soilcover = M_RENEWAL = cf_renewal = cf_combi = NULL
+  W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = NULL
   
   # Input tables
   checkmate::assert_data_table(dt,null.ok = TRUE)
+  checkmate::assert_true(all(c('B_LU_START', 'B_LU_END') %in% colnames(dt)))
+  checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = F)
+  checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = F)
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
+  checkmate::assert_subset(colnames(dt.weather), choices = c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH"))
 
-  # Determine crop cover based on start and end of crop rotation
+  # Establish months of crop cover based on start and end of crop rotation
   dt.growth <- dt[, {
     
-    # Create a sequence of year-month combinations
+    # Create a sequence of year-month combinations when crops are growing
     seq_dates <- seq.Date(as.Date(B_LU_START), as.Date(B_LU_END), by = 'month')
     
     # Extract year and month
@@ -56,15 +71,13 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc
   dt.crop_cover <- merge(dt.time, dt.crop_cover, by = c('year','month'))
 
   weather <- merge(dt.time, dt.weather, by = 'month', all.x=TRUE)
-  
-  setorder(weather, year, month)
-  
-  # Add soil data to weather table for rmf calculation
-  weather[, B_DEPTH := B_DEPTH]
-  weather[, A_CLAY_MI := A_CLAY_MI]
-  
+ 
   # combine weather and crop cover data
   dt <- merge(weather, dt.crop_cover, by = c('time', 'year', 'month'))
+  
+  # Add soil data for rmf calculation
+  dt[, B_DEPTH := B_DEPTH]
+  dt[, A_CLAY_MI := A_CLAY_MI]
 
   # Add rate modifying factors
   
@@ -83,14 +96,14 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc
 
   # Calculate the monthly soil moisture deficit
   dt[,smd := W_PREC_SUM_MONTH - W_ET_ACT_MONTH]
- 
+
   
   # Calculate the accumulated soil moisture deficit
   dt[, acc_smd := {
     # Create filler column of the length of the data table
     x = numeric(length(smd))
     
-    # set initial value to first soil moisture deficit
+    # Base initial deficit on deficit in the same period yet for the next year
     x[1] = smd[1]
     
     # Apply constraints to initial value
@@ -111,11 +124,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc
   
   # add rate modifying factor for soil cover
   dt[,cf_soilcover := fifelse(crop_cover==1,0.6,1)]
-  
-  # add rate modifying factor for grassland renewal
-  renew.year <- unique(floor(dt[M_RENEWAL == TRUE, time])) + 1
-  dt[,cf_renewal := fifelse(year %in% renew.year & month == 1,1,0)]
-  
+ 
   # add combined rate modifying factor
   dt[,cf_combi := cf_temp * cf_moist * cf_soilcover]
   
@@ -123,18 +132,17 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc
   setorder(dt,time)
   
   # select only relevant variables for rate modifying factors
-  rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, d = cf_renewal, abc = cf_combi)]
+  rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, abc = cf_combi)]
   
   # derive rate modifying factor for full simulation period
   # calculate interpolation for correction factors
   abc <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$abc, method = "linear",rule=2)
-  d <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$d, method = "constant",f=1,rule=2)
   
   # calculate correction factor for soil structure
   R1 <- 1/((1.67*(1.85+1.6*exp(-0.0786*A_CLAY_MI)))+1)
   
   # combine RothC input parameters
-  rothc.parms <- list(R1 = R1, abc = abc, d = d)
+  rothc.parms <- list(R1 = R1, abc = abc)
   
   # return output
   return(rothc.parms)

@@ -160,7 +160,7 @@ rc_sim <- function(soil_properties,
   dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, rothc_parms = rothc_parms, dt.weather = dt.weather)
   
   # combine RothC input parameters
-  rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)
+  rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc)
 
   # prepare EVENT database with all C inputs over time 
   rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = soil_properties$A_CLAY_MI,simyears = rothc_parms$simyears)
