@@ -61,7 +61,7 @@
 #' Includes the columns:
 #' * month
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
-#' * W_PREC_MEAN_MONTH (precipitation in mm)
+#' * W_PREC_SUM_MONTH (precipitation in mm)
 #' * W_ET_POT_MONTH (potential evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 #'
@@ -110,8 +110,13 @@ rc_sim <- function(soil_properties,
   # Define unit of output
   unit <- rothc_parms$unit
   
-  # Define simyears
-  simyears <- rothc_parms$simyears
+  # Define start_date
+  start_date <- rothc_parms$start_date
+  
+  #Define end_date
+  end_date <- rothc_parms$end_date
+  
+ 
   
   # Define method
   method <- rothc_parms$method
@@ -155,15 +160,18 @@ rc_sim <- function(soil_properties,
   if(is.null(rothc_parms$start_date)) rothc_parms$start_date <- dates[1,date]
   if(is.null(rothc_parms$end_date)) rothc_parms$end_date <- dates[nrow(dates),date]
   if(as.Date(rothc_parms$start_date) > as.Date(rothc_parms$end_date)) stop('Start_date is not before end_date')
-  
+ 
+  # Calculate simulation duration
+  simyears <- year(end_date) + month(end_date)/12  - (year(start_date) + month(start_date)/12)
+
   # make rate modifying factors input database
-  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, rothc_parms = rothc_parms, dt.weather = dt.weather)
+  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, rothc_parms = rothc_parms, dt.weather = dt.weather, simyears = simyears)
   
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc)
 
   # prepare EVENT database with all C inputs over time 
-  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = soil_properties$A_CLAY_MI,simyears = rothc_parms$simyears)
+  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = soil_properties$A_CLAY_MI,simyears = simyears, start_date = start_date, end_date = end_date)
   
   # initialize the RothC pools (kg C / ha)
   

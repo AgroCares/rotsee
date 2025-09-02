@@ -5,10 +5,12 @@
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
 #' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm. 
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%).
-#' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
+#' @param simyears (numeric) Amount of years for which the simulation should run
+#' @param start_date (date) Start date of the rothc simulation
+#' @param end_date (date) end date of the rothc simulation
 #'
 #' @export
-rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears){
+rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears, start_date, end_date){
   
   # add visual bindings
   id = time = yr_rep = NULL
@@ -85,9 +87,6 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
   
   # make internal copy
   dt <- copy(crops)
-  
-  # If month is not supplied, set to 9
-  dt[is.na(month), month := 9]
 
   # setorder
   setorder(dt,year,month)
@@ -153,24 +152,19 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_integerish(dt$year,len = nrow(dt))
   
-  # If month is na, set to 9
- dt[is.na(month), month := 9]
 
   # add cumulative time vector
   dt[,time := year + month / 12 - min(year)]
   
   # select only those events that manure input occurs
   dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
-  
-  # add one row to ensure that there is always an input
-  if(nrow(dt) == 0){dt <- data.table(time = 1, cin_dpm = 0, cin_rpm = 0, cin_hum = 0.01)}
-  
+
   # select only relevant columns, rename them
   out <- dt[,list(CDPM = cin_dpm,CRPM = cin_rpm,CHUM = cin_hum,time = time)]
   
   # melt the output table
   out <- melt(out,id.vars = "time", variable.name = "var")
-  
+
   # add method how RothC should treat the event
   out[, method := 'add']
   

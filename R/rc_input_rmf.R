@@ -24,7 +24,7 @@
 #' * W_ET_ACT_MONTH
 #'
 #' @export
-rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc_parms){
+rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc_parms, simyears){
   
   # add visual bindings
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
@@ -49,9 +49,9 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc
     list(year = year(seq_dates), month = month(seq_dates), crop_cover = 1)
   }, by = list(B_LU_START,B_LU_END)] 
 
-  
+ 
   # Create a complete set of year-month combinations
-  dt.full_year <- CJ(year = min(year(rothc_parms$start_date)):max(year(rothc_parms$end_date)), month = 1:12)
+  dt.full_year <- CJ(year = min(year(dt$B_LU_START)):max(year(dt$B_LU_END)), month = 1:12)
  
   # Merge and fill missing crop_cover values with 0
   dt.crop_cover <- merge(dt.full_year, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
@@ -134,6 +134,25 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc
   # select only relevant variables for rate modifying factors
   rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, abc = cf_combi)]
   
+  # Expand file to include full simulation period
+  
+  # Add an unique id
+  rothc.mf[, id := .I]
+  
+  # Duplicate each ID for the number of simyears
+  rothc.mf <- rothc.mf[rep(id, each = ceiling(simyears/max(time)))]
+  
+  # Update the time for all repetitions
+  rothc.mf[,yr_rep := 1:.N, by = id]
+  rothc.mf[,year := (yr_rep-1) * ceiling(max(time)), by = yr_rep]
+  rothc.mf[,time := year + time]
+  
+  # filter only the rounds for simulation
+  rothc.mf <- rothc.mf[round(time) <= simyears]
+  
+  # Update time to match events
+  rothc.mf[,time := time + 1/12]
+ 
   # derive rate modifying factor for full simulation period
   # calculate interpolation for correction factors
   abc <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$abc, method = "linear",rule=2)

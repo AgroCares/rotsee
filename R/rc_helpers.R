@@ -92,14 +92,14 @@ rc_update_weather <- function(dt = NULL){
 #' 
 rc_update_parms <- function(parms = NULL){
   
-  
+ 
   # Add visible bindings
-  c_fractions = NULL
+  c_fractions = start_date = end_date = NULL
   
   # Checks names parms
   if(!is.null(parms)){
-    checkmate::assert_subset(colnames(parms), choices = c("dec_rates", "c_fractions", "initialize", "simyears", "unit", "method", "poutput"), empty.ok = TRUE)
-    checkmate::assert_data_table(parms)
+    checkmate::assert_subset(colnames(parms), choices = c("dec_rates", "c_fractions", "initialize", "simyears", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
+    checkmate::assert_list(parms)
   }
   
   # add checks on decomposition rates
@@ -152,16 +152,12 @@ rc_update_parms <- function(parms = NULL){
    
   }
   
-  # add checks on simyears
-  simyears <- 50
+  # Check the format of start_date and end_date
+  start_date <- parms$start_date
+  checkmate::assert_date(as.Date(start_date))
   
-  if(!is.null(parms$simyears)){
-    # check input for the number of simulation year
-    checkmate::assert_integerish(parms$simyears, lower = 1)
-    
-    simyears = parms$simyears
-    
-  }
+  end_date <- parms$end_date
+  checkmate::assert_date(as.Date(end_date))
   
   # Add checks on unit
   unit <- "A_SOM_LOI"
