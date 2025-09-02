@@ -22,7 +22,7 @@ cf_ind_importance <- function(x) {
 #' @param dt (data.table) Monthly weather table with the following columns:
 #' *month (1 - 12)
 #' *W_TEMP_MEAN_MONTH (°C)
-#' *W_PREC_MEAN_MONTH (mm)
+#' *W_PREC_SUM_MONTH (mm)
 #' *W_ET_POT_MONTH (mm)
 #' *W_ET_ACT_MONTH (mm; can be NA, will be derived based on W_ET_POT_MONTH)
 #' If not supplied, default monthly weather based on the Netherlands is added
@@ -39,14 +39,14 @@ rc_update_weather <- function(dt = NULL){
     
     # Check inputs
     checkmate::assert_data_table(dt, nrows = 12)
-    checkmate::assert_subset(c("month", "W_TEMP_MEAN_MONTH", "W_PREC_MEAN_MONTH"), colnames(dt))
+    checkmate::assert_subset(c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH"), colnames(dt))
     checkmate::assert(
       any(c("W_ET_POT_MONTH", "W_ET_ACT_MONTH") %in% names(dt)),
       msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided."
     )
     checkmate::assert_subset(dt$month, 1:12, add = FALSE)
     checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = -30, upper = 50, any.missing = FALSE, len = 12)
-    checkmate::assert_numeric(dt$W_PREC_MEAN_MONTH, lower = 0, upper = 10000, any.missing = FALSE, len = 12)
+    checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = 0, upper = 10000, any.missing = FALSE, len = 12)
     
     # Check if both potential and actual ET are provided
     if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
@@ -69,7 +69,7 @@ rc_update_weather <- function(dt = NULL){
   #Set default weather for Dutch conditions
   dt <- data.table(month = 1:12,
                    W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
-                   W_PREC_MEAN_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                   W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
                    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                    W_ET_ACT_MONTH = NA_real_)
 }
