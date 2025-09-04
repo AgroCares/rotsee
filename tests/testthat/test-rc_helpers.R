@@ -64,6 +64,28 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
     C_dt <- dt[, A_C_OF := 80]
     expect_no_error(rc_calculate_bd(dt = dt))
 })
+
+
+test_that("rc_extend_crops correctly extends crop input file", {
+  # Create a valid crop table
+  crops <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
+  # Define valid simyears
+  simyears <- 50
+  
+  # Define valid start_date
+  start_date <- "2022-04-01"
+  
+  # Check whether crop table is extended with valid data
+  expect_no_error(rc_extend_crops(crops = crops, simyears = simyears, start_date = start_date))
+})
 # context("cf_ind_importance")
 #
 # test_that("cf_ind_importance() works", {

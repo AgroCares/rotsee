@@ -339,3 +339,87 @@ rc_calculate_B_C_OF <- function(dt){
 return(dt.crop)
 }
 
+
+
+#' Function to extend the user crop input file to cover the full range of simulation years
+#'
+#' @param simyears (numeric) number of simulation years of the RothC model
+#' @param crops (data table) Input crop table for the RothC model. See details for further information
+#' @param start_date (formatted YYYY-MM-DD) Date in which simulation starts
+#'
+#' @returns
+#' An extended crop input file to be used in the main RothC model
+#' 
+#' @details
+#' Crops: crop table
+#' Includes the columns: 
+#' * B_LU_START (start of crop rotation),
+#' * B_LU_END (end of crop rotation),
+#' * B_LU (a crop id), 
+#' * B_LU_NAME (a crop name, optional),
+#' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
+#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+#' 
+#' 
+#' @export
+#'
+rc_extend_crops <- function(simyears, crops, start_date){
+  # add visible bindings
+  id = B_LU_START = B_LU_END = yr_rep = year_start = year_end = NULL
+  year_start_ext = year_end_ext = NULL
+  
+  # Check input data
+  checkmate::assert_numeric(simyears, lower = 1)
+  checkmate::assert_data_table(crops,null.ok = TRUE)
+  checkmate::assert_subset(colnames(crops),choices = c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC","P_C_OF", "B_C_OF_INPUT", "B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
+  checkmate::assert_character(crops$B_LU_NAME, any.missing = F)
+  checkmate::assert_numeric(crops$B_LU_HC, lower = 0, upper = 1, any.missing = F)
+  checkmate::assert_numeric(crops$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = F)
+  checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
+  checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
+  
+  # Copy crops table
+  crops <- as.data.table(crops)
+  setnames(crops,toupper(colnames(crops)))
+  
+  # Define total length of rotation (years)
+  rotation_length <- max(year(crops$B_LU_END)) - year(start_date) +1
+  
+  # Add an unique ID
+  crops[,id := .I]
+  
+  # Determine number of duplications
+  duplications <- ceiling(simyears / rotation_length)
+  
+  # Extend crop table for the number of years
+  crops_ext <- crops[rep(id, each = duplications)]
+ 
+  # Update  B_LU_START and B_LU_END for all repetitions of rotation block
+  # Define start year for each repetition
+  crops_ext[,`:=` (year_start = year(B_LU_START), year_end = year(B_LU_END))]
+  
+  # create helper column to identify years of repetition
+  crops_ext[,yr_rep := 1:.N, by = id]
+  
+  # Recalculate start years based on length of crop rotation and number of repetitions
+  crops_ext[,`:=` (year_start_ext = year_start + (yr_rep - 1) * ceiling(rotation_length),
+                      year_end_ext = year_end + (yr_rep - 1) * ceiling(rotation_length))]
+ 
+  # Update B_LU_START and B_LU_END
+  crops_ext[, `:=` (B_LU_START = paste0(year_start_ext,substr(B_LU_START, start = 5, stop = 10)),
+                       B_LU_END = paste0(year_end_ext,substr(B_LU_END, start = 5, stop = 10)))]
+
+  # filter only the years for simulation
+  this.crops <- crops_ext[year_start_ext <= (year(start_date) + simyears),]
+ 
+  # Select relevant columns
+  this.crops <- this.crops[, .SD, .SDcols =!names(this.crops) %in% c("id", "year_start", "year_end",
+                                                       "yr_rep", "year_start_ext", "year_end_ext")
+                                  ]
+
+  return(this.crops)
+  
+}
+  
+
+
