@@ -90,7 +90,7 @@ rc_update_weather <- function(dt = NULL){
 #' @export
 #'
 #' 
-rc_update_parms <- function(parms = NULL){
+rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   
  
   # Add visible bindings
@@ -145,7 +145,7 @@ rc_update_parms <- function(parms = NULL){
   
   if(!is.null(parms$initialize)){
     # check initialize
-    checkmate::assert_logical(initialize,any.missing = FALSE, len = 1)
+    checkmate::assert_logical(parms$initialize,any.missing = FALSE, len = 1)
     
     initialize = parms$initialize
     
@@ -153,11 +153,29 @@ rc_update_parms <- function(parms = NULL){
   }
   
   # Check the format of start_date and end_date
-  start_date <- parms$start_date
-  checkmate::assert_date(as.Date(start_date))
+  # Set dates in case start_date or end_date is not supplied
+  dates <- data.table(date = c(crops$B_LU_START,crops$B_LU_END,amendments$P_DATE_FERTILIZATION))
+  dates[, year := year(date)][, month := month(date)]
+  setorder(dates,year,month)
   
-  end_date <- parms$end_date
-  checkmate::assert_date(as.Date(end_date))
+  start_date <- dates[1, date]
+  end_date <- dates[nrow(dates), date]
+  
+  if(!is.null(parms$start_date)){
+    # check start_date 
+    checkmate::assert_date(as.Date(start_date))
+  
+    start_date <- parms$start_date
+  }
+  
+  if(!is.null(parms$end_date)){
+    checkmate::assert_date(as.Date(end_date)) 
+    
+    end_date <- parms$end_date
+  }
+
+  if(as.Date(start_date) > as.Date(end_date)) stop('Start_date is not before end_date')
+  
   
   # Add checks on unit
   unit <- "A_SOM_LOI"
@@ -194,10 +212,11 @@ rc_update_parms <- function(parms = NULL){
   out = list(initialize = initialize,
              dec_rates = c(k1 = k1, k2 = k2, k3 = k3, k4 = k4),
              c_fractions = c(fr_IOM = fr_IOM, fr_DPM = fr_DPM, fr_RPM = fr_RPM, fr_BIO = fr_BIO),
-             simyears = simyears,
              unit = unit,
              method = method,
-             poutput = poutput)
+             poutput = poutput,
+             start_date = start_date,
+             end_date = end_date)
   
   # return output
   return(out)
@@ -247,11 +266,9 @@ rc_check_inputs <- function(soil_properties,
     checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = F)
     checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = F)
     checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = F)
-    if(!is.null(rothc_amendment$month)){
-      checkmate::assert_integerish(rothc_amendment$month, lower = 1, upper = 12, any.missing = TRUE)}
-  }
+    checkmate::assert_date(as.Date(amendments$P_DATE_FERTILIZATION))
 }
-
+}
 
 #' Function to calculate the dry soil bulk density based on Dutch pedotransfer functions
 #'
@@ -343,12 +360,12 @@ return(dt.crop)
 
 #' Function to extend the user crop input file to cover the full range of simulation years
 #'
-#' @param simyears (numeric) number of simulation years of the RothC model
 #' @param crops (data table) Input crop table for the RothC model. See details for further information
+#' @param simyears (numeric) number of simulation years of the RothC model
 #' @param start_date (formatted YYYY-MM-DD) Date in which simulation starts
 #'
 #' @returns
-#' An extended crop input file to be used in the main RothC model
+#' An extended crop input file to be used in the rtosee package
 #' 
 #' @details
 #' Crops: crop table
@@ -363,7 +380,7 @@ return(dt.crop)
 #' 
 #' @export
 #'
-rc_extend_crops <- function(simyears, crops, start_date){
+rc_extend_crops <- function(crops, simyears, start_date){
   # add visible bindings
   id = B_LU_START = B_LU_END = yr_rep = year_start = year_end = NULL
   year_start_ext = year_end_ext = NULL
@@ -382,8 +399,8 @@ rc_extend_crops <- function(simyears, crops, start_date){
   crops <- as.data.table(crops)
   setnames(crops,toupper(colnames(crops)))
   
-  # Define total length of rotation (years)
-  rotation_length <- max(year(crops$B_LU_END)) - year(start_date) +1
+  # Define total length of crop rotation (years)
+  rotation_length <- max(year(crops$B_LU_END)) - year(start_date) + 1
   
   # Add an unique ID
   crops[,id := .I]
