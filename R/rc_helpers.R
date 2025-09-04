@@ -82,6 +82,8 @@ rc_update_weather <- function(dt = NULL){
 #' Function to check user given RothC simulation parameters, or provide default if none are given
 #'
 #' @param parms (list) List containing the columns dec_rates, c_fractions, initialize, simyears, unit, method, and poutput
+#' @param crops (data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD)
+#' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD)
 #' 
 #' @returns
 #' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, simyears, unit, method and poutput
@@ -266,7 +268,7 @@ rc_check_inputs <- function(soil_properties,
     checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = F)
     checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = F)
     checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = F)
-    checkmate::assert_date(as.Date(amendments$P_DATE_FERTILIZATION))
+    checkmate::assert_date(as.Date(rothc_amendment$P_DATE_FERTILIZATION))
 }
 }
 
@@ -468,6 +470,7 @@ rc_extend_crops <- function(crops, simyears, start_date){
 rc_extend_amendments <- function(amendments,simyears, start_date){
   
   # Add visible bindings
+  id = yr_rep = P_DATE_FERTILIZATION = NULL
   
   # Check input data
   checkmate::assert_data_table(amendments, null.ok = TRUE)
@@ -513,4 +516,40 @@ rc_extend_amendments <- function(amendments,simyears, start_date){
   
   #return amendments file 
   return(this.amendments)
+}
+
+
+
+#' Function to create data table with dates and months of the entire simulation period
+#'
+#' @param start_date (date) start date of the simulation period (formatted as YYYY-MM-DD)
+#' @param end_date (date) end date of the simulation period (formatted as YYYY-MM-DD)
+#'
+#' @returns
+#' Table with all year and month combinations of the simulation period
+#' @export
+#'
+rc_time_period <- function(start_date, end_date){
+  #add visible bindings
+  time = NULL
+  
+  # perform inputs checks
+  checkmate::assert_date(as.Date(start_date))
+  checkmate::assert_date(as.Date(end_date))
+  
+  # Create a complete set of year-month combinations for the simulation period
+  dt.time <- CJ(year = min(year(start_date)):max(year(end_date)), month = 1:12)
+  
+  # Make selection of dates between start and end date
+  dt.time <-  dt.time[,date := as.Date(paste(year, month, "01", sep = "-"))]
+  
+  dt.time <- dt.time[date >= as.Date(paste(year(start_date), month(start_date), "01", sep = "-")) &
+                       date <= as.Date(paste(year(end_date), month(end_date), "01", sep = "-"))]
+  dt.time[,date := NULL]
+  
+  # Format time
+  dt.time[, time := .I / 12 - 1/12]
+  
+  #return output
+  return(dt.time)
 }

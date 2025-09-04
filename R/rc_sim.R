@@ -95,7 +95,7 @@ rc_sim <- function(soil_properties,
   dt.weather <- rc_update_weather(dt = weather)
   
   # Check and update parameter tabel rothc_parms
-  rothc_parms <- rc_update_parms(parms = rothc_parms, crop = rothc_rotation, amendments = rothc_amendment)
+  rothc_parms <- rc_update_parms(parms = rothc_parms, crops = rothc_rotation, amendments = rothc_amendment)
  
   # Define decomposition rates
   k1 <- rothc_parms$dec_rates[["k1"]]
@@ -135,6 +135,10 @@ rc_sim <- function(soil_properties,
   # rothC model parameters
 
   # prepare the RothC model inputs
+  # Define data of complete simulation period
+  dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
+
+  
   # create an internal crop rotation file
   if(!is.null(rothc_rotation)){
     dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
@@ -149,27 +153,18 @@ rc_sim <- function(soil_properties,
     dt.org <- NULL
   }
   
-  # Determine the start and end date if not present in rothc_parms and check order
-  dates <- data.table(date = c(dt.crop$B_LU_START,dt.crop$B_LU_END,dt.org$P_DATE_FERTILIZATION))
-  dates[, year := year(date)][, month := month(date)]
-  setorder(dates,year,month)
-  
-  if(is.null(rothc_parms$start_date)) rothc_parms$start_date <- dates[1,date]
-  if(is.null(rothc_parms$end_date)) rothc_parms$end_date <- dates[nrow(dates),date]
-  if(as.Date(rothc_parms$start_date) > as.Date(rothc_parms$end_date)) stop('Start_date is not before end_date')
- 
-  # Calculate simulation duration
+   # Calculate simulation duration
   simyears <- year(end_date) + month(end_date)/12  - (year(start_date) + month(start_date)/12)
 
   # make rate modifying factors input database
-  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, rothc_parms = rothc_parms, dt.weather = dt.weather, simyears = simyears)
-  
+  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
+ 
   # combine RothC input parameters
-  rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc)
+  rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
 
   # prepare EVENT database with all C inputs over time 
-  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org,A_CLAY_MI = soil_properties$A_CLAY_MI,simyears = simyears, start_date = start_date, end_date = end_date)
-  
+  rothc.event <- rc_input_events(crops = dt.crop,amendment = dt.org, dt.time = dt.time)
+
   # initialize the RothC pools (kg C / ha)
   
   # make internal data.table 
@@ -246,14 +241,15 @@ rc_sim <- function(soil_properties,
   # extract relevant columns
   rothc.ini <- dt.soc[,list(CIOM0,CDPM0,CRPM0,CBIO0,CHUM0)]
   
-  
   # run RothC model
-  
+
   # set time vector for RothC, add event times
-  rothc.times <- seq(0,simyears,12/12)
+  rothc.times <- rothc.parms$time
   rothc.times <- c(rothc.event$time,rothc.times)
   rothc.times <- sort(unique(rothc.times))
-  
+  rothc.parms$time <- NULL
+
+
   # set initial distribution of C pool
   y  = c(CDPM = rothc.ini$CDPM0,
          CRPM = rothc.ini$CRPM0,
@@ -272,9 +268,10 @@ rc_sim <- function(soil_properties,
                       method = method,
                       rtol = 0.1,
                       atol = 1)
+  
   # set to data.table
   out <- as.data.table(out)
-
+  
   # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   

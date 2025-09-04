@@ -39,8 +39,7 @@ rc_input_crop <- function(dt = NULL,cf_yield){
   dt.crop[,month := month(B_LU_END)]
 
   # ensure that year always start with 1 to X, and sort
-  dt.crop[,YEAR := year - min(year) + 1]
-  setorder(dt.crop,YEAR)
+  setorder(dt.crop,year)
   
   # add dpm-rmp ratio
   dt.crop[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
@@ -56,7 +55,7 @@ rc_input_crop <- function(dt = NULL,cf_yield){
 
 
   # select only relevant columns with C input (kg C/ ha)
-  dt.crop <- dt.crop[,list(year = YEAR, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm,
+  dt.crop <- dt.crop[,list(year = year, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm,
                            M_GREEN_TIMING,M_IRRIGATION,M_CROPRESIDUE,
                            cf_yield = CF_YIELD)]
   

@@ -39,9 +39,6 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   # Add year and month of amendment application
   dt.org[, year := year(P_DATE_FERTILIZATION)]
   dt.org[, month := month(P_DATE_FERTILIZATION)]
-
-  # Set years to 1:x
-  dt.org[,year := year - min(year) + 1]
  
   # add month = NA when no input given
   if(!'month' %in% colnames(dt.org)){dt.org[,month := NA_real_]}

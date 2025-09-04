@@ -4,51 +4,29 @@
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
 #' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm. 
-#' @param A_CLAY_MI (numeric) The clay content of the soil (\%).
-#' @param simyears (numeric) Amount of years for which the simulation should run
-#' @param start_date (date) Start date of the rothc simulation
-#' @param end_date (date) end date of the rothc simulation
+#' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period
 #'
 #' @export
-rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears, start_date, end_date){
+rc_input_events <- function(crops,amendment,dt.time){
   
   # add visual bindings
   id = time = yr_rep = NULL
   
   # estimate default crop rotation plan, the building block
-  event.crop <- rc_input_event_crop(crops = crops, A_CLAY_MI)
+  event.crop <- rc_input_event_crop(crops = crops, dt.time = dt.time)
   
   # estimate Carbon input via manure, compost and organic residues
-  event.man <- rc_input_event_amendment(crops = crops,amendment = amendment)
+  event.man <- rc_input_event_amendment(crops = crops,amendment = amendment, dt.time = dt.time)
   
   # create event
   rothc.event <- rbind(event.crop,event.man)
-  
+ 
   # sum multiple additives that are given at same time
-  rothc.event <- rothc.event[,list(value = sum(value)),by = c('time','var','method')]
-  
-  # extend duration of event block and correction factors
-  
-  # add an unique ID
-  rothc.event[,id := .I]
-  
-  ## extend crop table for the number of years
-  rothc.event <- rothc.event[rep(id, each = ceiling(simyears / max(time)))]
-  
-  ## update the time for all repetitions of rotation block
-  rothc.event[,yr_rep := 1:.N, by = id]
-  rothc.event[,year := (yr_rep - 1) * ceiling(max(time)), by = yr_rep]
-  rothc.event[,time := year + time]
-  
-  # filter only the years for simulation
-  rothc.event <- rothc.event[round(time) <= simyears]
-  
-  # remove helper columns
-  rothc.event[,c('id','year','yr_rep') := NULL]
-  
+  rothc.event <- rothc.event[,list(value = sum(value)),by = c( 'time','var','method')]
+
   # order
   setorder(rothc.event,time)
-  
+ 
   # return output
   return(rothc.event)
 }
@@ -58,10 +36,10 @@ rc_input_events <- function(crops,amendment,A_CLAY_MI,simyears, start_date, end_
 #' This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
 #'
 #' @param crops (data.table) Table with crop rotation, crop management measures, year and potential Carbon inputs.
-#' @param A_CLAY_MI (numeric) The clay content of the soil (\%).
+#' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period
 #'
 #' @export
-rc_input_event_crop <- function(crops,A_CLAY_MI){
+rc_input_event_crop <- function(crops,dt.time){
   
   # add visual bindings
   crop_name = B_LU = NULL
@@ -90,20 +68,20 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
 
   # setorder
   setorder(dt,year,month)
-  
+
   # add cumulative time vector
-  dt[,time := year + month/12 - min(year)]
+  dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)
   
   # select only relevant columns as output for EVENT crop residue input
   # and select only those time steps where C input is bigger than zero
-  out1 <- dt[cin_dpm > 0 ,list(CDPM = cin_dpm,CRPM = cin_rpm,time = time)]
-  
+  out1 <- dt[cin_dpm > 0 | cin_rpm >0 ,list(CDPM = cin_dpm,CRPM = cin_rpm ,time = time)]
+ 
   # melt the output table
   out1 <- melt(out1,id.vars = "time", variable.name = "var")
   
   # add method how RothC should treat the event
   out1[, method := 'add']
-  
+
   # return output
   return(out1)
 }
@@ -114,6 +92,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
 #'
 #' @param crops (data.table) Table with crop rotation, year and potential Carbon inputs.
 #' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.
+#' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
 #' The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
@@ -121,7 +100,7 @@ rc_input_event_crop <- function(crops,A_CLAY_MI){
 #' The output is an EVENT object.
 #'
 #' @export
-rc_input_event_amendment <- function(crops,amendment = NULL){
+rc_input_event_amendment <- function(crops,amendment = NULL, dt.time){
   
   # add visual bindings
   B_LU = B_LU_NAME = p_cat = fre_eoc_p = crflt = tcf = NULL
@@ -152,16 +131,15 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt))
   checkmate::assert_integerish(dt$year,len = nrow(dt))
   
-
   # add cumulative time vector
-  dt[,time := year + month / 12 - min(year)]
+  dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)
   
   # select only those events that manure input occurs
   dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
 
   # select only relevant columns, rename them
   out <- dt[,list(CDPM = cin_dpm,CRPM = cin_rpm,CHUM = cin_hum,time = time)]
-  
+ 
   # melt the output table
   out <- melt(out,id.vars = "time", variable.name = "var")
 

@@ -6,7 +6,7 @@
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param dt.weather (data.table) Data table of monthly weather
-#' @param rothc_parms (data.table) Data table with the rothc run parameters
+#' @param dt.time (data.table) table with all combinations of year and month in the simulation period
 #'
 #' @details
 #' dt: crop rotation table
@@ -24,12 +24,12 @@
 #' * W_ET_ACT_MONTH
 #'
 #' @export
-rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc_parms, simyears){
+rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.time){
   
   # add visual bindings
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
   tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = acc_smd = NULL
-  W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = NULL
+  W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
   
   # Input tables
   checkmate::assert_data_table(dt,null.ok = TRUE)
@@ -133,35 +133,16 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, rothc
   
   # select only relevant variables for rate modifying factors
   rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, abc = cf_combi)]
-  
-  # Expand file to include full simulation period
-  
-  # Add an unique id
-  rothc.mf[, id := .I]
-  
-  # Duplicate each ID for the number of simyears
-  rothc.mf <- rothc.mf[rep(id, each = ceiling(simyears/max(time)))]
-  
-  # Update the time for all repetitions
-  rothc.mf[,yr_rep := 1:.N, by = id]
-  rothc.mf[,year := (yr_rep-1) * ceiling(max(time)), by = yr_rep]
-  rothc.mf[,time := year + time]
-  
-  # filter only the rounds for simulation
-  rothc.mf <- rothc.mf[round(time) <= simyears]
-  
-  # Update time to match events
-  rothc.mf[,time := time + 1/12]
- 
+
   # derive rate modifying factor for full simulation period
   # calculate interpolation for correction factors
   abc <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$abc, method = "linear",rule=2)
   
   # calculate correction factor for soil structure
   R1 <- 1/((1.67*(1.85+1.6*exp(-0.0786*A_CLAY_MI)))+1)
-  
+ 
   # combine RothC input parameters
-  rothc.parms <- list(R1 = R1, abc = abc)
+  rothc.parms <- list(R1 = R1, abc = abc, time = rothc.mf$time)
   
   # return output
   return(rothc.parms)
