@@ -277,10 +277,10 @@ rc_sim <- function(soil_properties,
   
   # get only the SOC values on the time scale of years
   if(poutput=='year'){
-    out <- out[time %in% 0:simyears]
-    out[,year:= time + year(start_date)]
+    out <- merge(out, dt.time, by = 'time')
+    out <- out[round(time, 5) %% 1 == 0]
     }
-  
+
   # select type output
   if(unit=='A_SOM_LOI') {
     # Output in organic matter content [\%]

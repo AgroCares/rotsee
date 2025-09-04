@@ -48,30 +48,14 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
     # Extract year and month
     list(year = year(seq_dates), month = month(seq_dates), crop_cover = 1)
   }, by = list(B_LU_START,B_LU_END)] 
-
- 
-  # Create a complete set of year-month combinations
-  dt.full_year <- CJ(year = min(year(dt$B_LU_START)):max(year(dt$B_LU_END)), month = 1:12)
  
   # Merge and fill missing crop_cover values with 0
-  dt.crop_cover <- merge(dt.full_year, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
-  dt.crop_cover <- unique(dt.crop_cover[,list(year,month,crop_cover)])
-  
-  # Make selection of dates between start and end date
-  dt.time <-  dt.full_year[,date := as.Date(paste(year, month, "01", sep = "-"))]
-    
-  dt.time <- dt.time[date >= as.Date(paste(year(rothc_parms$start_date), month(rothc_parms$start_date), "01", sep = "-")) &
-                        date <= as.Date(paste(year(rothc_parms$end_date), month(rothc_parms$end_date), "01", sep = "-"))]
-  dt.time[,date := NULL]
-  
-  # Format time
-  dt.time[, time := .I / 12 - 1/12]
-  
-  # Select relevant rows for crop cover and weather
-  dt.crop_cover <- merge(dt.time, dt.crop_cover, by = c('year','month'))
+  dt.crop_cover <- merge(dt.time, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
+  dt.crop_cover <- unique(dt.crop_cover[,list(year,month, time, crop_cover)])
 
+  # Merge time and weather table
   weather <- merge(dt.time, dt.weather, by = 'month', all.x=TRUE)
- 
+
   # combine weather and crop cover data
   dt <- merge(weather, dt.crop_cover, by = c('time', 'year', 'month'))
   
