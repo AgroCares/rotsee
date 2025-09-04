@@ -275,19 +275,15 @@ rc_sim <- function(soil_properties,
   # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   
-  # get only the SOC values on the time scale of years
-  if(poutput=='year'){
-    out <- merge(out, dt.time, by = 'time')
-    out <- out[round(time, 5) %% 1 == 0]
-    }
-
+ 
+ 
   # select type output
   if(unit=='A_SOM_LOI') {
     # Output in organic matter content [\%]
     
     # subset the RothC simulation result
-    rothc.soc <- out[,list(time=time, year = year,soc)]
-    
+    rothc.soc <- out[,list(time=time, soc)]
+
     # Set required soil parameters
     rothc.soc[,A_DENSITY_SA := mean(dt.soc$A_DENSITY_SA)]
     rothc.soc[,A_CLAY_MI := mean(dt.soc$A_CLAY_MI)]
@@ -307,7 +303,7 @@ rc_sim <- function(soil_properties,
     # Output in organic carbon content [g C/kg]
     
     # subset the RothC simulation result
-    rothc.soc <- out[,list(time = time, year = year, soc)]
+    rothc.soc <- out[,list(time = time, soc)]
     
     # Set required soil parameters
     rothc.soc[,A_DENSITY_SA := mean(dt.soc$A_DENSITY_SA)]
@@ -346,14 +342,22 @@ rc_sim <- function(soil_properties,
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, soc := soc / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     
     # select output variables
-    out <- rothc.soc[,.(time = time, year = year, A_SOM_LOI = soc,CDPM,CRPM,CBIO,CHUM,CIOM)]
+    out <- rothc.soc[,.(time = time, A_SOM_LOI = soc,CDPM,CRPM,CBIO,CHUM,CIOM)]
     
   } else if (unit=='Cstock'){
     # Output in kg C/ha
-    out <- rothc.soc[,list(time = time, year = year, soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
-    
+    out <- rothc.soc[,list(time = time, soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
+      }
+
+  # Add date information to output
+  out <- merge(out, dt.time, by = 'time')
+  
+  # if requested, provide information in the scale of years
+  if(poutput=='year'){
+        out <- out[round(time, 5) %% 1 == 0]
   }
- 
+  out <- out[,.SD, .SDcols = !names(out) %in% "time"]
+
   # update year
   # out[,year := year + rotation[1,year] - 1]
   
