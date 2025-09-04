@@ -274,19 +274,22 @@ rc_sim <- function(soil_properties,
                       atol = 1)
   # set to data.table
   out <- as.data.table(out)
-  
+
   # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   
   # get only the SOC values on the time scale of years
-  if(poutput=='year'){out <- out[time %in% 0:simyears]}
+  if(poutput=='year'){
+    out <- out[time %in% 0:simyears]
+    out[,year:= time + year(start_date)]
+    }
   
   # select type output
   if(unit=='A_SOM_LOI') {
     # Output in organic matter content [\%]
     
     # subset the RothC simulation result
-    rothc.soc <- out[,list(year=time,soc)]
+    rothc.soc <- out[,list(time=time, year = year,soc)]
     
     # Set required soil parameters
     rothc.soc[,A_DENSITY_SA := mean(dt.soc$A_DENSITY_SA)]
@@ -303,12 +306,11 @@ rc_sim <- function(soil_properties,
     
     # select output variables
     out <- rothc.soc[,]
-    
   } else if (unit == 'psoc') {
     # Output in organic carbon content [g C/kg]
     
     # subset the RothC simulation result
-    rothc.soc <- out[,list(year = time,soc)]
+    rothc.soc <- out[,list(time = time, year = year, soc)]
     
     # Set required soil parameters
     rothc.soc[,A_DENSITY_SA := mean(dt.soc$A_DENSITY_SA)]
@@ -347,14 +349,14 @@ rc_sim <- function(soil_properties,
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, soc := soc / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     
     # select output variables
-    out <- rothc.soc[,.(year = time,A_SOM_LOI = soc,CDPM,CRPM,CBIO,CHUM,CIOM)]
+    out <- rothc.soc[,.(time = time, year = year, A_SOM_LOI = soc,CDPM,CRPM,CBIO,CHUM,CIOM)]
     
   } else if (unit=='Cstock'){
     # Output in kg C/ha
-    out <- rothc.soc[,list(year = time,soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
+    out <- rothc.soc[,list(time = time, year = year, soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
     
   }
-  
+ 
   # update year
   # out[,year := year + rotation[1,year] - 1]
   

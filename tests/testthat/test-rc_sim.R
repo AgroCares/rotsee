@@ -42,25 +42,27 @@ test_that("rc_sim correctly checks input validity", {
                         W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                         W_ET_ACT_MONTH = NA_real_)
   
-  parms <- data.table(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
+  parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                       c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
                       initialize = TRUE,
                       simyears = 50,
                       unit = "A_SOM_LOI",
                       method = "adams",
-                      poutput = "year")
+                      poutput = "year",
+                      start_date = "2022-04-01",
+                      end_date = "2040-10-01")
 
   # All correct
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
-                   weather = weather))
+                   weather = weather, rothc_parms = parms))
   
   # No amendment table (allowed)
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                          B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
-                         weather = weather))
+                         weather = weather, rothc_parms = parms))
   
     # No crop table (not allowed)
   expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
@@ -68,6 +70,11 @@ test_that("rc_sim correctly checks input validity", {
                    rothc_rotation = NULL, rothc_amendment = rothc_amendment, 
                    weather = weather))
   
-
+  # Simulation longer than rotation and amendment tables
+  #parms1 <- parms[, end_date := "2030-10-01"]
+  #expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
+  #                       B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+  #                       rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
+  #                       weather = weather))
 })
 
