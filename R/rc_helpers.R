@@ -415,7 +415,10 @@ rc_extend_crops <- function(simyears, crops, start_date){
   # Select relevant columns
   this.crops <- this.crops[, .SD, .SDcols =!names(this.crops) %in% c("id", "year_start", "year_end",
                                                        "yr_rep", "year_start_ext", "year_end_ext")
-                                  ]
+                                 ]
+  
+  # order crop file
+  setorder(this.crops, B_LU_START)
 
   return(this.crops)
   
@@ -423,3 +426,74 @@ rc_extend_crops <- function(simyears, crops, start_date){
   
 
 
+#' Function to extend the user amendments input file to cover the full range of simulation years
+#'
+#' @param amendments (data table) Input amendments table for the RothC model. See details for further information
+#' @param simyears (numeric) number of simulation years of the RothC model
+#' @param start_date (formatted YYYY-MM-DD) Date in which simulation starts
+#'
+#' @returns
+#' An extended crop input file to be used in the rotsee package
+#' 
+#' @details
+#' amendments: amendment table
+#' Includes the columns:
+#' * P_ID (character), ID of the soil amendment product
+#' * P_NAME (character), name of the soil amendment product, optional
+#' * P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
+#' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
+#' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+#' 
+#' @export
+#'
+rc_extend_amendments <- function(amendments,simyears, start_date){
+  
+  # Add visible bindings
+  
+  # Check input data
+  checkmate::assert_data_table(amendments, null.ok = TRUE)
+  checkmate::assert_subset(colnames(amendments),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "P_DATE_FERTILIZATION"), empty.ok = TRUE)
+  checkmate::assert_character(amendments$P_NAME, any.missing = T)
+  checkmate::assert_numeric(amendments$P_DOSE, lower = 0, upper = 250000, any.missing = F)
+  checkmate::assert_numeric(amendments$P_C_OF, lower = 0, upper = 1000, any.missing = F)
+  checkmate::assert_numeric(amendments$P_HC, lower = 0, upper = 1, any.missing = F)
+  checkmate::assert_date(as.Date(amendments$P_DATE_FERTILIZATION))
+  
+  # Make copy of amendments table
+    amendments <- as.data.table(amendments)
+    setnames(amendments,toupper(colnames(amendments)))
+    
+  # Define total length of amendment rotation (years)
+  rotation_length <- max(year(amendments$P_DATE_FERTILIZATION)) - year(start_date) + 1
+    
+  # Add an unique ID
+  amendments[,id := .I]
+    
+  # Determine number of duplications
+  duplications <- ceiling(simyears / rotation_length)
+    
+  # Extend amendment table for the number of years
+  amendments_ext <- amendments[rep(id, each = ceiling(simyears / rotation_length))]
+    
+  # Update P_DATE_FERTILIZATION for all repetitions of rotation block
+  amendments_ext[, yr_rep := 1:.N, by = id]
+  amendments_ext[, year := year(P_DATE_FERTILIZATION) + (yr_rep - 1) * rotation_length]
+  amendments_ext[, P_DATE_FERTILIZATION := paste0(year,substr(P_DATE_FERTILIZATION, start = 5, stop = 10))]
+    
+  # filter only the years for simulation
+  this.amendments <- amendments_ext[year <= (year(start_date) + simyears),]
+    
+  # Select relevant columns
+  this.amendments <- this.amendments[, .SD, .SDcols =!names(this.amendments) %in% 
+                                         c("id", "year", "year_start", "year_end",
+                                           "yr_rep", "year_start_ext", "year_end_ext")
+    ]
+
+  # order amendments file
+  setorder(this.amendments, P_DATE_FERTILIZATION)
+  
+  #return amendments file 
+  return(this.amendments)
+}

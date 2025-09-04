@@ -86,6 +86,28 @@ test_that("rc_extend_crops correctly extends crop input file", {
   # Check whether crop table is extended with valid data
   expect_no_error(rc_extend_crops(crops = crops, simyears = simyears, start_date = start_date))
 })
+
+
+test_that("rc_extend_amendments correctly extends amendments input file", {
+  # Create a valid crop table
+  amendments <- data.table(
+    P_ID = c(1, 1),
+    P_NAME = c('cattle_slurry', 'cattle_slurry'),
+    P_DOSE = c(63300, 63300),
+    P_HC = c(0.7,0.7),
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+  
+  # Define valid simyears
+  simyears <- 50
+  
+  # Define valid start_date
+  start_date <- "2022-04-01"
+  
+  # Check whether crop table is extended with valid data
+  expect_no_error(rc_extend_amendments(amendments = amendments, simyears = simyears, start_date = start_date))
+})
+
 # context("cf_ind_importance")
 #
 # test_that("cf_ind_importance() works", {
