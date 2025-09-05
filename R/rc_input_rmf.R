@@ -98,10 +98,32 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
       x[i] = x[i-1] + smd[i]
       x[i] = pmin(0, pmax(x[i], tsmdmax_cor[i]))
     }
+    
     # return output
     return(x)
   }]
- 
+
+  # Replace deficit of starting months with next year if there is already soil moisture deficit
+  # Check if year starts with a soil moisture deficit
+  if(dt[13, acc_smd] < 0){
+   
+  dt[1:12, acc_smd :={
+    # Create fillter column of the first year
+    x <- numeric(length(1:12))
+    
+    # Set first value to the accumulated soil moisture deficit of the next year
+    x[1] <- dt[13, acc_smd]
+    
+    # Loop through first year, calculated cumulative soil moisture deficit
+    for(i in 2:length(x)){
+      x[i] = x[i-1] + smd[i]
+      x[i] = pmin(0, pmax(x[i], tsmdmax_cor[i]))
+    }
+    # Return output
+    return(x)
+  }]
+  }
+  
   # add rate modifying factor for moisture
   dt[,cf_moist := fifelse(acc_smd > 0.444 * tsmdmax_cor,1, pmax(0.2, 0.2 + (1 - 0.2) * (tsmdmax_cor - acc_smd)/ (tsmdmax_cor - 0.444*tsmdmax_cor)))]
  
