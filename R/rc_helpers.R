@@ -364,7 +364,8 @@ return(dt.crop)
 #'
 #' @param crops (data table) Input crop table for the RothC model. See details for further information
 #' @param simyears (numeric) number of simulation years of the RothC model
-#' @param start_date (formatted YYYY-MM-DD) Date in which simulation starts
+#' @param start_date (character, formatted YYYY-MM-DD) Date in which simulation starts
+#' @param end_date (character, formatted YYYY-MM-DD) Required if simyears is not supplied
 #'
 #' @returns
 #' An extended crop input file to be used in the rtosee package
@@ -382,13 +383,12 @@ return(dt.crop)
 #' 
 #' @export
 #'
-rc_extend_crops <- function(crops, simyears, start_date){
+rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   # add visible bindings
   id = B_LU_START = B_LU_END = yr_rep = year_start = year_end = NULL
   year_start_ext = year_end_ext = NULL
   
   # Check input data
-  checkmate::assert_numeric(simyears, lower = 1)
   checkmate::assert_data_table(crops,null.ok = TRUE)
   checkmate::assert_subset(colnames(crops),choices = c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC","P_C_OF", "B_C_OF_INPUT", "B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
   checkmate::assert_character(crops$B_LU_NAME, any.missing = F)
@@ -396,6 +396,10 @@ rc_extend_crops <- function(crops, simyears, start_date){
   checkmate::assert_numeric(crops$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
+  checkmate::assert_date(as.Date(start_date))
+  if(!is.null(end_date)){checkmate::assert_date(as.Date(start_date))}
+  if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
+  if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   
   # Copy crops table
   crops <- as.data.table(crops)
@@ -406,6 +410,11 @@ rc_extend_crops <- function(crops, simyears, start_date){
   
   # Add an unique ID
   crops[,id := .I]
+  
+  # Define simyears if not supplied
+  if(is.null(simyears)){
+    simyears <- year(end_date) + month(end_date)/12 - (year(start_date) + month(start_date)/12)
+  }
   
   # Determine number of duplications
   duplications <- ceiling(simyears / rotation_length)
@@ -449,10 +458,11 @@ rc_extend_crops <- function(crops, simyears, start_date){
 #'
 #' @param amendments (data table) Input amendments table for the RothC model. See details for further information
 #' @param simyears (numeric) number of simulation years of the RothC model
-#' @param start_date (formatted YYYY-MM-DD) Date in which simulation starts
+#' @param start_date (character, formatted YYYY-MM-DD) Date in which simulation starts
+#' @param end_date (character, formatted YYYY-MM-DD) Required if simyears is not supplied
 #'
 #' @returns
-#' An extended crop input file to be used in the rotsee package
+#' An extended amendment input file to be used in the rotsee package
 #' 
 #' @details
 #' amendments: amendment table
@@ -467,7 +477,7 @@ rc_extend_crops <- function(crops, simyears, start_date){
 #' 
 #' @export
 #'
-rc_extend_amendments <- function(amendments,simyears, start_date){
+rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyears = NULL){
   
   # Add visible bindings
   id = yr_rep = P_DATE_FERTILIZATION = NULL
@@ -480,6 +490,9 @@ rc_extend_amendments <- function(amendments,simyears, start_date){
   checkmate::assert_numeric(amendments$P_C_OF, lower = 0, upper = 1000, any.missing = F)
   checkmate::assert_numeric(amendments$P_HC, lower = 0, upper = 1, any.missing = F)
   checkmate::assert_date(as.Date(amendments$P_DATE_FERTILIZATION))
+  if(!is.null(end_date)){checkmate::assert_date(as.Date(start_date))}
+  if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
+  if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   
   # Make copy of amendments table
     amendments <- as.data.table(amendments)
@@ -490,7 +503,12 @@ rc_extend_amendments <- function(amendments,simyears, start_date){
     
   # Add an unique ID
   amendments[,id := .I]
-    
+  
+  # Define simyears if not supplied
+  if(is.null(simyears)){
+    simyears <- year(end_date) + month(end_date)/12 - (year(start_date) + month(start_date)/12)
+  }
+  
   # Determine number of duplications
   duplications <- ceiling(simyears / rotation_length)
     
