@@ -81,7 +81,7 @@ rc_update_weather <- function(dt = NULL){
 
 #' Function to check user given RothC simulation parameters, or provide default if none are given
 #'
-#' @param parms (list) List containing the columns dec_rates, c_fractions, initialize, simyears, unit, method, and poutput
+#' @param parms (list) List containing the columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
 #' @param crops (data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD)
 #' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD)
 #' 
@@ -100,12 +100,12 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   
   # Checks names parms
   if(!is.null(parms)){
-    checkmate::assert_subset(colnames(parms), choices = c("dec_rates", "c_fractions", "initialize", "simyears", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
+    checkmate::assert_subset(colnames(parms), choices = c("dec_rates", "c_fractions", "initialize", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
     checkmate::assert_list(parms)
   }
   
   # add checks on decomposition rates
-  # Define defaults decomposition rates
+  # Define default decomposition rates
   k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
   
   # if dec_rates supplied, check inputs and overwrite defaults

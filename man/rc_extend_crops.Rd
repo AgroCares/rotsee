@@ -4,17 +4,19 @@
 \alias{rc_extend_crops}
 \title{Function to extend the user crop input file to cover the full range of simulation years}
 \usage{
-rc_extend_crops(simyears, crops, start_date)
+rc_extend_crops(crops, start_date, end_date = NULL, simyears = NULL)
 }
 \arguments{
-\item{simyears}{(numeric) number of simulation years of the RothC model}
-
 \item{crops}{(data table) Input crop table for the RothC model. See details for further information}
 
-\item{start_date}{(formatted YYYY-MM-DD) Date in which simulation starts}
+\item{start_date}{(character, formatted YYYY-MM-DD) Date in which simulation starts}
+
+\item{end_date}{(character, formatted YYYY-MM-DD) Required if simyears is not supplied}
+
+\item{simyears}{(numeric) number of simulation years of the RothC model}
 }
 \value{
-An extended crop input file to be used in the main RothC model
+An extended crop input file to be used in the rtosee package
 }
 \description{
 Function to extend the user crop input file to cover the full range of simulation years

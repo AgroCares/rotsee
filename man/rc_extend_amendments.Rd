@@ -4,17 +4,19 @@
 \alias{rc_extend_amendments}
 \title{Function to extend the user amendments input file to cover the full range of simulation years}
 \usage{
-rc_extend_amendments(amendments, simyears, start_date)
+rc_extend_amendments(amendments, start_date, end_date = NULL, simyears = NULL)
 }
 \arguments{
 \item{amendments}{(data table) Input amendments table for the RothC model. See details for further information}
 
-\item{simyears}{(numeric) number of simulation years of the RothC model}
+\item{start_date}{(character, formatted YYYY-MM-DD) Date in which simulation starts}
 
-\item{start_date}{(formatted YYYY-MM-DD) Date in which simulation starts}
+\item{end_date}{(character, formatted YYYY-MM-DD) Required if simyears is not supplied}
+
+\item{simyears}{(numeric) number of simulation years of the RothC model}
 }
 \value{
-An extended crop input file to be used in the rotsee package
+An extended amendment input file to be used in the rotsee package
 }
 \description{
 Function to extend the user amendments input file to cover the full range of simulation years

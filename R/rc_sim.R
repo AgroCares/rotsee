@@ -24,7 +24,7 @@
 #' * A_CLAY_MI (numeric), clay fraction (\%)
 #' * A_DENSITY_SA (numeric), dry soil bulk density(g/cm3)
 #' 
-#' rothc_amendment: amendment table
+#' rothc_amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
 #' Includes the columns:
 #' * P_ID (character), ID of the soil amendment product
 #' * P_NAME (character), name of the soil amendment product, optional
@@ -34,7 +34,7 @@
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #' 
-#' rothc_rotation: crop table
+#' rothc_rotation: crop table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_crops}
 #' Includes the columns: 
 #' * B_LU_START (start of crop rotation),
 #' * B_LU_END (end of crop rotation),
@@ -49,13 +49,16 @@
 #' * M_IRRIGATION (boolean) whether the crop is irrigated.
 #' * M_RENEWAL (boolean) whether the grassland is renewed (only applicable for grassland)
 #'
-#' rothc_parms: simulation parameters
-#' Table with possible parameters to adapt the calculations. May include the columns initialize, c_fractions, dec_rates, simyears and unit.
-#' * initialize: scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
-#' * c_fractions: Distribution over the different C pools.
-#' * dec_rates: Decomposition rates of the different pools
-#' * simyears: Duration of simulation (years), default is 50
-#' * unit: Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
+#' rothc_parms: parameters to adapt calculations (optional)
+#' May include the following columns:
+#' * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
+#' * c_fractions (list) Distribution over the different C pools. If not supplied, default RothC distribution is used
+#' * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
+#' * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
+#' * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
+#' * poutput (character) Resolution of data ouptut. Options: 'year', 'month'
+#' * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
+#' * end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
 #' 
 #' weather: Weather table. If no table is given, average Dutch conditions are used
 #' Includes the columns:
@@ -79,10 +82,10 @@ rc_sim <- function(soil_properties,
                    weather = NULL){
   
   # add visual bindings
-  code = value_min = value_max = a_depth = dens.sand = dens.clay = cf = bd = toc = A_CLAY_MI = A_C_OF= NULL
-  b_depth = var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
-  soc = dec_rates = simyears = c_fractions = method = poutput = unit = CDPM = CRPM = CBIO = CHUM = CIOM = bd =  . = NULL
-  B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
+  a_depth = toc = A_CLAY_MI = A_C_OF = B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
+  var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
+  soc = CDPM = CRPM = CBIO = CHUM = CIOM = . = NULL
+  
   
   # Check input data and create defaults when necessary
 
@@ -124,7 +127,6 @@ rc_sim <- function(soil_properties,
   # Define initialize
   initialize <- rothc_parms$initialize
   
-
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = 0, upper = 0.6, any.missing = FALSE, len = 1)
   checkmate::assert_numeric(B_DEPTH, lower = 0, upper = 0.3, any.missing = FALSE, len = 1)
@@ -135,10 +137,9 @@ rc_sim <- function(soil_properties,
   # rothC model parameters
 
   # prepare the RothC model inputs
-  # Define data of complete simulation period
+  # Define dates of complete simulation period
   dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
 
-  
   # create an internal crop rotation file
   if(!is.null(rothc_rotation)){
     dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
@@ -152,9 +153,7 @@ rc_sim <- function(soil_properties,
   } else {
     dt.org <- NULL
   }
-  
-   # Calculate simulation duration
-  simyears <- year(end_date) + month(end_date)/12  - (year(start_date) + month(start_date)/12)
+
 
   # make rate modifying factors input database
   dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)

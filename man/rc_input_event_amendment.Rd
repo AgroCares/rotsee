@@ -4,12 +4,14 @@
 \alias{rc_input_event_amendment}
 \title{Calculate the monthly timing of carbon inputs for different fertilizer strategies}
 \usage{
-rc_input_event_amendment(crops, amendment = NULL)
+rc_input_event_amendment(crops, amendment = NULL, dt.time)
 }
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, year and potential Carbon inputs.}
 
 \item{amendment}{(data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.}
+
+\item{dt.time}{(data.table) Table containing all combinations of months and years in the simulation period}
 }
 \description{
 This function calculates the timing of carbon inputs (kg C per ha) based on type of organic matter amendments and land use.

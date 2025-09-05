@@ -11,7 +11,7 @@ rc_ode(time, y, parms)
 
 \item{y}{state variables to run RothC}
 
-\item{parms}{(list) parameters to run RothC, includes rate modifying functions and constants R1, abc, and d}
+\item{parms}{(list) parameters to run RothC, includes rate modifying functions and constants R1 and abc}
 }
 \description{
 Set of differential equations to calculate the evolution of Soil Organic Carbon stocks using the RothC model.
