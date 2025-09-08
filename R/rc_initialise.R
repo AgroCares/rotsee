@@ -5,7 +5,8 @@
 #' @param B_LU_BRP (numeric) value of the BRP crop code
 #' @param A_SOM_LOI (numeric) value for the soil organic matter content of the soil
 #' @param A_CLAY_MI (numeric) value for the clay content of the soil
-#' @param soil (data.table) Data table containing information on soil properties. See details for information.
+#' @param dt.soc (data.table) Data table containing information on soil properties. See details for information.
+#' @param rothc.parms (list) List with relevant RothC parameters. See details for more information
 #' @param type (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #' @import data.table
@@ -20,23 +21,37 @@
 #' Soil: data table on soil properties.
 #' Contains the following columns:
 #' * toc (numeric) total organic carbon content (kg C/ha)
-#' * bd (numeric) soil bulk density 
+#' * bd (numeric) soil bulk density (g/cm3)
+#' * A_SOM_LOI (numeric) organic matter content (\%)
+#' 
+#' rothc.parms: list with RothC parameters.
+#' Contains the following columns:
+#' * k1 (numeric) decomposition rate of the DPM pool
+#' * k2 (numeric) decomposition rate of the RPM pool
+#' * k3 (numeric) decomposition rate of the BIO pool
+#' * k4 (numeric) decomposition rate of the hum pool
+#' * abc (function) function to calculate rate modifying factors as function of time
+#' * R1 (numeric) Correction factor for soil structure
 #' 
 #' Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
 #' spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 #' Otherwise one of the other two is fine.
 #'
 #' @export
-rc_initialise <- function(crops = NULL,amendment = NULL,
-                          B_LU_BRP = NULL,A_SOM_LOI,A_CLAY_MI,
-                          soil,
+rc_initialise <- function(crops = NULL,
+                          amendment = NULL,
+                          B_LU_BRP = NULL,
+                          A_SOM_LOI,
+                          A_CLAY_MI,
+                          dt.soc,
+                          rothc.parms,
                           type ='spinup_analytical_bodemcoolstof'){
   
   # add visual bindings
   . = CIOM = CDPM = CRPM = CBIO = NULL
   B_LU_EOM = B_LU_EOM_RESIDUE = M_CROPRESIDUE = B_LU_HC = P_DOSE = P_OM = P_HC = NULL
   M_GREEN_TIMING = fr_dpm_rpm = toc = B_DEPTH = time = var = cf_abc = NULL
-  ciom.ini = biohum.ini = cbio.ini = chum.ini = NULL
+  ciom.ini = biohum.ini = cbio.ini = chum.ini = bd = NULL
     
   # Prepare input for scenario Business As Usual
   if(is.null(crops) | is.null(amendment)){
@@ -50,13 +65,21 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
   if(is.null(crops)){rotation <-  scen.inp$rotation} else {rotation <- crops}
   if(is.null(amendment)){amendment <- scen.inp$amendment} else {amendment <- amendment}
 
+  # Define rothc parms
+  k1 <- rothc.parms$k1
+  k2 <- rothc.parms$k2
+  k3 <- rothc.parms$k3
+  k4 <- rothc.parms$k4
+  
+  abs <- rothc.parms$abc
+  
   # initialise options
   
   # do a simulation for 150 years to estimate the C fractions assuming system is in equilibrium
   if(type =='spinup_simulation'){
     
     # Set model parameters
-    parms <- list(simyears = 150,unit = 'psomperfraction', initialize = TRUE)
+    parms <- list(simyears = 150,unit = 'psomperfraction', initialize = FALSE)
     
     # Run initialization run for 150 years
     this.result <- rc_sim(A_SOM_LOI = A_SOM_LOI,
@@ -100,9 +123,6 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
     # what is length of the crop rotation in years
     isimyears <- max(rotation$year)
     
-    # make rate modifying factors input function
-    dt.rmf <- rc_input_rmf(dt = rotation,B_LU_BRP = NULL,A_CLAY_MI = A_CLAY_MI, 
-                           B_DEPTH = 0.3,simyears = isimyears, cf_yield = 1)
     
     # ratio CO2 / (BIO+HUM)
     x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * A_CLAY_MI))
@@ -111,8 +131,8 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
     B = 0.46/(x + 1)
     H = 0.54/(x + 1)
     
-    # rates of the five pools, DPM, RPM, BIO, HUM and IOM
-    ks <- c(10, 0.3, 0.66, 0.02, 0)
+    # rates of the five pools, DPM, RPM, BIO, HUM and IOM 
+    ks <- c(k1, k2, k3, k4, 0)
     
     # make C flow matrix
     A = diag(-ks)
@@ -120,7 +140,7 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
     A[4, ] = A[4, ] + H * ks
     
     # averaged rate modifying factor over the crop rotation 
-    xi <- mean(dt.rmf$abc(1:(12*isimyears)/12))
+    xi <- mean(abc(1:(12*isimyears)/12))
     
     # rho is fraction plant material as DPM
     rho <- DR_crop / (1 + DR_crop)
@@ -179,14 +199,10 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
     isimyears <- max(rotation$year)
     
     # use EVENT object to calculate all C inputs over time 
+    # Dubbel!!!!!! Aanpassen dat rothc.event ingeladen kan worden en dan dates zetten naar max(rotation$year)
     rothc.event <- rc_input_events(crops = rotation,amendment = amendment,
                                    A_CLAY_MI = A_CLAY_MI,simyears = isimyears)
     
-    # make rate modifying factors input function
-    dt.rmf <- rc_input_rmf(dt = rotation,B_LU_BRP = NULL,A_CLAY_MI = A_CLAY_MI, 
-                           B_DEPTH = 0.3,simyears = isimyears, cf_yield = 1)
-    
-
     # calculate total organic carbon (ton C / ha)
     dt.soc[,toc := toc * 1000]
     
@@ -194,11 +210,8 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
     timecor = 1
     
     # set rate modifying parameters
-    abc <- dt.rmf$abc
-    
-    # set default decomposition rates
-    k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
-    
+    abc <- rothc.parms$abc
+
     # CDPM pool (ton C / ha)
     cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]
     cdpm.ini[,cf_abc := abc(time)]

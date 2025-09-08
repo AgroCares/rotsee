@@ -176,8 +176,8 @@ rc_sim <- function(A_SOM_LOI,
     dt.soc[,c(cols) := as.list(rc_initialise(crops = rothc_rotation, 
                                              amendment = rothc_amendment,
                                              B_LU_BRP = NULL,A_SOM_LOI,A_CLAY_MI,
-                                             soil = dt.soc,
-                                             dec_rates = rothc_parms$dec_rates,
+                                             dt.soc = dt.soc,
+                                             rothc.parms = rothc.parms,
                                              type = initialize))]
     
     # Set the intial C pools (kg C / ha)
