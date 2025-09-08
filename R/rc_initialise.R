@@ -7,6 +7,7 @@
 #' @param A_CLAY_MI (numeric) value for the clay content of the soil
 #' @param dt.soc (data.table) Data table containing information on soil properties. See details for information.
 #' @param rothc.parms (list) List with relevant RothC parameters. See details for more information
+#' @param rothc.events (data.table) List with events of C inputs. See details for more information
 #' @param type (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #' @import data.table
@@ -33,6 +34,13 @@
 #' * abc (function) function to calculate rate modifying factors as function of time
 #' * R1 (numeric) Correction factor for soil structure
 #' 
+#' rothc.events: data table with C input events
+#' Contains the following columns:
+#' * time (numeric) time within the simulation run, where 1 equals the first year
+#' * var (character) C pool under consideration, options being 'CDPM', 'CRPM', and 'CHUM'.
+#' * method (character) Method of considering listed value, default is add.
+#' * value (numeric) carbon amount added (kg C/ha)
+#' 
 #' Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
 #' spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 #' Otherwise one of the other two is fine.
@@ -45,13 +53,14 @@ rc_initialise <- function(crops = NULL,
                           A_CLAY_MI,
                           dt.soc,
                           rothc.parms,
+                          rothc.events,
                           type ='spinup_analytical_bodemcoolstof'){
   
   # add visual bindings
-  . = CIOM = CDPM = CRPM = CBIO = NULL
-  B_LU_EOM = B_LU_EOM_RESIDUE = M_CROPRESIDUE = B_LU_HC = P_DOSE = P_OM = P_HC = NULL
-  M_GREEN_TIMING = fr_dpm_rpm = toc = B_DEPTH = time = var = cf_abc = NULL
-  ciom.ini = biohum.ini = cbio.ini = chum.ini = bd = NULL
+  . = CIOM = CDPM = CRPM = CBIO = B_LU_EOM = M_CROPRESIDUE = B_LU_HC = chum.ini = NULL
+  P_DOSE = P_OM = M_GREEN_TIMING = fr_dpm_rpm = P_HC = B_LU_EOM_RESIDUE = NULL
+  abc = bd = time = toc = var = cf_abc = ciom.ini = biohum.ini = cbio.ini = NULL
+  
     
   # Prepare input for scenario Business As Usual
   if(is.null(crops) | is.null(amendment)){
@@ -65,7 +74,7 @@ rc_initialise <- function(crops = NULL,
   if(is.null(crops)){rotation <-  scen.inp$rotation} else {rotation <- crops}
   if(is.null(amendment)){amendment <- scen.inp$amendment} else {amendment <- amendment}
 
-  # Define rothc parms
+  # Define rothc parameters
   k1 <- rothc.parms$k1
   k2 <- rothc.parms$k2
   k3 <- rothc.parms$k3
@@ -98,7 +107,7 @@ rc_initialise <- function(crops = NULL,
     
   }
   
-  # calculate initial carbon pools at equilibrium using analytical solution (Heuvelink)
+  # calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
   if(type=='spinup_analytical_heuvelink'){
     
     # averaged total C input (kg C/ha/year) from crop, crop residues, catch crops and amendments
@@ -122,7 +131,6 @@ rc_initialise <- function(crops = NULL,
       
     # what is length of the crop rotation in years
     isimyears <- max(rotation$year)
-    
     
     # ratio CO2 / (BIO+HUM)
     x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * A_CLAY_MI))
@@ -190,7 +198,7 @@ rc_initialise <- function(crops = NULL,
     
   }
   
-  # calulate initial C pools at equilibrium using analytical solution (as implemented in BodemCoolstof tool)
+  # calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
   if(type=='spinup_analytical_bodemcoolstof'){
   
     #B_LU_BRP <- c(2951,256,233,1932,2951,256,233)
@@ -200,17 +208,13 @@ rc_initialise <- function(crops = NULL,
     
     # use EVENT object to calculate all C inputs over time 
     # Dubbel!!!!!! Aanpassen dat rothc.event ingeladen kan worden en dan dates zetten naar max(rotation$year)
-    rothc.event <- rc_input_events(crops = rotation,amendment = amendment,
-                                   A_CLAY_MI = A_CLAY_MI,simyears = isimyears)
+    rothc.event <- rothc.event[, time <= isimyears]
     
     # calculate total organic carbon (ton C / ha)
     dt.soc[,toc := toc * 1000]
     
     # time correction (is 12 in documentation Chantals' study, not clear why, probably due to fixed time step calculation)
     timecor = 1
-    
-    # set rate modifying parameters
-    abc <- rothc.parms$abc
 
     # CDPM pool (ton C / ha)
     cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]

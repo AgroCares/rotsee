@@ -10,6 +10,9 @@ rc_initialise(
   B_LU_BRP = NULL,
   A_SOM_LOI,
   A_CLAY_MI,
+  dt.soc,
+  rothc.parms,
+  rothc.events,
   type = "spinup_analytical_bodemcoolstof"
 )
 }
@@ -24,6 +27,12 @@ rc_initialise(
 
 \item{A_CLAY_MI}{(numeric) value for the clay content of the soil}
 
+\item{dt.soc}{(data.table) Data table containing information on soil properties. See details for information.}
+
+\item{rothc.parms}{(list) List with relevant RothC parameters. See details for more information}
+
+\item{rothc.events}{(data.table) List with events of C inputs. See details for more information}
+
 \item{type}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
 }
 \description{
@@ -34,4 +43,30 @@ The crop table used as input for carbon modelling requires at minimum data on ef
 To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
 if crops is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 The same is done for the amendment data.table. This table requires as input:"P_NAME", "year","month","P_OM","P_HC","p_p2o5", and "P_DOSE"
+
+Soil: data table on soil properties.
+Contains the following columns:
+* toc (numeric) total organic carbon content (kg C/ha)
+* bd (numeric) soil bulk density (g/cm3)
+* A_SOM_LOI (numeric) organic matter content (\%)
+
+rothc.parms: list with RothC parameters.
+Contains the following columns:
+* k1 (numeric) decomposition rate of the DPM pool
+* k2 (numeric) decomposition rate of the RPM pool
+* k3 (numeric) decomposition rate of the BIO pool
+* k4 (numeric) decomposition rate of the hum pool
+* abc (function) function to calculate rate modifying factors as function of time
+* R1 (numeric) Correction factor for soil structure
+
+rothc.events: data table with C input events
+Contains the following columns:
+* time (numeric) time within the simulation run, where 1 equals the first year
+* var (character) C pool under consideration, options being 'CDPM', 'CRPM', and 'CHUM'.
+* method (character) Method of considering listed value, default is add.
+* value (numeric) carbon amount added (kg C/ha)
+
+Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
+spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
+Otherwise one of the other two is fine.
 }

@@ -1,3 +1,12 @@
+# rotsee v0.0.5 2025-09-08
+
+## added
+* Multiple initialisation options to rc_initialise
+* link between rc_sim and rc_initialise
+
+## changed
+* Input checks on multiple functions
+
 # rotsee v0.0.1 2025-07-31
 
 ## Added

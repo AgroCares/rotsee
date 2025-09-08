@@ -53,6 +53,10 @@ The crop table might include the measures M_GREEN, M_GREEN_PROPERLY, M_CROPRESID
 * M_IRRIGATION (boolean) gives whether the crop is irrigated.
 * M_RENEWAL (boolean) gives whether the grassland is renewed (only applicable for grassland)
 
-The simulation of C via the RothC model can be adapted by the following parameters: initialize, c_fractions, dec_rates, simyears and unit.
-These have to be in a list called 'rothc_parms'.
+rothc_parms: list containing information on adapting the RothC simulation. Contains the following column names:
+* initialize (character) method of initializing C distributions. Options: FALSE, spinup_simulation, spinup_simulation_bodemcoolstof, spinup_analytical_Heuvelink. Defaul is spinup_simulation_bodemcoolstof.
+* c_fractions (list)
+* dec_rates (list)
+* simyears (numeric)
+* unit (character)
 }
