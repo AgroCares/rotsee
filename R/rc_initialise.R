@@ -5,6 +5,7 @@
 #' @param B_LU_BRP (numeric) value of the BRP crop code
 #' @param A_SOM_LOI (numeric) value for the soil organic matter content of the soil
 #' @param A_CLAY_MI (numeric) value for the clay content of the soil
+#' @param soil (data.table) Data table containing information on soil properties. See details for information.
 #' @param type (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #' @import data.table
@@ -15,10 +16,20 @@
 #' To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
 #' if crops is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 #' The same is done for the amendment data.table. This table requires as input:"P_NAME", "year","month","P_OM","P_HC","p_p2o5", and "P_DOSE"
+#' 
+#' Soil: data table on soil properties.
+#' Contains the following columns:
+#' * toc (numeric) total organic carbon content (kg C/ha)
+#' * bd (numeric) soil bulk density 
+#' 
+#' Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
+#' spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
+#' Otherwise one of the other two is fine.
 #'
 #' @export
 rc_initialise <- function(crops = NULL,amendment = NULL,
                           B_LU_BRP = NULL,A_SOM_LOI,A_CLAY_MI,
+                          soil,
                           type ='spinup_analytical_bodemcoolstof'){
   
   # add visual bindings
@@ -119,12 +130,6 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
     #tau <- 0.49 ; nu <- 0.49
     tau <- (1 - 0.02) * DR_amendment / (1 + DR_amendment)
     nu <- (1 - 0.02) * 1 / (1 + DR_amendment)
-
-    # calculate soil texture dependent density (estimated with Dutch pedotransferfunction)
-    dens.sand <- (1 / (0.02525 * A_SOM_LOI + 0.6541))
-    dens.clay <-  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206)
-    cf <- pmin(1, A_CLAY_MI/25)
-    bd <- cf * dens.clay + (1-cf) * dens.sand
     
     # total SOC stock (ton C / ha) from bulk density 
     CTOT <- A_SOM_LOI * 100 * 100 * 0.3 * bd * 0.01 * 0.5 
@@ -181,21 +186,9 @@ rc_initialise <- function(crops = NULL,amendment = NULL,
     dt.rmf <- rc_input_rmf(dt = rotation,B_LU_BRP = NULL,A_CLAY_MI = A_CLAY_MI, 
                            B_DEPTH = 0.3,simyears = isimyears, cf_yield = 1)
     
-    # make internal data.table
-    dt.soc <- data.table(A_SOM_LOI = A_SOM_LOI,A_CLAY_MI = A_CLAY_MI,B_DEPTH = 0.3)
-    
-    # calculate soil texture dependent density
-    dt.soc[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541))]
-    dt.soc[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206)]
-    
-    # fraction clay correction
-    dt.soc[, cf := pmin(1, A_CLAY_MI/25)]
-    
-    # clay dependent density
-    dt.soc[, bd := cf * dens.clay + (1-cf) * dens.sand]
-    
+
     # calculate total organic carbon (ton C / ha)
-    dt.soc[,toc := A_SOM_LOI * 0.5 * bd * B_DEPTH * 100 * 100 / 100]
+    dt.soc[,toc := toc * 1000]
     
     # time correction (is 12 in documentation Chantals' study, not clear why, probably due to fixed time step calculation)
     timecor = 1
