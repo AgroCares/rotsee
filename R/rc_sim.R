@@ -27,8 +27,12 @@
 #' * M_IRRIGATION (boolean) gives whether the crop is irrigated.
 #' * M_RENEWAL (boolean) gives whether the grassland is renewed (only applicable for grassland)
 #'
-#' The simulation of C via the RothC model can be adapted by the following parameters: initialize, c_fractions, dec_rates, simyears and unit.
-#' These have to be in a list called 'rothc_parms'.
+#' rothc_parms: list containing information on adapting the RothC simulation. Contains the following column names:
+#' * initialize (character) method of initializing C distributions. Options: FALSE, spinup_simulation, spinup_simulation_bodemcoolstof, spinup_analytical_Heuvelink. Defaul is spinup_simulation_bodemcoolstof.
+#' * c_fractions (list)
+#' * dec_rates (list)
+#' * simyears (numeric)
+#' * unit (character)
 #'
 #' @import deSolve
 #'
@@ -77,7 +81,7 @@ rc_sim <- function(A_SOM_LOI,
   if(is.null(rothc_parms$method)){method <- 'adams'} else {method <- 'adams'}
   
   # add check on initialise
-  if(is.null(rothc_parms$initialize)){initialize <- TRUE} else {initialize <- rothc_parms$initialize}
+  if(is.null(rothc_parms$initialize)){initialize <- 'spinup_analytical_bodemcoolstof'} else {initialize <- rothc_parms$initialize}
   
   # add checks on simulation years
   if(is.null(rothc_parms$simyears)){simyears <- 50} else {simyears <- rothc_parms$simyears}
@@ -151,27 +155,8 @@ rc_sim <- function(A_SOM_LOI,
   # calculate total organic carbon (kg C / ha)
   dt.soc[,toc := A_SOM_LOI * 0.5 * bd * b_depth * 100 * 100 / 100]
   
-  
   # initialize the RothC pools (kg C / ha)
-  if(initialize == TRUE){ 
-    
-     # the new fractions to be calculated
-     cols <- c('fr_IOM','fr_DPM','fr_RPM','fr_BIO')
-     
-     # derive the initial distribution of C pools (original data.tables are used as input)
-     dt.soc[,c(cols) := as.list(rc_initialise(crops = rothc_rotation, 
-                                              amendment = rothc_amendment,
-                                              B_LU_BRP = NULL,A_SOM_LOI,A_CLAY_MI,
-                                              type ='spinup_analytical_bodemcoolstof'))]
-     
-    # Set the intial C pools (kg C / ha)
-    dt.soc[,CIOM0 := toc * fr_IOM]
-    dt.soc[,CDPM0 := toc * fr_DPM]
-    dt.soc[,CRPM0 := toc * fr_RPM]
-    dt.soc[,CBIO0 := toc * fr_BIO]
-    dt.soc[,CHUM0 := toc * (1 - fr_IOM - fr_DPM - fr_RPM-fr_BIO)]
-    
-  } else {
+  if(initialize == FALSE){ 
     
     # Calculate carbon pools based on default distribution (kg C / ha)
     dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
@@ -179,6 +164,28 @@ rc_sim <- function(A_SOM_LOI,
     dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
     dt.soc[,CBIO0 := c_fractions$fr_BIO * (toc-CIOM0)]
     dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
+    
+    
+    
+    
+  } else {
+    # the new fractions to be calculated
+    cols <- c('fr_IOM','fr_DPM','fr_RPM','fr_BIO')
+    
+    # derive the initial distribution of C pools (original data.tables are used as input)
+    dt.soc[,c(cols) := as.list(rc_initialise(crops = rothc_rotation, 
+                                             amendment = rothc_amendment,
+                                             B_LU_BRP = NULL,A_SOM_LOI,A_CLAY_MI,
+                                             soil = dt.soc,
+                                             dec_rates = rothc_parms$dec_rates,
+                                             type = initialize))]
+    
+    # Set the intial C pools (kg C / ha)
+    dt.soc[,CIOM0 := toc * fr_IOM]
+    dt.soc[,CDPM0 := toc * fr_DPM]
+    dt.soc[,CRPM0 := toc * fr_RPM]
+    dt.soc[,CBIO0 := toc * fr_BIO]
+    dt.soc[,CHUM0 := toc * (1 - fr_IOM - fr_DPM - fr_RPM-fr_BIO)]
     
   }
   
