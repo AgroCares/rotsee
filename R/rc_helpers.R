@@ -254,13 +254,8 @@ rc_check_inputs <- function(soil_properties,
   # Check crop properties if supplied
   if(!is.null(rothc_rotation)){
     checkmate::assert_data_table(rothc_rotation, null.ok = TRUE, min.rows = 1)
-    
-    allowed <- c("year","month","B_LU","B_LU_NAME","B_LU_HC","P_C_OF","B_C_OF_INPUT",
-                 "B_LU_YIELD","B_LU_DM","B_LU_HI","B_LU_HI_RES","B_LU_RS_FR",
-                 "M_GREEN_TIMING","M_CROPRESIDUE","M_IRRIGATION","M_RENEWAL")
-    checkmate::assert_subset(names(rothc_rotation), choices = allowed, empty.ok = FALSE)
-    
-    req <- c("year","B_LU","B_LU_HC","B_C_OF_INPUT")
+
+    req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
     checkmate::assert_true(all(req %in% names(rothc_rotation)))
     
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = FALSE)
@@ -270,31 +265,31 @@ rc_check_inputs <- function(soil_properties,
   checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
     }
-  
+
   # Check amendment properties if supplied
   if(!is.null(rothc_amendment)){
     checkmate::assert_data_table(rothc_amendment, null.ok = TRUE, min.rows = 1)
     
-    allowed <- c("P_ID","P_NAME","P_C_OF_INPUT","P_DOSE","P_C_OF","P_HC","P_DATE_FERTILIZATION","month")
-    checkmate::assert_subset(names(rothc_amendment), choices = allowed, empty.ok = FALSE)
-    
-    checkmate::assert_true("P_DATE_FERTILIZATION" %in% names(rothc_amendment))
-    if ("P_NAME" %in% names(rothc_amendment))
+    req <- c("P_HC","P_DATE_FERTILIZATION")
+    checkmate::assert_true(all(req%in% names(rothc_amendment)))
     checkmate::assert_date(as.Date(rothc_amendment$P_DATE_FERTILIZATION), any.missing = FALSE)
-      checkmate::assert_character(rothc_amendment$P_NAME, any.missing = TRUE)
+    checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = FALSE)
+    checkmate::assert(
+      "P_C_OF_INPUT" %in% names(rothc_amendment) || all(c("P_DOSE","P_C_OF") %in% names(rothc_amendment))
+    )
+    
+    if ("P_NAME" %in% names(rothc_amendment))
+          checkmate::assert_character(rothc_amendment$P_NAME, any.missing = TRUE)
     if ("P_DOSE" %in% names(rothc_amendment))
        checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = FALSE)
     if ("P_C_OF" %in% names(rothc_amendment))
       checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = FALSE)
     if ("P_C_OF_INPUT" %in% names(rothc_amendment))
       checkmate::assert_numeric(rothc_amendment$P_C_OF_INPUT, lower = 0, upper = 250000, any.missing = FALSE)
-    checkmate::assert_true("P_HC" %in% names(rothc_amendment))
-    checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = FALSE)
     
   }
-    checkmate::assert_date(as.Date(rothc_amendment$P_DATE_FERTILIZATION))
 }
-}
+
 
 #' Function to calculate the dry soil bulk density based on Dutch pedotransfer functions
 #'

@@ -39,9 +39,10 @@ rc_multicore <- function(ID,
   # Check inputs
 # check each ID is supplied for each data point
   
-
+#ensure soil properties only contains 1 value per id
+  this.soil[, lapply(.SD, mean, , by = ID, na.rm = T)]
   
-  # RothC
+  # Set RothC run parameters
   simulation_time <- 50L
   
   # multithreading
@@ -115,15 +116,15 @@ rc_multicore <- function(ID,
 #'
 #' @export
 rc_parallel <- function(this.xs,
-                        soil_properties,
-                        rotation,
-                        amendment,
-                        A_DEPTH,
-                        B_DEPTH,
-                        parms,
-                        weather,
+                        soil_properties = NA_real_,
+                        rotation = NA_real_,
+                        amendment = NA_real_,
+                        A_DEPTH = 0.3,
+                        B_DEPTH = 0.3,
+                        parms = NA_real_,
+                        weather = NA_real_,
                         p,
-                        final){
+                        final = NA_real_){
   
   
   # set visual binding
@@ -131,28 +132,22 @@ rc_parallel <- function(this.xs,
   
   # get simulation data
    
-  this.rotation <- rotation[,xs == this.xs]
-  this.amendment <- amendment[,xs == this.xs]
-  browser()
-  this.soil <- soil_properties[, xs == this.xs]
-  browser()
+  this.rotation <- rotation[xs == this.xs]
+  this.amendment <- amendment[xs == this.xs]
   
-  mc <- soil_properties$mc[1]
-  
+  # set seed
+  mc <- 111
   # do RothC simulation
   result <- tryCatch({
     
     # set seed
     set.seed(mc)
-    
-    # Ensure soil only contains one data point
-    soil_properties[, lapply(.SD, mean, na.rm = T)]
-    
+ 
     # run simulations for the desire scenarios
     sim <- list(); count <- 0
     
     # Run the RothC model
-    out <- rc_sim(soil_properties = this.soil,
+    out <- rc_sim(soil_properties = soil_properties,
                   A_DEPTH = 0.3,
                   B_DEPTH = 0.3,
                   cf_yield = 1,
@@ -162,27 +157,24 @@ rc_parallel <- function(this.xs,
                   rothc_parms = parms)
     
     out[,xs := this.xs]
-    
-    # update names
-    setnames(dt.sim,old = scen,new = paste0('A_SOM_LOI_',scen),skip_absent=TRUE)
-    
+
     # if final is true select only last prediction
     if(final){out <- out[year > max(year) - 10,lapply(.SD,mean)]}
-    
+
     # show progress
     if (! is.null(p)) {if (this.xs %% 10 == 0) p(sprintf('id = %g', this.xs))}
     
     result <- copy(out)
-    
+ 
     return(result)
-    
+   
   }, error = function (e) {
     
     
     if(final){
-      result <-data.table(year = simyears,A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
+      result <-data.table(year = year(parms$end_date), A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
     } else{
-      result <- data.table(year = 1:simyears,A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
+      result <- data.table(A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
     }
     result$error <- as.character(e)
     
@@ -190,7 +182,7 @@ rc_parallel <- function(this.xs,
     
     return(result)
   })
-  
+
   
   return(result)
   

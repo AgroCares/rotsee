@@ -24,7 +24,8 @@ rc_input_crop <- function(dt, cf_yield = 1){
   
   # check crop table
   checkmate::assert_data_table(dt,null.ok = TRUE)
-  checkmate::assert_subset(colnames(dt),choices = c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC","B_C_OF_INPUT","B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION"), empty.ok = TRUE)
+  req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
+  checkmate::assert_true(all(req %in% names(dt)))
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   
   # create a copy of the crop table
