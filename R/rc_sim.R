@@ -295,9 +295,9 @@ rc_sim <- function(soil_properties,
     # Correct A_SOM_LOI for sampling depth
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI / (1 - 0.19 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, A_SOM_LOI := A_SOM_LOI / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
-    
+   
     # select output variables
-    out <- rothc.soc[,]
+    out <- rothc.soc[,.(time, A_SOM_LOI, soc)]
   } else if (unit == 'psoc') {
     # Output in organic carbon content [g C/kg]
     
@@ -318,7 +318,7 @@ rc_sim <- function(soil_properties,
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, psoc := psoc / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     
     # select output variables
-    out <- rothc.soc[,]
+    out <- rothc.soc[,.(time, A_SOM_LOI, soc)]
     
   } else if (unit == 'psomperfraction'){
     # Output in %SOM per rothc pool
@@ -359,7 +359,7 @@ rc_sim <- function(soil_properties,
 
   # update year
   # out[,year := year + rotation[1,year] - 1]
-  
+
   # return output
   return(out)
 }
