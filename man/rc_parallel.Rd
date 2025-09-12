@@ -4,16 +4,35 @@
 \alias{rc_parallel}
 \title{RothC parallel function}
 \usage{
-rc_parallel(this.xs, dt.c, scen, simyears = 50, p = NULL, final = TRUE)
+rc_parallel(
+  this.xs,
+  soil_properties,
+  rotation = NA_real_,
+  amendment = NA_real_,
+  A_DEPTH = 0.3,
+  B_DEPTH = 0.3,
+  parms = NA_real_,
+  weather = NA_real_,
+  p,
+  final = FALSE
+)
 }
 \arguments{
 \item{this.xs}{(numeric) selected id for a single field}
 
-\item{dt.c}{(data.table) set will all fields}
+\item{soil_properties}{(data.table) Data table with soil properties. For inputs, see \link{rc_sim} with additional column 'xs' as identifier for separate scenario's}
 
-\item{scen}{(character) scenarios to be simulated. Options include BAU, BAUIMPR, CLT and ALL.}
+\item{rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. For inputs, see \link{rc_sim} with additional column 'xs' as identifier for separate scenario's}
 
-\item{simyears}{(integer) value for the amount of years to simulate, default is 50 years}
+\item{amendment}{(data.table) Table with amendment input details. For inputs, see \link{rc_sim}}
+
+\item{A_DEPTH}{(numeric) Depth for which soil sample is taken (m). Default set to 0.3.}
+
+\item{B_DEPTH}{(numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.}
+
+\item{parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For inputs, see \link{rc_sim}.}
+
+\item{weather}{(data.table) Table with weather information. For inputs, see \link{rc_sim}.}
 
 \item{p}{(progress bar) progress bar}
 

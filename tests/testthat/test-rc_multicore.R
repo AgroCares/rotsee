@@ -51,13 +51,13 @@ test_that("rc_multicore runs with normal inputs", {
                 end_date = "2040-10-01")
   
   # Run with all correct values
-  rc_multicore(soil_properties = soil_properties,
+  expect_no_error(rc_multicore(soil_properties = soil_properties,
                A_DEPTH = A_DEPTH,
                B_DEPTH = B_DEPTH,
                parms = parms,
                weather = weather,
                rotation = rothc_rotation,
-               amendment = rothc_amendment)
+               amendment = rothc_amendment))
 })
 
 

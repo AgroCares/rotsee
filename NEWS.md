@@ -1,3 +1,14 @@
+#rotsee v0.0.6 2025-09-17
+## added
+* unit tests for rc_multicore and rc_parallel
+
+## changed
+* rc_multicore and rc_parallel for clearer workflow of multicore parallel calculations
+* Required inputs for rc_multicore to be similar to rc_sim
+
+## removed
+* rc_shi_field, with core functions incorporated into rc_parallel
+
 # rotsee v0.0.4 2025-09-05
 ## added
 * B_LU_START and B_LU_END as input parameters in rothc_rotation

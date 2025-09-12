@@ -5,33 +5,33 @@
 \title{Multicore RothC simulation}
 \usage{
 rc_multicore(
-  ID,
-  B_LU_BRP,
-  B_GWL_GLG,
-  A_SOM_LOI,
-  A_CLAY_MI,
-  scen,
-  simyears = 50,
+  soil_properties,
+  rotation = NA_real_,
+  amendment = NA_real_,
+  A_DEPTH = 0.3,
+  B_DEPTH = 0.3,
+  parms = NA_real_,
+  weather = NA_real_,
   quiet = TRUE
 )
 }
 \arguments{
-\item{ID}{(character) A field id}
+\item{soil_properties}{(data.table) Data table with soil properties. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.}
 
-\item{B_LU_BRP}{(numeric) value of the BRP crop code}
+\item{rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.}
 
-\item{B_GWL_GLG}{(numeric) The lowest groundwater level averaged over the most dry periods in 8 years in cm below ground level}
+\item{amendment}{(data.table) Table with amendment input details. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.}
 
-\item{A_SOM_LOI}{(numeric) value for the soil organic matter content of the soil}
+\item{A_DEPTH}{(numeric) Depth for which soil sample is taken (m). Default set to 0.3.}
 
-\item{A_CLAY_MI}{(numeric) value for the clay content of the soil}
+\item{B_DEPTH}{(numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.}
 
-\item{scen}{(character) scenarios to be simulated. Options include BAU, BAUIMPR,CLT and ALL.}
+\item{parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For inputs, see \link{rc_sim}.}
 
-\item{simyears}{(integer) value for the amount of years to simulate, default is 50 years}
+\item{weather}{(data.table) Table with weather information. For inputs, see \link{rc_sim}.}
 
 \item{quiet}{(boolean) showing progress bar for calculation RothC C-saturation for each field}
 }
 \description{
-Function to evaluate the carbon saturation via RothC simulation on multiple fields using multicore processing
+Function to perform parallel RothC calculations via \link{rc_sim} using multicore processing.
 }

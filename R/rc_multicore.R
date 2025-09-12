@@ -1,14 +1,14 @@
 #' Multicore RothC simulation
 #' 
-#' Function to evaluate the carbon saturation via RothC simulation on multiple fields using multicore processing
+#' Function to perform parallel RothC calculations via \link{rc_sim} using multicore processing.
 #'
-#' @param soil_properties (data.table)
-#' @param rotation (data.table)
-#' @param amendment (data.table)
-#' @param A_DEPTH (numeric)
-#' @param B_DEPTH (numeric)
-#' @param parms (list)
-#' @param weather (data.table)
+#' @param soil_properties (data.table) Data table with soil properties. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.
+#' @param rotation (data.table) Table with crop rotation details and crop management actions that have been taken. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.
+#' @param amendment (data.table) Table with amendment input details. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.
+#' @param A_DEPTH (numeric) Depth for which soil sample is taken (m). Default set to 0.3.
+#' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
+#' @param parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For inputs, see \link{rc_sim}.
+#' @param weather (data.table) Table with weather information. For inputs, see \link{rc_sim}. 
 #' @param quiet (boolean) showing progress bar for calculation RothC C-saturation for each field
 #'
 #' @import data.table
@@ -21,22 +21,30 @@
 rc_multicore <- function(soil_properties,
                          rotation = NA_real_,
                          amendment = NA_real_,
-                         A_DEPTH,
-                         B_DEPTH,
+                         A_DEPTH = 0.3,
+                         B_DEPTH = 0.3,
                          parms = NA_real_,
                          weather = NA_real_,
                          quiet = TRUE){
   
   # add visual bindings
-
+ID = NULL
   # Check if relevant packes are installed
   if (system.file(package = 'future') == '') {stop('multicore processing requires future to be installed')}
   if (system.file(package = 'future.apply') == '') {stop('multicore processing requires the package future.apply to be installed')}
   if (system.file(package = 'parallelly') == '') {stop('multicore processing requires the package parallelly to be installed')}
-  
-  # Check inputs
-# check each ID is supplied for each data point
-  
+
+  # Check inputs (for input value checks, see rc_sim)
+checkmate::assert_data_table(soil_properties)
+checkmate::assert_true(length(soil_properties$ID) >= 1)
+if(!is.null(rotation)){
+checkmate::assert_data_table(rotation)
+  checkmate::assert_true(length(unique(rotation$ID)) == length(unique(soil_properties$ID)))
+}
+if(!is.null(amendment)){
+  checkmate::assert_data_table(amendment)
+  checkmate::assert_true(length(unique(amendment$ID)) == length(unique(amendment$ID)))
+}
 # Ensure soil properties only has one value
 
   
@@ -79,22 +87,16 @@ rc_multicore <- function(soil_properties,
   # close cluster
   future::plan(future::sequential)
   
-  # combine output
+  # combine outputs
   dt.res <- rbindlist(results, fill = TRUE)
 
-  # columns to select
- # mcols <- paste0('A_SOM_LOI_',scen)
-  
-  # merge with dt.c
-  dt.c <- merge(dt.c,
-                dt.res[,mget(c('xs',mcols))],
-                by='xs',all.x=TRUE)
-  
-  # retreive unique value per ID
-  dt.c <- dt.c[,lapply(.SD,mean),.SDcols = mcols,by=ID]
-  
-  # return
-  return(dt.c)
+  # add original ID to identify treatment type 
+  dt.res <- merge(dt.res,
+                  soil_properties[,mget(c('ID', 'xs'))],
+                  by = 'xs', all.x = TRUE)
+
+  # return results
+  return(dt.res)
 }
 
 
@@ -103,13 +105,13 @@ rc_multicore <- function(soil_properties,
 #' Function to run RothC parallel for a series of fields
 #' 
 #' @param this.xs (numeric) selected id for a single field
-#' @param soil_properties (data.table)
-#' @param rotation (data.table)
-#' @param amendment (data.table)
-#' @param A_DEPTH (numeric)
-#' @param B_DEPTH (numeric)
-#' @param parms (list)
-#' @param weather (data.table)
+#' @param soil_properties (data.table) Data table with soil properties. For inputs, see \link{rc_sim} with additional column 'xs' as identifier for separate scenario's
+#' @param rotation (data.table) Table with crop rotation details and crop management actions that have been taken. For inputs, see \link{rc_sim} with additional column 'xs' as identifier for separate scenario's
+#' @param amendment (data.table) Table with amendment input details. For inputs, see \link{rc_sim}
+#' @param A_DEPTH (numeric) Depth for which soil sample is taken (m). Default set to 0.3.
+#' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
+#' @param parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For inputs, see \link{rc_sim}.
+#' @param weather (data.table) Table with weather information. For inputs, see \link{rc_sim}.
 #' @param p (progress bar) progress bar
 #' @param final (boolean) option to select only the last year
 #'
@@ -127,7 +129,7 @@ rc_parallel <- function(this.xs,
   
   
   # set visual binding
- 
+ xs = NULL
   
   # get simulation data
    
@@ -137,6 +139,7 @@ rc_parallel <- function(this.xs,
   
   # set seed
   mc <- 111
+  
   # do RothC simulation
   result <- tryCatch({
     

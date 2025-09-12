@@ -17,7 +17,7 @@ rc_sim(
 )
 }
 \arguments{
-\item{soil_properties}{(list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)}
+\item{soil_properties}{(data.table) Data table with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)}
 
 \item{A_DEPTH}{(numeric) Depth for which soil sample is taken (m). Default set to 0.3.}
 
@@ -29,11 +29,11 @@ rc_sim(
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
-\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_HC, and P_C_OF. See details for desired format.}
+\item{rothc_amendment}{(data.table) Table with amendment input details. See details for desired format.}
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
-\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
+\item{weather}{(data.table) Table with weather information. For more information, see details.}
 }
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
@@ -43,7 +43,7 @@ This function simulates the fate of SOC given the impact of soil properties, wea
 The soil_properties table is required. 
 When no weather inputs are given, these are estimated from long-term average weather conditions in the Netherlands.
 
-soil_properties: soil properties table
+soil_properties: soil properties table.
 Includes the columns:
 * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
 * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
