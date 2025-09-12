@@ -53,7 +53,7 @@ test_that("rc_sim correctly checks input validity", {
                       end_date = "2040-10-01")
 
   # All correct
-  expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
+ expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                    weather = weather, rothc_parms = parms))
