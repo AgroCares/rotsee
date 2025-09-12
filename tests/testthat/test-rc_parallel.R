@@ -4,11 +4,13 @@ test_that("rc_parallel can handle wanted inputs", {
   
   this.xs <- 1
   
-  soil_properties <- list(
-    A_C_OF = 50,
-    B_C_ST03 = 210,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
+  soil_properties <- data.table(
+    ID = c('high', 'low', 'mid'),
+    xs = c(1,2,3),
+    A_C_OF = rep(50,3),
+    B_C_ST03 = rep(210,3),
+    A_CLAY_MI = rep(18,3),
+    A_DENSITY_SA = rep(1.4,3)
   )
   
   A_DEPTH = 0.3

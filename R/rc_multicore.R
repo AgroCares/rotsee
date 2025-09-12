@@ -2,7 +2,6 @@
 #' 
 #' Function to evaluate the carbon saturation via RothC simulation on multiple fields using multicore processing
 #'
-#' @param ID (character) A field id
 #' @param soil_properties (data.table)
 #' @param rotation (data.table)
 #' @param amendment (data.table)
@@ -19,14 +18,13 @@
 #' @import parallelly
 #'
 #' @export
-rc_multicore <- function(ID,
-                         soil_properties,
-                         rotation,
-                         amendment,
+rc_multicore <- function(soil_properties,
+                         rotation = NA_real_,
+                         amendment = NA_real_,
                          A_DEPTH,
                          B_DEPTH,
-                         parms,
-                         weather,
+                         parms = NA_real_,
+                         weather = NA_real_,
                          quiet = TRUE){
   
   # add visual bindings
@@ -39,29 +37,31 @@ rc_multicore <- function(ID,
   # Check inputs
 # check each ID is supplied for each data point
   
-#ensure soil properties only contains 1 value per id
-  this.soil[, lapply(.SD, mean, , by = ID, na.rm = T)]
+# Ensure soil properties only has one value
+
   
   # Set RothC run parameters
   simulation_time <- 50L
   
   # multithreading
   cm.versions <- c('CM4')
-  
-  # Run the simulations
-  future::plan(future::multisession, workers = parallelly::availableCores()-1)
-  
-  # add seed
-  soil_properties$mc <- 111
-  
+
   # add group
-  soil_properties[,xs := .GRP,by = ID]
   rotation[,xs := .GRP,by = ID]
   amendment[,xs := .GRP,by = ID]
-  
+  soil_properties[,xs := .GRP,by = ID]
+
+  # Run the simulations
+  future::plan(future::multisession, workers = parallelly::availableCores()-1)
+
+  # add group
+  rotation[,xs := .GRP,by = ID]
+  amendment[,xs := .GRP,by = ID]
+  soil_properties[,xs := .GRP,by = ID]
+
   # run RothC function
   progressr::with_progress({
-    xs <- sort(unique(soil_properties$xs))
+    xs <- sort(unique(rotation$xs))
     if(quiet){p = NULL} else {p <- progressr::progressor(along = xs)}
     
     results <- future.apply::future_lapply(X = xs,
@@ -75,15 +75,15 @@ rc_multicore <- function(ID,
                                            future.seed = TRUE,
                                            future.packages = c('rotsee'))
   })
-  
+
   # close cluster
   future::plan(future::sequential)
   
   # combine output
   dt.res <- rbindlist(results, fill = TRUE)
-  
+
   # columns to select
-  mcols <- paste0('A_SOM_LOI_',scen)
+ # mcols <- paste0('A_SOM_LOI_',scen)
   
   # merge with dt.c
   dt.c <- merge(dt.c,
@@ -102,7 +102,6 @@ rc_multicore <- function(ID,
 #' 
 #' Function to run RothC parallel for a series of fields
 #' 
-#' 
 #' @param this.xs (numeric) selected id for a single field
 #' @param soil_properties (data.table)
 #' @param rotation (data.table)
@@ -116,7 +115,7 @@ rc_multicore <- function(ID,
 #'
 #' @export
 rc_parallel <- function(this.xs,
-                        soil_properties = NA_real_,
+                        soil_properties,
                         rotation = NA_real_,
                         amendment = NA_real_,
                         A_DEPTH = 0.3,
@@ -124,7 +123,7 @@ rc_parallel <- function(this.xs,
                         parms = NA_real_,
                         weather = NA_real_,
                         p,
-                        final = NA_real_){
+                        final = FALSE){
   
   
   # set visual binding
@@ -134,6 +133,7 @@ rc_parallel <- function(this.xs,
    
   this.rotation <- rotation[xs == this.xs]
   this.amendment <- amendment[xs == this.xs]
+  this.soil <- soil_properties[xs == this.xs]
   
   # set seed
   mc <- 111
@@ -145,20 +145,21 @@ rc_parallel <- function(this.xs,
  
     # run simulations for the desire scenarios
     sim <- list(); count <- 0
-    
+
     # Run the RothC model
-    out <- rc_sim(soil_properties = soil_properties,
+    out <- rotsee::rc_sim(
+                  soil_properties = this.soil,
                   A_DEPTH = 0.3,
                   B_DEPTH = 0.3,
                   cf_yield = 1,
                   M_TILLAGE_SYSTEM = "CT",
-                  rothc_rotation = rotation,
-                  rothc_amendment = amendment,
+                  rothc_rotation = this.rotation,
+                  rothc_amendment = this.amendment,
                   rothc_parms = parms)
     
     out[,xs := this.xs]
 
-    # if final is true select only last prediction
+    # if final is true, calculate mean of last 10 years
     if(final){out <- out[year > max(year) - 10,lapply(.SD,mean)]}
 
     # show progress
@@ -172,7 +173,7 @@ rc_parallel <- function(this.xs,
     
     
     if(final){
-      result <-data.table(year = year(parms$end_date), A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
+      result <- data.table(year = year(parms$end_date), A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
     } else{
       result <- data.table(A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
     }
