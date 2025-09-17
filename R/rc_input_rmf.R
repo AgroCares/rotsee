@@ -23,6 +23,7 @@
 #' * W_PREC_SUM_MONTH
 #' * W_ET_POT_MONTH
 #' * W_ET_ACT_MONTH
+#' * W_POT_TO_ACT
 #'
 #' dt.irrigation: irrigation table
 #' contains the following columns:
@@ -92,7 +93,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   dt[, tsmdmax_cor := fifelse(crop_cover==1,tsmdmax,tsmdmax/1.8)]
 
   # Calculate actual evapotranspiration for months where only potential is provided (general rothc calculation)
-  dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_POT_MONTH * 0.75]
+  dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_POT_MONTH * W_POT_TO_ACT]
 
   # Calculate the monthly soil moisture deficit
   dt[,smd := W_PREC_SUM_MONTH + B_IRR_AMOUNT - W_ET_ACT_MONTH]

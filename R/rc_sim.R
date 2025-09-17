@@ -10,7 +10,7 @@
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_HC, and P_C_OF. See details for desired format.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
-#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.
+#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH, W_POT_TO_ACT. For more information, see details.
 #' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
 #'
 #' @details
@@ -68,6 +68,7 @@
 #' * W_PREC_SUM_MONTH (precipitation in mm)
 #' * W_ET_POT_MONTH (potential evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
+#' * W_POT_TO_ACT (factor to recalculate potential to actual evapotranspiration, default 0.75)
 #' 
 #' Irrigation: Irrigation table, optional.
 #' Includes the columns:
