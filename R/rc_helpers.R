@@ -55,23 +55,30 @@ rc_update_weather <- function(dt = NULL){
         msg = "At least one of W_ET_POT_MONTH and W_ET_ACT_MONTH should not contain NA values."
       )
       # Check ranges, allow NAs
-      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = TRUE)
-      checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = TRUE)
+      checkmate::assert_numeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = TRUE)
+      checkmate::assert_numeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = TRUE)
     } else if ("W_ET_POT_MONTH" %in% colnames(dt)) {
       # Only potential ET provided: no NA allowed
-      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = FALSE)
+      checkmate::assert_numeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = FALSE)
     } else if ("W_ET_act_MONTH" %in% colnames(dt)) {
       # Only actual ET provided: no NA allowed
-      checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
+      checkmate::assert_numeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
     }
     
+    # Define values of ET correction factor
+    if("W_POT_TO_ACT" %in% colnames(dt)){
+      dt[, W_POT_TO_ACT := ifelse(is.na(W_POT_TO_ACT), 0.75, W_POT_TO_ACT)]
+      checkmate::assert_numeric(dt$W_POT_TO_ACT, lower = 0, upper = 1)
+      }
 }else{
   #Set default weather for Dutch conditions
   dt <- data.table(month = 1:12,
                    W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
                    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
-                   W_ET_ACT_MONTH = NA_real_)
+                   W_ET_ACT_MONTH = NA_real_,
+                   W_POT_TO_ACT = rep(0.75, 12)
+                   )
 }
   
   return(dt)

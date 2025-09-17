@@ -37,17 +37,21 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
   tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = acc_smd = NULL
   W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
-  
+ 
   # Input tables
   checkmate::assert_data_table(dt,null.ok = TRUE)
+  if(!is.null(dt)){
   checkmate::assert_true(all(c('B_LU_START', 'B_LU_END') %in% colnames(dt)))
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = F)
+  }
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
-  checkmate::assert_subset(colnames(dt.weather), choices = c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH"))
+  checkmate::assert_subset(colnames(dt.weather), choices = c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH", "W_POT_TO_ACT"))
+  if(!is.null(dt.irrigation)){
   checkmate::assert_data_table(dt.irrigation, null.ok = TRUE)
   checkmate::assert_true(all(c('B_DATE_IRRIGATION', 'B_IRR_AMOUNT') %in% colnames (dt.irrigation)))
-
+  }
+  
   # Establish months of crop cover based on start and end of crop rotation
   dt.growth <- dt[, {
     
