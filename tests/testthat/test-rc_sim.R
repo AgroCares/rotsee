@@ -40,7 +40,8 @@ test_that("rc_sim correctly checks input validity", {
                         W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                         W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
                         W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
-                        W_ET_ACT_MONTH = NA_real_)
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                       c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
@@ -51,24 +52,30 @@ test_that("rc_sim correctly checks input validity", {
                       poutput = "year",
                       start_date = "2022-04-01",
                       end_date = "2040-10-01")
+  
+  # Set irrigation moments
+  irrigation <- data.table(
+    B_DATE_IRRIGATION = c("2022-07-01", "2024-07-01", "2028-06-01"),
+    B_IRR_AMOUNT = c(12, 20, 10)
+  )
 
   # All correct
  expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
-                   weather = weather, rothc_parms = parms))
+                   weather = weather, rothc_parms = parms, irrigation = irrigation))
   
   # No amendment table (allowed)
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                          B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
-                         weather = weather, rothc_parms = parms))
+                         weather = weather, rothc_parms = parms, irrigation = irrigation))
   
     # No crop table (not allowed)
   expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = NULL, rothc_amendment = rothc_amendment, 
-                   weather = weather))
+                   weather = weather, irrigation = irrigation))
   
   # Simulation longer than rotation and amendment tables
   #parms1 <- parms[, end_date := "2030-10-01"]

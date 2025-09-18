@@ -4,8 +4,8 @@ test_that("rc_update_weather returns default weather data when input is NULL", {
   default_weather <- rc_update_weather(NULL)
   expect_s3_class(default_weather, "data.table")
   expect_equal(nrow(default_weather), 12)
-  expect_equal(ncol(default_weather), 5)
-  expect_equal(names(default_weather), c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH"))
+  expect_equal(ncol(default_weather), 6)
+  expect_equal(names(default_weather), c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH", "W_POT_TO_ACT"))
 })
 
 test_that("rc_update_weather validates input data table", {
@@ -45,6 +45,7 @@ test_that("rc_update_weather validates input data table", {
   invalid_dt <- copy(valid_dt)
   invalid_dt[, W_PREC_SUM_MONTH := -10]
   expect_error(rc_update_weather(invalid_dt), "W_PREC_SUM_MONTH")
+  
   
 })
 
