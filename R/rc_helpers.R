@@ -33,7 +33,12 @@ cf_ind_importance <- function(x) {
 #' @export
 #'
 rc_update_weather <- function(dt = NULL){
+  # Add visible bindings
+  W_POT_TO_ACT = NULL
+  
+  # Check if there is a weather data table
   if(!is.null(dt)){
+    
     # Create weather data table
     dt <- copy(dt)
     
@@ -69,9 +74,12 @@ rc_update_weather <- function(dt = NULL){
     if("W_POT_TO_ACT" %in% colnames(dt)){
       dt[, W_POT_TO_ACT := ifelse(is.na(W_POT_TO_ACT), 0.75, W_POT_TO_ACT)]
       checkmate::assert_numeric(dt$W_POT_TO_ACT, lower = 0, upper = 1)
-      }
+    }else{
+        dt[, W_POT_TO_ACT := 0.75]
+    }
+    
 }else{
-  #Set default weather for Dutch conditions
+  #Set default weather for Dutch conditions if none has been supplied
   dt <- data.table(month = 1:12,
                    W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),

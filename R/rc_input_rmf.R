@@ -37,6 +37,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
   tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = acc_smd = NULL
   W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
+  B_DATE_IRRIGATION = B_IRR_AMOUNT = W_POT_TO_ACT = NULL
  
   # Input tables
   checkmate::assert_data_table(dt,null.ok = TRUE)
@@ -47,9 +48,11 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   }
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
   checkmate::assert_subset(colnames(dt.weather), choices = c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH", "W_POT_TO_ACT"))
-  if(!is.null(dt.irrigation)){
   checkmate::assert_data_table(dt.irrigation, null.ok = TRUE)
+  if(!is.null(dt.irrigation)){
   checkmate::assert_true(all(c('B_DATE_IRRIGATION', 'B_IRR_AMOUNT') %in% colnames (dt.irrigation)))
+  checkmate::assert_date(as.Date(dt.irrigation$B_DATE_IRRIGATION))
+  checkmate::assert_numeric(dt.irrigation$B_IRR_AMOUNT, lower = 0, upper = 1000)
   }
   
   # Establish months of crop cover based on start and end of crop rotation
@@ -63,17 +66,23 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   }, by = list(B_LU_START,B_LU_END)] 
 
   # Merge and fill missing crop_cover values with 0
-   dt.crop_cover <- merge(dt.time, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
-   dt.crop_cover <- unique(dt.crop_cover[,list(year,month, time, crop_cover)])
-
+   dt <- merge(dt.time, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
+   
+      if(!is.null(dt.irrigation)){
    # Derive year and month from irrigation data
    dt.irrigation[, year := year(B_DATE_IRRIGATION)]
    dt.irrigation[,month := month(B_DATE_IRRIGATION)]
-   
-   # Merge irrigation and crop cover data
-   dt <- merge(dt.crop_cover, dt.irrigation, by = c('year', 'month'), all.x = TRUE)[, B_IRR_AMOUNT := fifelse(is.na(B_IRR_AMOUNT), 0, B_IRR_AMOUNT)]
-   dt <- unique(dt[,list(year, month, time, crop_cover, B_IRR_AMOUNT)])
   
+   # Merge irrigation and crop cover data
+   dt <- merge(dt, dt.irrigation, by = c('year', 'month'), all.x = TRUE)[, B_IRR_AMOUNT := fifelse(is.na(B_IRR_AMOUNT), 0, B_IRR_AMOUNT)]
+      }else{
+        # Set irrigation inputs to 0
+      dt[, B_IRR_AMOUNT:= 0]  
+      }
+
+   # Select required columns
+   dt <- unique(dt[,list(year, month, time, crop_cover, B_IRR_AMOUNT)])
+
   # Merge time and weather table
   weather <- merge(dt.time, dt.weather, by = 'month', all.x=TRUE)
 
@@ -85,7 +94,6 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   dt[, A_CLAY_MI := A_CLAY_MI]
 
   # Add rate modifying factors
-  
   # add correction factor for temperature
   dt[, cf_temp :=  47.9/(1+exp(106/(W_TEMP_MEAN_MONTH + 18.3)))]
   
