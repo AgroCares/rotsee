@@ -3,7 +3,7 @@
 #' This function combines required inputs into a data.table that is needed as input for the RothC model.
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm. 
+#' @param amendment (data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional), P_ID (optional), P_NAME (optional). 
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #'
 #' @export
@@ -21,6 +21,11 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears){
   # create event
   rothc.event <- rbind(event.crop,event.man)
   
+  # Return file if rothc event is empty
+  if(nrow(rothc.event) == 0L){
+    return(rothc.event)
+  }
+  
   # sum multiple additives that are given at same time
   rothc.event <- rothc.event[,list(value = sum(value)),by = c('time','var','method')]
   
@@ -35,11 +40,11 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears){
   
   ## update the time for all repetitions of rotation block
   rothc.event[,yr_rep := 1:.N, by = id]
-  rothc.event[,year := (yr_rep - 1) * period, by = yr_rep]
+  rothc.event[,year := (yr_rep - 1) * period]
   rothc.event[,time := year + time]
   
   # filter only the years for simulation
-  rothc.event <- rothc.event[round(time) <= simyears]
+  rothc.event <- rothc.event[time <= simyears]
   
   # remove helper columns
   rothc.event[,c('id','year','yr_rep') := NULL]
@@ -112,10 +117,9 @@ rc_input_event_crop <- function(crops){
 
 #' Calculate the monthly timing of carbon inputs for different fertilizer strategies
 #'
-#' This function calculates the timing of carbon inputs (kg C per ha) based on type of organic matter amendments and land use.
-#'
-#' @param crops (data.table) Table with crop rotation, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.
+#' This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.
+
+#' @param amendment (data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional), P_ID (optional), P_NAME (optional).
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
 #' The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
@@ -126,45 +130,38 @@ rc_input_event_crop <- function(crops){
 rc_input_event_amendment <- function(amendment = NULL){
   
   # add visual bindings
-  B_LU = B_LU_NAME = p_cat = fre_eoc_p = crflt = tcf = NULL
-  cin_hum = cin_rpm = cin_dpm = method = crop_code = crop_name = NULL
-  time = NULL
+  time = cin_hum = cin_rpm = cin_dpm = method = NULL
   
   # make local copy
   dt <- copy(amendment)
   
   # return empty event table if no amendment provided
-  if(is.null(dt)){
+  if(is.null(dt) || nrow(dt == 0L)){
     return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
     }
 
   
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
-  
-  allowed <- c('year','month','p_ID','p_name','cin_tot','cin_hum',
-               'cin_dpm','cin_rpm')
-  checkmate::assert_subset(colnames(dt), allowed, empty.ok = FALSE)
-  
-  checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt))
-  checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt))
-  checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt))
-  checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt))
-  checkmate::assert_integerish(dt$year,len = nrow(dt))
+  required <- c('year','cin_tot','cin_hum','cin_dpm','cin_rpm')
+  checkmate::assert_true(all(required %in% colnames(dt)))
+  checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
+  checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
+  checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
+  checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
+  checkmate::assert_integerish(dt$year,len = nrow(dt), any.missing = FALSE)
   
   # If month is na, set to 9
   if (!"month" %in% names(dt)) dt[, month := NA_real_]
-  dt[is.na(month), month := 9]
+  dt[, month := as.integer(month)]
+  dt[is.na(month), month := 9L]
 
   # add cumulative time vector
   dt[,time := year + month / 12 - min(year)]
   
   # select only those events that manure input occurs
   dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
-  
-  # add one row to ensure that there is always an input
-  if(nrow(dt) == 0){dt <- data.table(time = 1, cin_dpm = 0, cin_rpm = 0, cin_hum = 0.01)}
-  
+
   # select only relevant columns, rename them
   out <- dt[,list(CDPM = cin_dpm,CRPM = cin_rpm,CHUM = cin_hum,time = time)]
   

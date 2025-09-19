@@ -9,7 +9,7 @@ rc_input_events(crops = NULL, amendment = NULL, simyears)
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.}
 
-\item{amendment}{(data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.}
+\item{amendment}{(data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional), P_ID (optional), P_NAME (optional).}
 
 \item{simyears}{(numeric) Amount of years for which the simulation should run, default: 50 years}
 }

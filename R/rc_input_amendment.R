@@ -80,7 +80,7 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   dt.org[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
  
   # select only relevant columns
-  dt.org <- dt.org[,list(p_ID = P_ID, p_name = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
+  dt.org <- dt.org[,list(P_ID = P_ID, P_NAME = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
 
   # return
   return(dt.org)
