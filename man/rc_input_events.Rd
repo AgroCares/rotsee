@@ -4,7 +4,7 @@
 \alias{rc_input_events}
 \title{Combine all EVENT data needed for RothC modelling}
 \usage{
-rc_input_events(crops, amendment, simyears)
+rc_input_events(crops = NULL, amendment = NULL, simyears)
 }
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.}

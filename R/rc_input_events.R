@@ -59,6 +59,12 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears){
 #' 
 #' @export
 rc_input_event_crop <- function(crops){
+ 
+   # Return empty crop table if no crops have been provided
+  if(is.null(crops) || nrow(crops) == 0L){
+    return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
+  }
+
   # add visual bindings
   crop_name = B_LU = NULL
   M_GREEN_TIMING = M_CROPRESIDUE = green_eom = NULL
@@ -127,9 +133,10 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
   # make local copy
   dt <- copy(amendment)
   
-  # make default crop amendment data.table when dt = NULL
-  if(is.null(dt)){dt <- data.table(year = crops[1,year], month = 1, cin_tot = 0, cin_hum = 0,
-                                   cin_dpm = 0, cin_rpm = 0)}
+  # return empty event table if no amendment provided
+  if(is.null(dt)){
+    return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
+    }
 
   # do checks on the crop list
   checkmate::assert_data_table(crops)
