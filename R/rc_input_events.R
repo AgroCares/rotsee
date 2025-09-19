@@ -71,9 +71,10 @@ rc_input_event_crop <- function(crops){
   # check crops input data.table
   checkmate::assert_data_table(crops, nrows = arg.length)
   checkmate::assert_true(all(c('year','cin_dpm','cin_rpm') %in% names(crops)))
+  checkmate::assert_numeric(crops$cin_dpm, lower = 0, any.missing = FALSE, len = arg.length)
+  checkmate::assert_numeric(crops$cin_rpm, lower = 0, any.missing = FALSE, len = arg.length)
   checkmate::assert_integerish(crops$year, any.missing = FALSE, len = arg.length)
   if (!"month" %in% names(crops)) crops[, month := NA_real_]
-  
   
   
   # make internal copy
