@@ -3,7 +3,7 @@
 #' This function combines required inputs into a data.table that is needed as input for the RothC model.
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional), P_ID (optional), P_NAME (optional). 
+#' @param amendment (data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional). 
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #'
 #' @export
@@ -13,10 +13,10 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears){
   id = time = yr_rep = NULL
   
   # estimate carbon inputs from the crop rotation plan
-  event.crop <- rc_input_event_crop(crops = crops)
+  event.crop <- if(!is.null(crops)) rc_input_event_crop(crops = crops) else data.table()
   
   # estimate carbon inputs from amendment additions
-  event.man <- rc_input_event_amendment(amendment = amendment)
+  event.man <- if(!is.null(amendment)) rc_input_event_amendment(amendment = amendment) else data.table()
   
   # create event
   rothc.event <- rbind(event.crop,event.man)
@@ -119,7 +119,7 @@ rc_input_event_crop <- function(crops){
 #'
 #' This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.
 
-#' @param amendment (data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional), P_ID (optional), P_NAME (optional).
+#' @param amendment (data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional)
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
 #' The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
@@ -136,14 +136,13 @@ rc_input_event_amendment <- function(amendment = NULL){
   dt <- copy(amendment)
   
   # return empty event table if no amendment provided
-  if(is.null(dt) || nrow(dt == 0L)){
+  if(is.null(dt) || nrow(dt) == 0L){
     return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
     }
 
-  
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
-  required <- c('year','cin_tot','cin_hum','cin_dpm','cin_rpm')
+  required <- c('year','cin_hum','cin_dpm','cin_rpm')
   checkmate::assert_true(all(required %in% colnames(dt)))
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)

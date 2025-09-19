@@ -37,13 +37,11 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
     checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
     checkmate::assert_true("P_HC" %in% names(dt))
     checkmate::assert(
-        "P_C_OF_INPUT" %in% names(dt) || all(c("P_DOSE","P_C_OF") %in% names(dt))
+        "P_C_OF_INPUT" %in% names(dt) || all(c("P_DOSE","P_C_OF") %in% names(dt)),
+        msg = "Provide either P_C_OF_INPUT, or both P_DOSE and P_C_OF"
       )
-  
-  checkmate::assert_data_table(dt, null.ok = FALSE)
-  checkmate::assert_subset(colnames(dt),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "P_DATE_FERTILIZATION"), empty.ok = TRUE)
-  checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = F)
-
+  checkmate::assert_true(!anyNA(dt$P_C_OF_INPUT) || (!anyNA(dt$P_DOSE) & !anyNA(dt$P_C_OF)))
+ 
   
   # Create copy of data table
   dt.org <- copy(dt)
