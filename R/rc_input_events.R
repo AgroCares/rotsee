@@ -14,6 +14,7 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears = 50L){
   
   # Add checks on simyears
   checkmate::assert_integerish(simyears, lower = 1L)
+  
   # estimate carbon inputs from the crop rotation plan
   event.crop <- rc_input_event_crop(crops)
   
@@ -104,7 +105,7 @@ rc_input_event_crop <- function(crops){
   setorder(dt,year,month)
   
   # add cumulative time vector
-  dt[,time := year + month/12]
+  dt[,time := year + (month-1)/12]
   
   # select only relevant columns as output for EVENT crop residue input
   # and select only those time steps where C input is bigger than zero
@@ -157,13 +158,14 @@ rc_input_event_amendment <- function(amendment = NULL){
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   checkmate::assert_integerish(dt$year,len = nrow(dt), any.missing = FALSE)
   
-  # If month is na, set to 9
+  # Check month column, and if NA set to 9
   if (!"month" %in% names(dt)) dt[, month := NA_real_]
   dt[, month := as.integer(month)]
+  checkmate::assert_numeric(dt$month, lower = 1, upper = 12, any.missing = FALSE, len = nrow(dt))
   dt[is.na(month), month := 9L]
 
   # add cumulative time vector
-  dt[,time := year + month / 12]
+  dt[,time := year + (month - 1)/ 12]
   
   # select only those events that manure input occurs
   dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
