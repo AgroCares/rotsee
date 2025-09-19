@@ -12,11 +12,11 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears){
   # add visual bindings
   id = time = yr_rep = NULL
   
-  # estimate default crop rotation plan, the building block
+  # estimate carbon inputs from the crop rotation plan
   event.crop <- rc_input_event_crop(crops = crops)
   
-  # estimate Carbon input via manure, compost and organic residues
-  event.man <- rc_input_event_amendment(crops = crops,amendment = amendment)
+  # estimate carbon inputs from amendment additions
+  event.man <- rc_input_event_amendment(amendment = amendment)
   
   # create event
   rothc.event <- rbind(event.crop,event.man)
@@ -123,7 +123,7 @@ rc_input_event_crop <- function(crops){
 #' The output is an EVENT object.
 #'
 #' @export
-rc_input_event_amendment <- function(crops,amendment = NULL){
+rc_input_event_amendment <- function(amendment = NULL){
   
   # add visual bindings
   B_LU = B_LU_NAME = p_cat = fre_eoc_p = crflt = tcf = NULL
@@ -138,10 +138,6 @@ rc_input_event_amendment <- function(crops,amendment = NULL){
     return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
     }
 
-  # do checks on the crop list
-  checkmate::assert_data_table(crops)
-  checkmate::assert_true('B_LU' %in% colnames(crops))
-  checkmate::assert_true('year' %in% colnames(crops))
   
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
