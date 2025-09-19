@@ -7,7 +7,7 @@
 rc_input_event_amendment(amendment = NULL)
 }
 \arguments{
-\item{amendment}{(data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional)}
+\item{amendment}{(data.table) year, month (optional, defaults to 9), cin_hum, cin_dpm, and cin_rpm, cin_tot (optional)}
 }
 \description{
 This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.

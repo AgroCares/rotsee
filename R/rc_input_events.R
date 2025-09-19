@@ -14,7 +14,6 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears = 50L){
   
   # Add checks on simyears
   checkmate::assert_integerish(simyears, lower = 1L)
-  
   # estimate carbon inputs from the crop rotation plan
   event.crop <- rc_input_event_crop(crops)
   
@@ -30,9 +29,8 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears = 50L){
   }
 
   # align time for amendment and crop events
-  rothc.event[, time := time - min(time)]
-  
-  
+  rothc.event[, time := time - floor(min(time))]
+
   # sum multiple additives that are given at same time
   rothc.event <- rothc.event[,list(value = sum(value)),by = c('time','var','method')]
   
