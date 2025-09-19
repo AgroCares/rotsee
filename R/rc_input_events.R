@@ -3,20 +3,23 @@
 #' This function combines required inputs into a data.table that is needed as input for the RothC model.
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional). 
+#' @param amendment (data.table) year, month (optional, defaults to 9), cin_hum, cin_dpm, and cin_rpm, cin_tot (optional). 
 #' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
 #'
 #' @export
-rc_input_events <- function(crops = NULL,amendment = NULL, simyears){
+rc_input_events <- function(crops = NULL,amendment = NULL, simyears = 50L){
   
   # add visual bindings
   id = time = yr_rep = NULL
   
+  # Add checks on simyears
+  checkmate::assert_integerish(simyears, lower = 1L)
+  
   # estimate carbon inputs from the crop rotation plan
-  event.crop <- if(!is.null(crops)) rc_input_event_crop(crops = crops) else data.table()
+  event.crop <- rc_input_event_crop(crops)
   
   # estimate carbon inputs from amendment additions
-  event.man <- if(!is.null(amendment)) rc_input_event_amendment(amendment = amendment) else data.table()
+  event.man <- rc_input_event_amendment(amendment)
   
   # create event
   rothc.event <- rbind(event.crop,event.man)
@@ -25,6 +28,10 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears){
   if(nrow(rothc.event) == 0L){
     return(rothc.event)
   }
+
+  # align time for amendment and crop events
+  rothc.event[, time := time - min(time)]
+  
   
   # sum multiple additives that are given at same time
   rothc.event <- rothc.event[,list(value = sum(value)),by = c('time','var','method')]
@@ -99,7 +106,7 @@ rc_input_event_crop <- function(crops){
   setorder(dt,year,month)
   
   # add cumulative time vector
-  dt[,time := year + month/12 - min(year)]
+  dt[,time := year + month/12]
   
   # select only relevant columns as output for EVENT crop residue input
   # and select only those time steps where C input is bigger than zero
@@ -119,7 +126,7 @@ rc_input_event_crop <- function(crops){
 #'
 #' This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.
 
-#' @param amendment (data.table) A table with the following column names: year, month, cin_hum, cin_dpm, and cin_rpm, cin_tot (optional)
+#' @param amendment (data.table) year, month (optional, defaults to 9), cin_hum, cin_dpm, and cin_rpm, cin_tot (optional)
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
 #' The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
@@ -145,7 +152,9 @@ rc_input_event_amendment <- function(amendment = NULL){
   required <- c('year','cin_hum','cin_dpm','cin_rpm')
   checkmate::assert_true(all(required %in% colnames(dt)))
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
+  if("cin_tot" %in% colnames(dt)){
   checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
+  }
   checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   checkmate::assert_integerish(dt$year,len = nrow(dt), any.missing = FALSE)
@@ -156,7 +165,7 @@ rc_input_event_amendment <- function(amendment = NULL){
   dt[is.na(month), month := 9L]
 
   # add cumulative time vector
-  dt[,time := year + month / 12 - min(year)]
+  dt[,time := year + month / 12]
   
   # select only those events that manure input occurs
   dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
