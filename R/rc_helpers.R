@@ -211,7 +211,7 @@ rc_update_parms <- function(parms = NULL){
 #'
 #' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, P_C_OF_INPUT, and P_HC.
+#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_INPUT, and P_HC.
 #'
 #' @returns
 #' Error messages indicating if input data is not in order
@@ -256,7 +256,7 @@ rc_check_inputs <- function(soil_properties,
   if(!is.null(rothc_amendment)){
     checkmate::assert_data_table(rothc_amendment, null.ok = TRUE, min.rows = 1)
     
-    allowed <- c("P_ID","P_NAME","P_C_OF_INPUT","P_DOSE","P_C_OF","P_HC","P_DATE_FERTILIZATION","month")
+    allowed <- c("P_ID","P_NAME","B_C_OF_INPUT","P_DOSE","P_C_OF","P_HC","P_DATE_FERTILIZATION","month")
     checkmate::assert_subset(names(rothc_amendment), choices = allowed, empty.ok = FALSE)
     
     checkmate::assert_true("P_DATE_FERTILIZATION" %in% names(rothc_amendment))
@@ -267,8 +267,8 @@ rc_check_inputs <- function(soil_properties,
        checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = FALSE)
     if ("P_C_OF" %in% names(rothc_amendment))
       checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = FALSE)
-    if ("P_C_OF_INPUT" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$P_C_OF_INPUT, lower = 0, upper = 250000, any.missing = FALSE)
+    if ("B_C_OF_INPUT" %in% names(rothc_amendment))
+      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = FALSE)
     checkmate::assert_true("P_HC" %in% names(rothc_amendment))
     checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = FALSE)
     
@@ -300,7 +300,7 @@ rc_calculate_bd <- function(dt){
   # Add copy of data table
   dt <- copy(dt)
   
-  # calculate soil texture dependent density (BCAV 2019?)
+  # calculate soil texture dependent density (CBAV, 2019)
   if(!is.null(dt$A_SOM_LOI)){
   dt[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541))]
   dt[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206)]
@@ -329,8 +329,8 @@ rc_calculate_bd <- function(dt){
 #' Contains the following columns:
 #' * B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
 #' * B_LU_HI (numeric), the harvest index of the crop
-#' * B_LU_HI_RES (numeric), fraction of biomass that is harvested
-#' * B_LU_RS_FR (numeric), fraction of biomass that remains as residue
+#' * B_LU_HI_RES (numeric), fraction of biomass that is residue
+#' * B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
 #' * M_CROP_RESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
 #' @export
