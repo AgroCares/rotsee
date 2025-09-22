@@ -353,7 +353,7 @@ rc_calculate_B_C_OF <- function(dt){
   dt.crop <- copy(dt)
   
   # Calculate C inputs from roots and crop residue (kg C/ha)
-  dt.crop[, cin_aboveground := B_LU_YIELD * 0.001 / B_LU_HI * 0.5]
+  dt.crop[, cin_aboveground := B_LU_YIELD / B_LU_HI * 0.5]
   dt.crop[, cin_roots := cin_aboveground * B_LU_RS_FR]
   dt.crop[, cin_residue := fifelse(M_CROPRESIDUE, cin_aboveground * B_LU_HI_RES, 0)]
   dt.crop[, B_C_OF_INPUT := cin_roots + cin_residue]

@@ -20,7 +20,7 @@ Crop data table
 Contains the following columns:
 * B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
 * B_LU_HI (numeric), the harvest index of the crop
-* B_LU_HI_RES (numeric), fraction of biomass that is harvested
-* B_LU_RS_FR (numeric), fraction of biomass that remains as residue
+* B_LU_HI_RES (numeric), fraction of biomass that is residue
+* B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
 * M_CROP_RESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 }
