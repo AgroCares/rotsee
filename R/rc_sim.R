@@ -10,29 +10,36 @@
 #' @param cf_yield (numeric) A relative yield correction factor (fraction) if yield is higher than regional average
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.
-#' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. Default is NULL. For more information, see details.
+#' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
+#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.
 #'
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
 #' The following inputs are mandatory: rothc_rotation, A_SOM_LOI (\%), and A_CLAY_MI (\%). All other data is optional.
 #' When no weather inputs are given, these are estimated from long-term average weather conditions in the Netherlands.
 #'
-#' The organic amendment table includes the columns year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.
+#' rothc_amendment: amendment table
 #' P_NAME is the fertilizer name, P_DOSE has units (kg / ha), P_HC is the humification coefficient (fraction), P_OM is the organic matter content (%) and p_p2o5 is the phosphate content (%)
 #'
-#' The crop table includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM_CROP (the effective organic matter content, kg/ha), B_LU_EOM_CROPRESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
-#' The crop table might include the measures M_GREEN, M_GREEN_PROPERLY, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
+#' rothc_rotation: crop table
+#' Includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coefficient,-).
+#' May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
 #' * M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
-#' * M_CROPRESIDUE (boolean) gives whether crop residues are amended to the soil after harvest.
-#' * M_IRRIGATION (boolean) gives whether the crop is irrigated.
-#' * M_RENEWAL (boolean) gives whether the grassland is renewed (only applicable for grassland)
+#' * M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.
+#' * M_IRRIGATION (boolean) whether the crop is irrigated.
+#' * M_RENEWAL (boolean) whether the grassland is renewed (only applicable for grassland)
 #'
-#' rothc_parms: list containing information on adapting the RothC simulation. Contains the following column names:
-#' * initialize (character) method of initializing C distributions. Options: FALSE, spinup_simulation, spinup_simulation_bodemcoolstof, spinup_analytical_Heuvelink. Defaul is spinup_simulation_bodemcoolstof.
-#' * c_fractions (list)
-#' * dec_rates (list)
-#' * simyears (numeric)
-#' * unit (character)
+#' rothc_parms: simulation parameters
+#' Table with possible parameters to adapt the calculations. May include the columns initialize, c_fractions, dec_rates, simyears and unit.
+#' * initialize: scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
+#' * c_fractions: Distribution over the different C pools.
+#' * dec_rates: Decomposition rates of the different pools
+#' * simyears: Duration of simulation (years), default is 50
+#' * unit: Unit in which the output should be given. Options: 'all','soc', 'psomperfraction'
+#' 
+#' weather: Average weather conditions
+#' Table containing columns month, W_TEMP_MEAN_MONTH (temperature in °C), W_PREC_MEAN_MONTH (precipitation in mm), W_ET_POT_MONTH (potential evapotranspiration in mm), and W_ET_ACT_MONTH. (actual evapotranspiration in mm).
+#' If no table is given, average Dutch conditions are used
 #'
 #' @import deSolve
 #'
@@ -43,19 +50,48 @@ rc_sim <- function(A_SOM_LOI,
                    B_DEPTH = 0.3,
                    cf_yield = 1,
                    M_TILLAGE_SYSTEM = 'CT',
-                   rothc_rotation = NULL,
+                   rothc_rotation,
                    rothc_amendment = NULL,
-                   rothc_parms = list(simyears = 50, initialize = FALSE,spinup = 10,method='adams')){
+                   rothc_parms = NULL,
+                   weather = NULL){
   
   # add visual bindings
   code = value_min = value_max = a_depth = dens.sand = dens.clay = cf = bd = toc = NULL
   b_depth = var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
-  soc = CDPM = CRPM = CBIO = CHUM = CIOM = bd = . = NULL
-  fr_IOM = fr_DPM = fr_RPM = fr_BIO = B_LU_BRP = NULL
+  soc = dec_rates = simyears = c_fractions = method = poutput = unit = CDPM = CRPM = CBIO = CHUM = CIOM = bd =  . = NULL
   
   # add internal table
   rcp <- rotsee::rc_parms
   
+  # Check user input, add missing data (see rc_helpers)
+  dt.weather <- rc_update_weather(dt = weather)
+  rothc_parms <- rc_update_parms(parms = rothc_parms)
+  
+  # Define rothc_parms parameters
+  # Define decomposition rates
+  k1 <- rothc_parms$dec_rates[["k1"]]
+  k2 <- rothc_parms$dec_rates[["k2"]]
+  k3 <- rothc_parms$dec_rates[["k3"]]
+  k4 <- rothc_parms$dec_rates[["k4"]]
+  
+  # Define C fractions
+  c_fractions <- rothc_parms$c_fractions
+  
+  # Define unit of output
+  unit <- rothc_parms$unit
+  
+  # Define simyears
+  simyears <- rothc_parms$simyears
+  
+  # Define method
+  method <- rothc_parms$method
+  
+  # Define wanted output
+  poutput <- rothc_parms$poutput
+  
+  # Define initialize
+  initialize <- rothc_parms$initialize
+
   # add checks
   checkmate::assert_numeric(A_SOM_LOI, lower = rcp[code == "A_SOM_LOI", value_min], upper = rcp[code == "A_SOM_LOI", value_max],len = 1)
   checkmate::assert_numeric(A_CLAY_MI, lower = 0, upper = 100, any.missing = FALSE, len = 1)
@@ -65,69 +101,30 @@ rc_sim <- function(A_SOM_LOI,
   checkmate::assert_character(M_TILLAGE_SYSTEM, any.missing = FALSE,len=1)
   checkmate::assert_subset(M_TILLAGE_SYSTEM,choices = c('NT','ST','CT','DT'), empty.ok = FALSE)
   checkmate::assert_data_table(rothc_rotation)
-  checkmate::assert_data_table(rothc_amendment)
-  checkmate::assert_subset(colnames(rothc_rotation),choices = c("year","B_LU_EOM","B_LU_EOM_RESIDUE", "B_LU_HC","M_GREEN_TIMING","M_CROPRESIDUE","B_LU",'M_IRRIGATION','cf_yield'), empty.ok = FALSE)
-  checkmate::assert_subset(colnames(rothc_amendment),choices = c("P_NAME", "year","month","P_OM","P_HC","p_p2o5", "P_DOSE"), empty.ok = FALSE)
+  if(!is.null(rothc_amendment)){
+    checkmate::assert_data_table(rothc_amendment)
+  }
+  checkmate::assert_names(colnames(rothc_rotation),must.include = c("year","B_LU_EOM","B_LU_EOM_RESIDUE", "B_LU_HC","B_LU", "B_LU_NAME"))
+  if(!is.null(rothc_amendment)) {
+    checkmate::assert_names(colnames(rothc_amendment),must.include = c("P_NAME", "year","P_OM","P_HC","p_p2o5", "P_DOSE"))
+  }
+  
   
   # create an internal crop rotation file
   dt.crop <- rc_input_crop(dt = rothc_rotation, cf_yield = cf_yield)
   
   # create an internal amendment file
-  dt.org <- rc_input_amendment(dt = rothc_amendment)
+  if (!is.null(rothc_amendment)) {
+       dt.org <- rc_input_amendment(dt = rothc_amendment)
+     } else {
+         dt.org <- NULL
+       }
   
   # rothC model parameters
-  
-  # add check on method solver
-  if(is.null(rothc_parms$method)){method <- 'adams'} else {method <- 'adams'}
-  
-  # add check on initialise
-  if(is.null(rothc_parms$initialize)){initialize <- 'spinup_analytical_bodemcoolstof'} else {initialize <- rothc_parms$initialize}
-  
-  # add checks on simulation years
-  if(is.null(rothc_parms$simyears)){simyears <- 50} else {simyears <- rothc_parms$simyears}
-  if(!is.null(rothc_parms$spinup)){simyears <- simyears + rothc_parms$spinup}
-  
-  # add checks on units and time scale output for RothC (use defaults)
-  if(is.null(rothc_parms$unit)){unit <- 'soc'} else {unit <- rothc_parms$unit}
-  poutput <- 'year'
-  
-  # add checks on decomposition rates
-  if(is.null(rothc_parms$dec_rates)){
-    k1 = 10; k2 = 0.3; k3 = 0.66; k4 = 0.02
-  } else {
-    rcp <-  c(names(rothc_parms$dec_rates),colnames(rothc_parms$dec_rates))
-    if('k1' %in% rcp){k1 <- rothc_parms$dec_rates[['k1']]}
-    if('k2' %in% rcp){k2 <- rothc_parms$dec_rates[['k2']]}
-    if('k3' %in% rcp){k3 <- rothc_parms$dec_rates[['k3']]}
-    if('k4' %in% rcp){k4 <- rothc_parms$dec_rates[['k4']]}
-  }
-  
-  # adapt decomposition rate when ploughing is reduced
-  if('NT' %in% M_TILLAGE_SYSTEM){k4 = 0.8 * k4}
-  if('ST' %in% M_TILLAGE_SYSTEM){k4 = 0.9 * k4}
-  
-  # add checks on C distribution over pools
-  
-  # set defaults equal to input
-  c_fractions <- list(fr_IOM = 0.049,
-                      fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015)
-  
-  # overwrite with user input
-  if(!is.null(rothc_parms$c_fractions)){
-    
-    rcp <-  c(names(rothc_parms$c_fractions),colnames(rothc_parms$c_fractions))
-    if('fr_IOM' %in% rcp){c_fractions$fr_IOM <- rothc_parms$c_fractions[['fr_IOM']]}
-    if('fr_DPM' %in% rcp){c_fractions$fr_DPM <- rothc_parms$c_fractions[['fr_DPM']]}
-    if('fr_RPM' %in% rcp){c_fractions$fr_RPM <- rothc_parms$c_fractions[['fr_RPM']]}
-    if('fr_BIO' %in% rcp){c_fractions$fr_BIO <- rothc_parms$c_fractions[['fr_BIO']]}
-    
-  }
-  
-  
+
   # prepare the RothC model inputs
-  
   # make rate modifying factors input database
-  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield)
+  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = A_CLAY_MI, B_DEPTH = B_DEPTH,simyears = simyears, cf_yield = cf_yield, dt.weather = dt.weather)
   
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, d = dt.rmf$d)

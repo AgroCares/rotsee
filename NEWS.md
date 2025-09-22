@@ -7,6 +7,18 @@
 ## changed
 * Input checks on multiple functions
 
+# rotsee UNRELEASED
+## Added
+* Add GitHub Action to run R-CMD-CHECK for PR's
+* Added helper functions to check input weather and parameter data, and insert default values when not supplied
+* Added unit tests for helper functions
+
+## Changed
+* Expand README with some introductory text about the package
+
+## Fixed
+* Add missing dependenies for `roxygen2`, `devtools` and `usethis`
+
 # rotsee v0.0.1 2025-07-31
 
 ## Added
