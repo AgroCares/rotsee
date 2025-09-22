@@ -51,7 +51,7 @@ rc_update_weather <- function(dt = NULL){
     # Check if both potential and actual ET are provided
     if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
       checkmate::assert(
-        !all(is.na(dt$W_ET_POT_MONTH)) || !all(is.na(dt$W_ET_act_MONTH)),
+        !all(is.na(dt$W_ET_POT_MONTH)) || !all(is.na(dt$W_ET_ACT_MONTH)),
         msg = "At least one of W_ET_POT_MONTH and W_ET_ACT_MONTH should not contain NA values."
       )
       # Check ranges, allow NAs
@@ -60,7 +60,7 @@ rc_update_weather <- function(dt = NULL){
     } else if ("W_ET_POT_MONTH" %in% colnames(dt)) {
       # Only potential ET provided: no NA allowed
       checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = FALSE)
-    } else if ("W_ET_act_MONTH" %in% colnames(dt)) {
+    } else if ("W_ET_ACT_MONTH" %in% colnames(dt)) {
       # Only actual ET provided: no NA allowed
       checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
     }
@@ -243,7 +243,7 @@ rc_check_inputs <- function(soil_properties,
                  "M_GREEN_TIMING","M_CROPRESIDUE","M_IRRIGATION","M_RENEWAL")
     checkmate::assert_subset(names(rothc_rotation), choices = allowed, empty.ok = FALSE)
     
-    req <- c("year","B_LU","B_LU_HC","B_C_OF_INPUT")
+    req <- c("year","B_LU","B_C_OF_INPUT")
     checkmate::assert_true(all(req %in% names(rothc_rotation)))
     
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = FALSE)
@@ -343,10 +343,9 @@ rc_calculate_B_C_OF <- function(dt){
   # Check input data
   checkmate::assert_subset(colnames(dt), choices = c("B_LU_YIELD", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE"))
   checkmate::assert_numeric(dt$B_LU_YIELD, lower = 0, upper = 150000, any.missing = F)
-  checkmate::assert_numeric(dt$B_LU_DM, lower = 0, upper = 1000, any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI, lower = 0.01, upper = 1, any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI_RES, lower = 0, upper = 1, any.missing = F)
-  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = 0.01, upper = 1, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = 0.01, upper = 5, any.missing = F)
   checkmate::assert_logical(dt$M_CROPRESIDUE)
   
   # Make copy of input table
