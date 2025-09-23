@@ -18,6 +18,13 @@ Helper function to check the content and format of the amendment input table.
 The amendments table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
 This helper function assists the checking and controlling of amendments properties involved.
 
-To run this function, the dt requires as input:"P_NAME", "year","month","P_OM","P_HC","p_p2o5", and "P_DOSE"
-if dt is NULL, then the amendment input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
+rothc_amendment: amendment table
+Includes the columns:
+* P_ID (character), ID of the soil amendment product
+* P_NAME (character), name of the soil amendment product, optional
+* B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
+* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+* P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
+* P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 }

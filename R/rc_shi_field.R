@@ -26,9 +26,11 @@ rc_shi_field <- function(B_LU_BRP, A_SOM_LOI, A_CLAY_MI, simyears = 50, init = F
   # a single field can only have one value for SOM and clay
   this.som <- mean(A_SOM_LOI)
   this.clay <- mean(A_CLAY_MI)
+  this.soil <- list(A_SOM_LOI = this.som,
+                    A_CLAY_MI = this.clay) 
   
   # initialize RothC with BAU for 150 years
-  pool_fractions <- rc_initialise(B_LU_BRP = B_LU_BRP,A_SOM_LOI = this.som,A_CLAY_MI = this.clay)
+  pool_fractions <- rc_initialise(B_LU_BRP = B_LU_BRP, soil_properties = this.soil)
   
   # run simulations for the desire scenarios
   sim <- list(); count <- 0
@@ -50,8 +52,7 @@ rc_shi_field <- function(B_LU_BRP, A_SOM_LOI, A_CLAY_MI, simyears = 50, init = F
     set.seed(123)
     
     # Run simulation
-    result <- rc_sim(A_SOM_LOI = this.som,
-                            A_CLAY_MI = this.clay,
+    result <- rc_sim(soil_properties = this.soil,
                             A_DEPTH = 0.3,
                             cf_yield = if(i=='BAU') {1} else {1.05},
                             M_TILLAGE_SYSTEM = "CT",
