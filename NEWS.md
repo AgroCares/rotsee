@@ -4,6 +4,19 @@
 * Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
 * Expand README with some introductory text about the package
   
+# rotsee v0.0.3 2025-09-01
+## Added
+* function rc_check_inputs to check input data
+* Helper function rc_calculate_bd to estimate dry soil bulk density based on soil properties
+* Helper function rc_calculate_B_C_OF to calculate crop C inputs based on crop management
+
+## changed
+* Input data of crops and amendments to be optional
+* Option to input total crop C input or general crop management data
+* Changed amendment inputs to single event date, format yyyy-mm-dd
+
+# rotsee V0.0.2 2025-08-28
+
 ## Added
 * Add GitHub Action to run R-CMD-CHECK for PR's
 * Added helper functions to check input weather and parameter data, and insert default values when not supplied

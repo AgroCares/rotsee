@@ -4,14 +4,12 @@
 \alias{rc_initialise}
 \title{Function for initializing the RothC model}
 \usage{
-rc_initialise(B_LU_BRP, A_SOM_LOI, A_CLAY_MI)
+rc_initialise(B_LU_BRP, soil_properties)
 }
 \arguments{
 \item{B_LU_BRP}{(numeric) value of the BRP crop code}
 
-\item{A_SOM_LOI}{(numeric) value for the soil organic matter content of the soil}
-
-\item{A_CLAY_MI}{(numeric) value for the clay content of the soil}
+\item{soil_properties}{(list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)}
 }
 \description{
 Function for initializing the RothC model

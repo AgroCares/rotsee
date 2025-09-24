@@ -5,22 +5,19 @@
 \title{Simulate SOC evolution using Roth-C}
 \usage{
 rc_sim(
-  A_SOM_LOI,
-  A_CLAY_MI,
+  soil_properties,
   A_DEPTH = 0.3,
   B_DEPTH = 0.3,
   cf_yield = 1,
   M_TILLAGE_SYSTEM = "CT",
-  rothc_rotation,
+  rothc_rotation = NULL,
   rothc_amendment = NULL,
   rothc_parms = NULL,
   weather = NULL
 )
 }
 \arguments{
-\item{A_SOM_LOI}{(numeric) The percentage organic matter in the soil (\%).}
-
-\item{A_CLAY_MI}{(numeric) The clay content of the soil (\%).}
+\item{soil_properties}{(list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)}
 
 \item{A_DEPTH}{(numeric) Depth for which soil sample is taken (m). Default set to 0.3.}
 
@@ -32,7 +29,7 @@ rc_sim(
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
-\item{rothc_amendment}{(data.table) A table with the following column names: year, month, P_NAME, P_DOSE, P_HC, P_OM, and p_p2o5, where month is optional.}
+\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_HC, and P_C_OF. See details for desired format.}
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
@@ -43,14 +40,33 @@ This function calculates the change in carbon stock or C pools (in kg C per ha) 
 }
 \details{
 This function simulates the fate of SOC given the impact of soil properties, weather and management.
-The following inputs are mandatory: rothc_rotation, A_SOM_LOI (\%), and A_CLAY_MI (\%). All other data is optional.
+The soil_properties table is required. 
 When no weather inputs are given, these are estimated from long-term average weather conditions in the Netherlands.
 
+soil_properties: soil properties table
+Includes the columns:
+* A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
+* B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
+* A_CLAY_MI (numeric), clay fraction (\%)
+* A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
+
 rothc_amendment: amendment table
-P_NAME is the fertilizer name, P_DOSE has units (kg / ha), P_HC is the humification coefficient (fraction), P_OM is the organic matter content (%) and p_p2o5 is the phosphate content (%)
+Includes the columns:
+* P_ID (character), ID of the soil amendment product
+* P_NAME (character), name of the soil amendment product, optional
+* B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
+* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+* P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
+* P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
 rothc_rotation: crop table
-Includes the columns: year, B_LU (a crop id), B_LU_NAME (a crop name), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coefficient,-).
+Includes the columns: 
+* year,
+* B_LU (a crop id), 
+* B_LU_NAME (a crop name, optional),
+* B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
+* B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
 May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
 * M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
 * M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.
@@ -63,9 +79,13 @@ Table with possible parameters to adapt the calculations. May include the column
 * c_fractions: Distribution over the different C pools.
 * dec_rates: Decomposition rates of the different pools
 * simyears: Duration of simulation (years), default is 50
-* unit: Unit in which the output should be given. Options: 'all','soc', 'psomperfraction'
+* unit: Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
 
-weather: Average weather conditions
-Table containing columns month, W_TEMP_MEAN_MONTH (temperature in °C), W_PREC_MEAN_MONTH (precipitation in mm), W_ET_POT_MONTH (potential evapotranspiration in mm), and W_ET_ACT_MONTH. (actual evapotranspiration in mm).
-If no table is given, average Dutch conditions are used
+weather: Weather table. If no table is given, average Dutch conditions are used
+Includes the columns:
+* month
+* W_TEMP_MEAN_MONTH (temperature in °C)
+* W_PREC_MEAN_MONTH (precipitation in mm)
+* W_ET_POT_MONTH (potential evapotranspiration in mm)
+* W_ET_ACT_MONTH (actual evapotranspiration in mm)
 }
