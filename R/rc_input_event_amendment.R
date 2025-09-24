@@ -15,13 +15,12 @@ rc_input_event_amendment <- function(amendment = NULL){
   # add visual bindings
   time = cin_hum = cin_rpm = cin_dpm = method = NULL
   
-  # make local copy
-  dt <- copy(amendment)
-  
   # return empty event table if no amendment provided
-  if(is.null(dt) || nrow(dt) == 0L){
+  if(is.null(amendment) || nrow(amendment) == 0L){
     return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
   }
+  # make local copy
+  dt <- copy(amendment)
   
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
@@ -37,7 +36,7 @@ rc_input_event_amendment <- function(amendment = NULL){
   
   # Check month column, and if NA set to 9
   if (!"month" %in% names(dt)) dt[, month := NA_real_]
-  dt[, month := as.integer(month)]
+  dt[, month := as.numeric(month)]
   dt[is.na(month), month := 9L]
   checkmate::assert_numeric(dt$month, lower = 1, upper = 12, any.missing = FALSE, len = nrow(dt))
   

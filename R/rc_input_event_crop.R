@@ -3,7 +3,7 @@
 #'
 #' This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
 #'
-#' @param crops (data.table) Table with crop rotation, crop management measures, year and potential Carbon inputs.
+#' @param crops (data.table) Table containing the columns year, cin_dpm, and cin_rpm, with optional column month (if not supplied, defaulted to 9)
 #' 
 #' @export
 rc_input_event_crop <- function(crops){
@@ -14,29 +14,26 @@ rc_input_event_crop <- function(crops){
   }
   
   # add visual bindings
-  crop_name = B_LU = NULL
-  M_GREEN_TIMING = M_CROPRESIDUE = green_eom = NULL
-  crflt = cin_dpm = cin_crop_dpm = cin_res_dpm = cin_rpm = cin_crop_rpm = cin_res_rpm = NULL
-  cin_crop = tcf = method = cf_yield = crop_code = time = NULL
+  time = cin_dpm = cin_rpm = method = NULL
   
   # check inputs
   arg.length <- nrow(crops)
   
   # check crops input data.table
   checkmate::assert_data_table(crops, nrows = arg.length)
-  checkmate::assert_true(all(c('year','cin_dpm','cin_rpm') %in% names(crops)))
+  checkmate::assert_names(names(crops), must.include = c('year','cin_dpm','cin_rpm'))
   checkmate::assert_numeric(crops$cin_dpm, lower = 0, any.missing = FALSE, len = arg.length)
   checkmate::assert_numeric(crops$cin_rpm, lower = 0, any.missing = FALSE, len = arg.length)
   checkmate::assert_integerish(crops$year, any.missing = FALSE, len = arg.length)
   if (!"month" %in% names(crops)) crops[, month := NA_real_]
-  
+  crops[is.na(month), month := 9] # If month is not supplied, set to 9
+  crops[, month := as.integer(month)]
+  checkmate::assert_numeric(crops$month, lower = 1, upper = 12, any.missing = FALSE, len = arg.length)
   
   # make internal copy
   dt <- copy(crops)
   
-  # If month is not supplied, set to 9
-  dt[, month := as.integer(month)]
-  dt[is.na(month), month := 9]
+  
   
   # setorder
   setorder(dt,year,month)

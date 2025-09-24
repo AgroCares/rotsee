@@ -60,10 +60,15 @@ test_that("rc_input_events repetition logic works correctly", {
   )
   
   result <- rc_input_events(crops, amendment, simyears = 10)
+  
+  expect_s3_class(result, "data.table")
+  expect_true(max(result$time) <= 10)
+  expect_true(nrow(result) >= 2) # at least the repeated events
+  expect_true(all(result$time == sort(result$time)))
 })
   
 
-test_that("rc_input_events filters by simyears correctly using round function", {
+test_that("rc_input_events filters by simyears correctly", {
   crops <- data.table(
     time = c(1.4, 1.6),
     var = c("DPM", "RPM"), 
@@ -319,6 +324,5 @@ test_that("rc_input_events rbind preserves column structure", {
   # Should contain data from both sources
   expect_true("DPM" %in% result$var)
   expect_true("HUM" %in% result$var)
-  expect_true("add" %in% result$method)
-  expect_true("add" %in% result$method)
+  expect_true(setequal(unique(result$method), "add"))
 })

@@ -7,7 +7,7 @@
 rc_input_event_crop(crops)
 }
 \arguments{
-\item{crops}{(data.table) Table with crop rotation, crop management measures, year and potential Carbon inputs.}
+\item{crops}{(data.table) Table containing the columns year, cin_dpm, and cin_rpm, with optional column month (if not supplied, defaulted to 9)}
 }
 \description{
 This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.

@@ -26,20 +26,16 @@ test_that("rc_input_event_crop handles valid inputs correctly", {
     cin_dpm = c(500, 750),
     cin_rpm = c(300, 450)
   )
+
+  # Test with valid data
+  result_valid <- rc_input_event_crop(crops_valid)
   
-  # Test with clay content below 20%
-  result_sandy <- rc_input_event_crop(crops_valid)
+  expect_s3_class(result_valid, "data.table")
+  expect_true(all(c("var", "value", "time", "method") %in% colnames(result_valid)))
+  expect_true(all(result_valid$method == "add"))
+  expect_true(all(result_valid$value >= 0))
   
-  expect_s3_class(result_sandy, "data.table")
-  expect_true(all(c("var", "value", "time", "method") %in% colnames(result_sandy)))
-  expect_true(all(result_sandy$method == "add"))
-  expect_true(all(result_sandy$value >= 0))
-  
-  # Test with clay content above 20%
-  result_clay <- rc_input_event_crop(crops_valid)
-  
-  expect_s3_class(result_clay, "data.table")
-  expect_true(all(c("var", "value", "time", "method") %in% colnames(result_clay)))
+
 })
 
 
@@ -108,7 +104,14 @@ test_that("rc_input_event_crop handles empty input gracefully", {
   expect_true(all(c("time", "var", "value", "method") %in% colnames(result_empty)))
 })
 
-
+test_that("rc_input_event_crop handles month defaults and validates range", {
+  dt <- data.table(year = 2020, cin_dpm = 10, cin_rpm = 5)
+  res <- rc_input_event_crop(dt)
+  expect_true(all(res$time == 2020 + (9 - 1) / 12))
+  
+  dt_bad <- data.table(year = 2020, month = 13, cin_dpm = 10, cin_rpm = 5)
+  expect_error(rc_input_event_crop(dt_bad), class = "simpleError")
+})
 
 test_that("rc_input_event_crop handles zero carbon inputs", {
   # Test with zero carbon inputs
@@ -121,6 +124,7 @@ test_that("rc_input_event_crop handles zero carbon inputs", {
   
   result_zero <- rc_input_event_crop(crops_zero_carbon)
   expect_s3_class(result_zero, "data.table")
+  expect_equal(nrow(result_zero), 0)
 })
 
 test_that("rc_input_event_crop handles high carbon inputs", {

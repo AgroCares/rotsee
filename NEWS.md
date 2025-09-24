@@ -1,4 +1,4 @@
-# rotsee V0.0.2 2025-08-28
+# rotsee V0.0.4 2025-09-24
 ## Changed
 * Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
 * Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
