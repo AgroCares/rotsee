@@ -1,0 +1,56 @@
+
+#' Calculate the crop rotation related C inputs of a field on monthly basis
+#'
+#' This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
+#'
+#' @param crops (data.table) Table containing the columns year, cin_dpm, and cin_rpm, with optional column month (if not supplied, defaulted to 9)
+#' 
+#' @export
+rc_input_event_crop <- function(crops){
+  
+  # Return empty crop table if no crops have been provided
+  if(is.null(crops) || nrow(crops) == 0L){
+    return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
+  }
+  
+  # add visual bindings
+  time = cin_dpm = cin_rpm = method = NULL
+  
+  # check inputs
+  arg.length <- nrow(crops)
+  
+  # check crops input data.table
+  checkmate::assert_data_table(crops, nrows = arg.length)
+  checkmate::assert_names(names(crops), must.include = c('year','cin_dpm','cin_rpm'))
+  checkmate::assert_numeric(crops$cin_dpm, lower = 0, any.missing = FALSE, len = arg.length)
+  checkmate::assert_numeric(crops$cin_rpm, lower = 0, any.missing = FALSE, len = arg.length)
+  checkmate::assert_integerish(crops$year, any.missing = FALSE, len = arg.length)
+  if (!"month" %in% names(crops)) crops[, month := NA_real_]
+  crops[is.na(month), month := 9] # If month is not supplied, set to 9
+  crops[, month := as.integer(month)]
+  checkmate::assert_numeric(crops$month, lower = 1, upper = 12, any.missing = FALSE, len = arg.length)
+  
+  # make internal copy
+  dt <- copy(crops)
+  
+  
+  
+  # setorder
+  setorder(dt,year,month)
+  
+  # add cumulative time vector
+  dt[,time := year + (month-1)/12]
+  
+  # select only relevant columns as output for EVENT crop residue input
+  # and select only those time steps where C input is bigger than zero
+  out1 <- dt[cin_dpm > 0 | cin_rpm > 0,list(CDPM = cin_dpm,CRPM = cin_rpm,time = time)]
+  
+  # melt the output table
+  out1 <- melt(out1,id.vars = "time", variable.name = "var")
+  
+  # add method how RothC should treat the event
+  out1[, method := 'add']
+  
+  # return output
+  return(out1)
+}

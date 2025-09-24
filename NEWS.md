@@ -1,3 +1,9 @@
+# rotsee V0.0.4 2025-09-24
+## Changed
+* Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
+* Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
+* Expand README with some introductory text about the package
+  
 # rotsee v0.0.3 2025-09-01
 ## Added
 * function rc_check_inputs to check input data
@@ -16,11 +22,8 @@
 * Added helper functions to check input weather and parameter data, and insert default values when not supplied
 * Added unit tests for helper functions
 
-## Changed
-* Expand README with some introductory text about the package
-
 ## Fixed
-* Add missing dependenies for `roxygen2`, `devtools` and `usethis`
+* Add missing dependencies for `roxygen2`, `devtools` and `usethis`
 
 # rotsee v0.0.1 2025-07-31
 

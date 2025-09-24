@@ -2,27 +2,25 @@
 #'
 #' This function combines required inputs into a data.table that is needed as input for the RothC model.
 #'
-#' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) year, month (optional, defaults to 9), cin_hum, cin_dpm, and cin_rpm, cin_tot (optional). 
-#' @param simyears (numeric) Amount of years for which the simulation should run, default: 50 years
+#' @param crops (data.table) Table containing carbon inputs of DPM and RPM from crops, calculated in rc_input_event_crop
+#' @param amendment (data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments, calculated in rc_input_event_amendment
+#' @param simyears (numeric) Amount of years for which the simulation should run, Default: 50 years
 #'
 #' @export
-rc_input_events <- function(crops = NULL,amendment = NULL, simyears = 50L){
+rc_input_events <- function(crops, amendment, simyears = 50){
   
   # add visual bindings
   id = time = yr_rep = NULL
   
-  # Add checks on simyears
-  checkmate::assert_integerish(simyears, lower = 1L)
-  
-  # estimate carbon inputs from the crop rotation plan
-  event.crop <- rc_input_event_crop(crops)
-  
-  # estimate carbon inputs from amendment additions
-  event.man <- rc_input_event_amendment(amendment)
-  
+  # check parameters
+  checkmate::assert_numeric(simyears,lower = 0.1,  any.missing = FALSE)
+  checkmate::assert_data_table(crops, any.missing = FALSE)
+  checkmate::assert_names(colnames(crops), must.include = c("time", "var", "value", "method"))
+  checkmate::assert_data_table(amendment, any.missing = FALSE)
+  checkmate::assert_names(colnames(amendment), must.include = c("time", "var", "value", "method"))
+
   # create event
-  rothc.event <- rbind(event.crop,event.man)
+  rothc.event <- rbind(crops,amendment)
   
   # Return file if rothc event is empty
   if(nrow(rothc.event) == 0L){
@@ -62,123 +60,4 @@ rc_input_events <- function(crops = NULL,amendment = NULL, simyears = 50L){
   return(rothc.event)
 }
 
-#' Calculate the crop rotation related C inputs of a field on monthly basis
-#'
-#' This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
-#'
-#' @param crops (data.table) Table with crop rotation, crop management measures, year and potential Carbon inputs.
-#' 
-#' @export
-rc_input_event_crop <- function(crops){
- 
-   # Return empty crop table if no crops have been provided
-  if(is.null(crops) || nrow(crops) == 0L){
-    return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
-  }
 
-  # add visual bindings
-  crop_name = B_LU = NULL
-  M_GREEN_TIMING = M_CROPRESIDUE = green_eom = NULL
-  crflt = cin_dpm = cin_crop_dpm = cin_res_dpm = cin_rpm = cin_crop_rpm = cin_res_rpm = NULL
-  cin_crop = tcf = method = cf_yield = crop_code = time = NULL
-  
-  # check inputs
-  arg.length <- nrow(crops)
-  
-  # check crops input data.table
-  checkmate::assert_data_table(crops, nrows = arg.length)
-  checkmate::assert_true(all(c('year','cin_dpm','cin_rpm') %in% names(crops)))
-  checkmate::assert_numeric(crops$cin_dpm, lower = 0, any.missing = FALSE, len = arg.length)
-  checkmate::assert_numeric(crops$cin_rpm, lower = 0, any.missing = FALSE, len = arg.length)
-  checkmate::assert_integerish(crops$year, any.missing = FALSE, len = arg.length)
-  if (!"month" %in% names(crops)) crops[, month := NA_real_]
-  
-  
-  # make internal copy
-  dt <- copy(crops)
-  
-  # If month is not supplied, set to 9
-  dt[, month := as.integer(month)]
-  dt[is.na(month), month := 9]
-
-  # setorder
-  setorder(dt,year,month)
-  
-  # add cumulative time vector
-  dt[,time := year + (month-1)/12]
-  
-  # select only relevant columns as output for EVENT crop residue input
-  # and select only those time steps where C input is bigger than zero
-  out1 <- dt[cin_dpm > 0 | cin_rpm > 0,list(CDPM = cin_dpm,CRPM = cin_rpm,time = time)]
-  
-  # melt the output table
-  out1 <- melt(out1,id.vars = "time", variable.name = "var")
-  
-  # add method how RothC should treat the event
-  out1[, method := 'add']
-  
-  # return output
-  return(out1)
-}
-
-#' Calculate the monthly timing of carbon inputs for different fertilizer strategies
-#'
-#' This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.
-
-#' @param amendment (data.table) year, month (optional, defaults to 9), cin_hum, cin_dpm, and cin_rpm, cin_tot (optional)
-#'
-#' @details This function increases temporal detail for time series of C inputs of organic amendments.
-#' The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
-#'
-#' The output is an EVENT object.
-#'
-#' @export
-rc_input_event_amendment <- function(amendment = NULL){
-  
-  # add visual bindings
-  time = cin_hum = cin_rpm = cin_dpm = method = NULL
-  
-  # make local copy
-  dt <- copy(amendment)
-  
-  # return empty event table if no amendment provided
-  if(is.null(dt) || nrow(dt) == 0L){
-    return(data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0)))
-    }
-
-  # do checks on the input of C due to organic amendments
-  checkmate::assert_data_table(dt)
-  required <- c('year','cin_hum','cin_dpm','cin_rpm')
-  checkmate::assert_true(all(required %in% colnames(dt)))
-  checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
-  if("cin_tot" %in% colnames(dt)){
-  checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
-  }
-  checkmate::assert_numeric(dt$cin_dpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
-  checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
-  checkmate::assert_integerish(dt$year,len = nrow(dt), any.missing = FALSE)
-  
-  # Check month column, and if NA set to 9
-  if (!"month" %in% names(dt)) dt[, month := NA_real_]
-  dt[, month := as.integer(month)]
-  checkmate::assert_numeric(dt$month, lower = 1, upper = 12, any.missing = FALSE, len = nrow(dt))
-  dt[is.na(month), month := 9L]
-
-  # add cumulative time vector
-  dt[,time := year + (month - 1)/ 12]
-  
-  # select only those events that manure input occurs
-  dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
-
-  # select only relevant columns, rename them
-  out <- dt[,list(CDPM = cin_dpm,CRPM = cin_rpm,CHUM = cin_hum,time = time)]
-  
-  # melt the output table
-  out <- melt(out,id.vars = "time", variable.name = "var")
-  
-  # add method how RothC should treat the event
-  out[, method := 'add']
-  
-  # return output
-  return(out)
-}
