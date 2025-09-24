@@ -256,7 +256,7 @@ rc_check_inputs <- function(soil_properties,
     checkmate::assert_data_table(rothc_rotation, null.ok = TRUE, min.rows = 1)
 
     req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
-    checkmate::assert_true(all(req %in% names(rothc_rotation)))
+    checkmate::assert_names(colnames(rothc_rotation), must.include = req)
     
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = FALSE)
     checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = FALSE)
@@ -269,7 +269,7 @@ rc_check_inputs <- function(soil_properties,
     checkmate::assert_data_table(rothc_amendment, null.ok = TRUE, min.rows = 1)
     
     req <- c("P_HC","P_DATE_FERTILIZATION")
-    checkmate::assert_true(all(req %in% names(rothc_amendment)))
+    checkmate::assert_names(colnames(rothc_amendment), must.include = req)
     
     checkmate::assert_date(as.Date(rothc_amendment$P_DATE_FERTILIZATION), any.missing = FALSE)
     checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = FALSE)

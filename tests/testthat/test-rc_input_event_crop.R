@@ -57,10 +57,10 @@ test_that("rc_input_event_crop handles multiple years correctly", {
   expect_s3_class(result_multi, "data.table")
   expect_true(all(c("var", "value", "time", "method") %in% colnames(result_multi)))
   expect_true(all(result_multi$value >= 0))
-  expect_true(length(unique(result_multi$time)) >= 1)
   
-  # Check that time values are reasonable
-  expect_true(all(result_multi$time >= 0))
+  # Expect one event per provided (year, month)
+  expected <- dt.time[year %in% 2020:2022 & month == 8, .(time)]
+  expect_true(all(result_multi[, unique(time)] %in% expected$time))
 })
 
 test_that("rc_input_event_crop output structure is correct", {
@@ -92,6 +92,8 @@ test_that("rc_input_event_crop output structure is correct", {
   # Check that var contains expected pool types
   if (nrow(result) > 0) {
     expect_true(all(result$var %in% c("CDPM", "CRPM")))
+    expect_true(any(result$var == "CDPM"))
+    expect_true(any(result$var == "CRPM"))
   }
 })
 

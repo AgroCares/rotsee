@@ -7,6 +7,8 @@
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
 #' The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
+#' dt. time Must contain integerish columns \code{year} (>= 0) and \code{month} (1..12), numeric column \code{time}, 
+#' and unique \code{(year, month)} pairs over the simulation window.
 #'
 #' The output is an EVENT object.
 #'
@@ -26,7 +28,7 @@ rc_input_event_amendment <- function(amendment = NULL, dt.time){
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
   required <- c('year', 'month', 'cin_hum','cin_dpm','cin_rpm')
-  checkmate::assert_true(all(required %in% colnames(dt)))
+  checkmate::assert_names(colnames(dt), must.include = required)
   checkmate::assert_integerish(dt$month, lower = 1, upper = 12, len = nrow(dt), any.missing = FALSE)
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   if("cin_tot" %in% colnames(dt)){
@@ -38,7 +40,11 @@ rc_input_event_amendment <- function(amendment = NULL, dt.time){
   
   # validate dt.time
   checkmate::assert_data_table(dt.time, any.missing = FALSE)
-  checkmate::assert_true(all(c('year','month','time') %in% colnames(dt.time)))
+  checkmate::assert_names(colnames(dt.time), must.include = c('year','month','time'))
+  checkmate::assert(
+        !any(duplicated(dt.time[, paste(year, month)])),
+        msg = "dt.time has duplicate (year, month) combinations"
+  )
   
   # add cumulative time vector
   dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)

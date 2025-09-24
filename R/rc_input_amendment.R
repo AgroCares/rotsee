@@ -30,9 +30,8 @@ rc_input_amendment <- function(dt = NULL){
   checkmate::assert_data_table(dt, null.ok = FALSE, min.rows = 1)
   
   req <- c("P_HC","P_DATE_FERTILIZATION")
-  checkmate::assert(all(req%in%names(dt)),
-                    msg = "Missing required columns P_HC and/or P_DATE_FERTILIZATION")
-    checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
+  checkmate::assert_names(names(dt), must.include = req)
+  checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
   if("B_C_OF_INPUT" %in% names(dt)){ 
     # For any row with NA B_C_OF_INPUT, require P_DOSE & P_C_OF
     checkmate::assert_true(

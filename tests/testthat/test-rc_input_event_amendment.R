@@ -41,6 +41,7 @@ test_that("rc_input_event_amendment handles NULL amendment correctly", {
   
   expect_s3_class(result, "data.table")
   expect_true(all(c("time", "var", "value", "method") %in% colnames(result)))
+  expect_equal(nrow(result), 0)
 })
 
 # Test input validation - amendment parameter
@@ -122,8 +123,8 @@ test_that("rc_input_event_amendment handles multiple years correctly", {
   expect_true(nrow(result) > 0)
  
   # Should have entries for multiple years
-  unique_years <- unique(floor(result$time + min(multi_year_amendment$year)))
-  expect_true(length(unique_years) >= 1)
+  years_joined <- unique(merge(result[, .(time)], dt.time, by = "time")[, year])
+  expect_true(all(years_joined %in% multi_year_amendment$year))
 })
 
 # Test melt operation and output structure

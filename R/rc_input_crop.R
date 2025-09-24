@@ -25,7 +25,10 @@ rc_input_crop <- function(dt, cf_yield = 1){
   # check crop table
   checkmate::assert_data_table(dt,null.ok = TRUE)
   req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
-  checkmate::assert_true(all(req %in% names(dt)))
+  checkmate::assert_names(colnames(dt), must.include = req)
+  checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = FALSE)
+  checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = FALSE)
+  checkmate::assert_numeric(dt$B_C_OF_INPUT, any.missing = FALSE, lower = 0, upper = 15000)
   checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   
   # create a copy of the crop table
@@ -47,7 +50,7 @@ rc_input_crop <- function(dt, cf_yield = 1){
   dt.crop[,month := month(B_LU_END)]
 
   # ensure that year always start with 1 to X, and sort
-  setorder(dt.crop,year)
+  setorder(dt.crop,year, month)
   
   # add dpm-rmp ratio
   dt.crop[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]

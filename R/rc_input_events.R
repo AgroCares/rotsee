@@ -19,7 +19,7 @@ rc_input_events <- function(crops,amendment){
   checkmate::assert_names(colnames(amendment), must.include = c("time", "var", "value", "method"))
  
   # create event
-  rothc.event <- rbind(crops,amendment)
+  rothc.event <- rbindlist(list(crops,amendment), use.names = TRUE)
   
   # Return file if rothc event is empty
   if(nrow(rothc.event) == 0L){
