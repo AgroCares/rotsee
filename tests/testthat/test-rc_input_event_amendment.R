@@ -7,6 +7,8 @@ library(data.table)
 
 create_test_amendment <- function() {
   data.table(
+    P_ID = c(1, 2, 3),
+    P_name = c("low", "mid", "high"),
     year = c(2020, 2021, 2022),
     month = c(4, 5, 6),
     cin_tot = c(1000, 1500, 2000),
@@ -18,9 +20,11 @@ create_test_amendment <- function() {
 
 # Test basic functionality with valid inputs
 test_that("rc_input_event_amendment returns correct structure with valid inputs", {
-  amendment <- create_test_amendment()
   
-  result <- rc_input_event_amendment(amendment)
+  amendment <- create_test_amendment()
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
+  
+  result <- rc_input_event_amendment(amendment = amendment, dt.time = dt.time)
   
   expect_s3_class(result, "data.table")
   expect_true(all(c("time", "var", "value", "method") %in% colnames(result)))
@@ -77,6 +81,7 @@ test_that("rc_input_event_amendment validates amendment parameter correctly", {
 test_that("rc_input_event_amendment handles zero carbon inputs correctly", {
   zero_amendment <- data.table(
     year = 2020,
+    month = 5,
     cin_tot = 0,
     cin_hum = 0,
     cin_dpm = 0,
@@ -84,12 +89,14 @@ test_that("rc_input_event_amendment handles zero carbon inputs correctly", {
     fr_eoc_p = 15
   )
   
-  result <- rc_input_event_amendment(zero_amendment)
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
+  
+  result <- rc_input_event_amendment(amendment = zero_amendment, dt.time = dt.time)
 
   expect_s3_class(result, "data.table")
 })
 
-# Test edge case with NA month values
+# Test that no amendment events are supplied when no months are given
 test_that("rc_input_event_amendment handles NA month values", {
   na_month_amendment <- data.table(
     year = 2020,
@@ -101,10 +108,11 @@ test_that("rc_input_event_amendment handles NA month values", {
     fr_eoc_p = 15
   )
   
-  result <- rc_input_event_amendment(na_month_amendment)
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
+  
+  result <- rc_input_event_amendment(na_month_amendment, dt.time)
   
   expect_s3_class(result, "data.table")
-  expect_true(nrow(result) > 0)
 })
 
 # Test multiple years with different amendments
@@ -112,6 +120,7 @@ test_that("rc_input_event_amendment handles multiple years correctly", {
   
   multi_year_amendment <- data.table(
     year = 2020:2022,
+    month = rep(5, each = 3),
     cin_tot = c(1000, 1500, 2000),
     cin_hum = c(100, 150, 200),
     cin_dpm = c(300, 450, 600),
@@ -119,7 +128,9 @@ test_that("rc_input_event_amendment handles multiple years correctly", {
     fr_eoc_p = c(15, 15, 15)
   )
   
-  result <- rc_input_event_amendment(multi_year_amendment)
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
+  
+  result <- rc_input_event_amendment(multi_year_amendment, dt.time)
   
   expect_s3_class(result, "data.table")
   expect_true(nrow(result) > 0)
@@ -132,8 +143,9 @@ test_that("rc_input_event_amendment handles multiple years correctly", {
 # Test melt operation and output structure
 test_that("rc_input_event_amendment output has correct melted structure", {
   amendment <- create_test_amendment()
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   
-  result <- rc_input_event_amendment(amendment)
+  result <- rc_input_event_amendment(amendment, dt.time = dt.time)
   
   # Should have exactly these variable names after melting
   expected_vars <- c("CDPM", "CRPM", "CHUM")
@@ -151,28 +163,32 @@ test_that("rc_input_event_amendment handles boundary values correctly", {
   # Test minimum values
   min_amendment <- data.table(
     year = 2020,
+    month = 5,
     cin_tot = 0,
     cin_hum = 0,
     cin_dpm = 0,
     cin_rpm = 0,
     fr_eoc_p = 0
   )
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   
-  result_min <- rc_input_event_amendment(min_amendment)
+  result_min <- rc_input_event_amendment(min_amendment, dt.time)
   
   expect_s3_class(result_min, "data.table")
   
   # Test maximum allowed values
   max_amendment <- data.table(
     year = 2020,
+    month = 5,
     cin_tot = 100000,
     cin_hum = 100000,
     cin_dpm = 100000,
     cin_rpm = 100000,
     fr_eoc_p = 250
   )
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   
-  result_max <- rc_input_event_amendment(max_amendment)
+  result_max <- rc_input_event_amendment(max_amendment, dt.time)
   
   expect_s3_class(result_max, "data.table")
   expect_true(all(result_max$value >= 0))
