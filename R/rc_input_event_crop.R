@@ -3,8 +3,8 @@
 #'
 #' This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
 #'
-#' @param crops (data.table) Table containing the columns year, month, cin_dpm, and cin_rpm
-#' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period
+#' @param crops (data.table) Table containing the columns year, month, cin_dpm, and cin_rpm. If month is omitted, 9 (September) is assumed.
+#' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period, with columns year, month, and time (cumulative months from the start date)
 #' 
 #' @export
 rc_input_event_crop <- function(crops, dt.time){
@@ -15,7 +15,7 @@ rc_input_event_crop <- function(crops, dt.time){
   }
   
   # add visual bindings
-  time = cin_dpm = cin_rpm = method = NULL
+  time = cin_dpm = cin_rpm = method = var = NULL
   
   # check inputs
   arg.length <- nrow(crops)

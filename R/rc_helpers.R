@@ -86,7 +86,7 @@ rc_update_weather <- function(dt = NULL){
 #' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD)
 #' 
 #' @returns
-#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, simyears, unit, method and poutput
+#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
 #' 
 #' 
 #' @export
@@ -373,13 +373,13 @@ return(dt.crop)
 
 #' Function to extend the user crop input file to cover the full range of simulation years
 #'
-#' @param crops (data table) Input crop table for the RothC model. See details for further information
+#' @param crops (data.table) Input crop table for the RothC model. See details for further information
 #' @param simyears (numeric) number of simulation years of the RothC model
 #' @param start_date (character, formatted YYYY-MM-DD) Date in which simulation starts
 #' @param end_date (character, formatted YYYY-MM-DD) Required if simyears is not supplied
 #'
 #' @returns
-#' An extended crop input file to be used in the rtosee package
+#' An extended crop input file to be used in the rotsee package
 #' 
 #' @details
 #' Crops: crop table
@@ -469,8 +469,8 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #'
 #' @param amendments (data table) Input amendments table for the RothC model. See details for further information
 #' @param simyears (numeric) number of simulation years of the RothC model
-#' @param start_date (character, formatted YYYY-MM-DD) Date in which simulation starts
-#' @param end_date (character, formatted YYYY-MM-DD) Required if simyears is not supplied
+#' @param start_date (date, formatted YYYY-MM-DD) Date in which simulation starts
+#' @param end_date (date, formatted YYYY-MM-DD) Required if simyears is not supplied
 #'
 #' @returns
 #' An extended amendment input file to be used in the rotsee package
@@ -551,8 +551,8 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
 
 #' Function to create data table with dates and months of the entire simulation period
 #'
-#' @param start_date (date) start date of the simulation period (formatted as YYYY-MM-DD)
-#' @param end_date (date) end date of the simulation period (formatted as YYYY-MM-DD)
+#' @param start_date start date of the simulation period (formatted as YYYY-MM-DD, either as date or as character)
+#' @param end_date end date of the simulation period (formatted as YYYY-MM-DD, either as date or as character), should be after start date
 #'
 #' @returns
 #' Table with all year and month combinations of the simulation period

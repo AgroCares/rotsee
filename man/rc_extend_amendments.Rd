@@ -9,9 +9,9 @@ rc_extend_amendments(amendments, start_date, end_date = NULL, simyears = NULL)
 \arguments{
 \item{amendments}{(data table) Input amendments table for the RothC model. See details for further information}
 
-\item{start_date}{(character, formatted YYYY-MM-DD) Date in which simulation starts}
+\item{start_date}{(date, formatted YYYY-MM-DD) Date in which simulation starts}
 
-\item{end_date}{(character, formatted YYYY-MM-DD) Required if simyears is not supplied}
+\item{end_date}{(date, formatted YYYY-MM-DD) Required if simyears is not supplied}
 
 \item{simyears}{(numeric) number of simulation years of the RothC model}
 }

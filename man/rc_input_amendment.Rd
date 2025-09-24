@@ -4,12 +4,10 @@
 \alias{rc_input_amendment}
 \title{Do check and expand amendment input table for RothC}
 \usage{
-rc_input_amendment(dt = NULL, B_LU_BRP = NULL)
+rc_input_amendment(dt = NULL)
 }
 \arguments{
 \item{dt}{(data.table) Table with amendments and amendment properties for Carbon input.}
-
-\item{B_LU_BRP}{(numeric) The crop code}
 }
 \description{
 Helper function to check the content and format of the amendment input table.

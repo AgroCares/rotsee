@@ -6,7 +6,7 @@
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param dt.weather (data.table) Data table of monthly weather
-#' @param dt.time (data.table) table with all combinations of year and month in the simulation period
+#' @param dt.time (data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}
 #'
 #' @details
 #' dt: crop rotation table
@@ -16,12 +16,12 @@
 #' 
 #' dt.weather: weather table
 #' contains the following columns:
-#' * year (optional)
+#' * year (optional), monthly weather repeated when not supplied
 #' * month
 #' * W_TEMP_MEAN_MONTH
 #' * W_PREC_SUM_MONTH
 #' * W_ET_POT_MONTH
-#' * W_ET_ACT_MONTH
+#' * W_ET_ACT_MONTH (optional), calculated from W_ET_POT_MONTH when not supplied
 #'
 #' @export
 rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.time){

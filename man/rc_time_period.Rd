@@ -7,9 +7,9 @@
 rc_time_period(start_date, end_date)
 }
 \arguments{
-\item{start_date}{(date) start date of the simulation period (formatted as YYYY-MM-DD)}
+\item{start_date}{start date of the simulation period (formatted as YYYY-MM-DD, either as date or as character)}
 
-\item{end_date}{(date) end date of the simulation period (formatted as YYYY-MM-DD)}
+\item{end_date}{end date of the simulation period (formatted as YYYY-MM-DD, either as date or as character), should be after start date}
 }
 \value{
 Table with all year and month combinations of the simulation period

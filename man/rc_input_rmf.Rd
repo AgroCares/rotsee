@@ -15,7 +15,7 @@ rc_input_rmf(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI, dt.weather, dt.time)
 
 \item{dt.weather}{(data.table) Data table of monthly weather}
 
-\item{dt.time}{(data.table) table with all combinations of year and month in the simulation period}
+\item{dt.time}{(data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}}
 }
 \description{
 This function prepares the rate modifying factors for RothC given crop cover
@@ -28,10 +28,10 @@ contains at least the following columns:
 
 dt.weather: weather table
 contains the following columns:
-* year (optional)
+* year (optional), monthly weather repeated when not supplied
 * month
 * W_TEMP_MEAN_MONTH
 * W_PREC_SUM_MONTH
 * W_ET_POT_MONTH
-* W_ET_ACT_MONTH
+* W_ET_ACT_MONTH (optional), calculated from W_ET_POT_MONTH when not supplied
 }

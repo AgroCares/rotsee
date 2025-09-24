@@ -2,8 +2,8 @@
 #'
 #' This function combines required inputs into a data.table that is needed as input for the RothC model.
 #'
-#' @param crops (data.table) Table containing carbon inputs of DPM and RPM from crops, calculated in rc_input_event_crop
-#' @param amendment (data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments, calculated in rc_input_event_amendment
+#' @param crops (data.table) Table containing carbon inputs of DPM and RPM from crops, calculated in \link{rc_input_event_crop}
+#' @param amendment (data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments, calculated in \link{rc_input_event_amendment}
 
 #'
 #' @export

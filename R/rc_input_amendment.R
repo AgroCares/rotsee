@@ -3,7 +3,6 @@
 #' Helper function to check the content and format of the amendment input table.
 #'
 #' @param dt (data.table) Table with amendments and amendment properties for Carbon input.
-#' @param B_LU_BRP (numeric) The crop code
 #'
 #' @details
 #' The amendments table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
@@ -20,7 +19,7 @@
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #'
 #' @export
-rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
+rc_input_amendment <- function(dt = NULL){
   
 
   # add visual bindings
