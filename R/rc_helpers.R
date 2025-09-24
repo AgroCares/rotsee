@@ -51,7 +51,7 @@ rc_update_weather <- function(dt = NULL){
     # Check if both potential and actual ET are provided
     if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
       checkmate::assert(
-        !all(is.na(dt$W_ET_POT_MONTH)) || !all(is.na(dt$W_ET_act_MONTH)),
+        !all(is.na(dt$W_ET_POT_MONTH)) || !all(is.na(dt$W_ET_ACT_MONTH)),
         msg = "At least one of W_ET_POT_MONTH and W_ET_ACT_MONTH should not contain NA values."
       )
       # Check ranges, allow NAs
@@ -60,7 +60,7 @@ rc_update_weather <- function(dt = NULL){
     } else if ("W_ET_POT_MONTH" %in% colnames(dt)) {
       # Only potential ET provided: no NA allowed
       checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = FALSE)
-    } else if ("W_ET_act_MONTH" %in% colnames(dt)) {
+    } else if ("W_ET_ACT_MONTH" %in% colnames(dt)) {
       # Only actual ET provided: no NA allowed
       checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
     }
@@ -228,7 +228,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 #'
 #' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, P_C_OF_INPUT, and P_HC.
+#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_INPUT, and P_HC.
 #'
 #' @returns
 #' Error messages indicating if input data is not in order
@@ -279,8 +279,8 @@ rc_check_inputs <- function(soil_properties,
        checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = FALSE)
     if ("P_C_OF" %in% names(rothc_amendment))
       checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = FALSE)
-    if ("P_C_OF_INPUT" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$P_C_OF_INPUT, lower = 0, upper = 250000, any.missing = FALSE)
+    if ("B_C_OF_INPUT" %in% names(rothc_amendment))
+      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = FALSE)
   }
 }
 
@@ -309,7 +309,7 @@ rc_calculate_bd <- function(dt){
   # Add copy of data table
   dt <- copy(dt)
   
-  # calculate soil texture dependent density (BCAV 2019?)
+  # calculate soil texture dependent density (CBAV, 2019)
   if(!is.null(dt$A_SOM_LOI)){
   dt[, dens.sand := (1 / (0.02525 * A_SOM_LOI + 0.6541))]
   dt[, dens.clay :=  (0.00000067*A_SOM_LOI^4 - 0.00007792*A_SOM_LOI^3 + 0.00314712*A_SOM_LOI^2 - 0.06039523*A_SOM_LOI + 1.33932206)]
@@ -338,8 +338,8 @@ rc_calculate_bd <- function(dt){
 #' Contains the following columns:
 #' * B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
 #' * B_LU_HI (numeric), the harvest index of the crop
-#' * B_LU_HI_RES (numeric), fraction of biomass that is harvested
-#' * B_LU_RS_FR (numeric), fraction of biomass that remains as residue
+#' * B_LU_HI_RES (numeric), fraction of biomass that is residue
+#' * B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
 #' * M_CROP_RESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
 #' @export
@@ -352,17 +352,16 @@ rc_calculate_B_C_OF <- function(dt){
   # Check input data
   checkmate::assert_subset(colnames(dt), choices = c("B_LU_YIELD", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE"))
   checkmate::assert_numeric(dt$B_LU_YIELD, lower = 0, upper = 150000, any.missing = F)
-  checkmate::assert_numeric(dt$B_LU_DM, lower = 0, upper = 1000, any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI, lower = 0.01, upper = 1, any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI_RES, lower = 0, upper = 1, any.missing = F)
-  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = 0.01, upper = 1, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = 0.01, upper = 5, any.missing = F)
   checkmate::assert_logical(dt$M_CROPRESIDUE)
   
   # Make copy of input table
   dt.crop <- copy(dt)
   
   # Calculate C inputs from roots and crop residue (kg C/ha)
-  dt.crop[, cin_aboveground := B_LU_YIELD * 0.001 / B_LU_HI * 0.5]
+  dt.crop[, cin_aboveground := B_LU_YIELD / B_LU_HI * 0.5]
   dt.crop[, cin_roots := cin_aboveground * B_LU_RS_FR]
   dt.crop[, cin_residue := fifelse(M_CROPRESIDUE, cin_aboveground * B_LU_HI_RES, 0)]
   dt.crop[, B_C_OF_INPUT := cin_roots + cin_residue]

@@ -7,9 +7,9 @@
 rc_input_events(crops, amendment, dt.time)
 }
 \arguments{
-\item{crops}{(data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.}
+\item{crops}{(data.table) Table containing carbon inputs of DPM and RPM from crops, calculated in rc_input_event_crop}
 
-\item{amendment}{(data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.}
+\item{amendment}{(data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments, calculated in rc_input_event_amendment}
 
 \item{dt.time}{(data.table) Table containing all combinations of months and years in the simulation period}
 }

@@ -13,9 +13,9 @@
 #' Includes the columns:
 #' * P_ID (character), ID of the soil amendment product
 #' * P_NAME (character), name of the soil amendment product, optional
-#' * P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
-#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
+#' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #'
@@ -24,7 +24,7 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   
 
   # add visual bindings
-  P_C_OF = P_C_OF_INPUT = P_DATE_FERTILIZATION = P_DOSE = P_HC = NULL
+  P_C_OF = B_C_OF_INPUT = P_DATE_FERTILIZATION = P_DOSE = P_HC = NULL
   P_ID = P_NAME = cin_dpm = cin_hum = cin_rpm = cin_tot = fr_dpm_rpm = NULL
   
   # Check amendment table
@@ -33,7 +33,12 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   req <- c("P_HC","P_DATE_FERTILIZATION")
   checkmate::assert_true(all(req%in%names(dt)))
     checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
-
+    checkmate::assert(
+        "B_C_OF_INPUT" %in% names(dt) || all(c("P_DOSE","P_C_OF") %in% names(dt)),
+        msg = "Provide either B_C_OF_INPUT, or both P_DOSE and P_C_OF"
+      )
+  checkmate::assert_true(!anyNA(dt$B_C_OF_INPUT) || (!anyNA(dt$P_DOSE) & !anyNA(dt$P_C_OF)))
+ 
   # Create copy of data table
   dt.org <- copy(dt)
  
@@ -44,7 +49,7 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   # add month = NA when no input given
   if(!'month' %in% colnames(dt.org)){dt.org[,month := NA_real_]}
  
-  # add dpm-rmp ratio
+  # add dpm-rpm ratio
   dt.org[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
   
   # add default ratio if no humification coefficient is supplied
@@ -52,9 +57,9 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   
   
   # estimate total Carbon input per crop and year (kg C/ha)
-  if(!is.null(dt.org$P_C_OF_INPUT)){
+  if(!is.null(dt.org$B_C_OF_INPUT)){
     # If supplied, copy value
-    dt.org[, cin_tot := P_C_OF_INPUT]
+    dt.org[, cin_tot := B_C_OF_INPUT]
   }else{
     # If not supplied calculate from dose (kg/ha) and organic carbon content (g C/kg)
   dt.org[, cin_tot := P_DOSE * P_C_OF/1000]
@@ -66,7 +71,7 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   dt.org[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
  
   # select only relevant columns
-  dt.org <- dt.org[,list(p_ID = P_ID, p_name = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
+  dt.org <- dt.org[,list(P_ID = P_ID, P_NAME = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
 
   # return
   return(dt.org)
