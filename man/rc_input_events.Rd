@@ -4,14 +4,12 @@
 \alias{rc_input_events}
 \title{Combine all EVENT data needed for RothC modelling}
 \usage{
-rc_input_events(crops, amendment, dt.time)
+rc_input_events(crops, amendment)
 }
 \arguments{
 \item{crops}{(data.table) Table containing carbon inputs of DPM and RPM from crops, calculated in rc_input_event_crop}
 
 \item{amendment}{(data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments, calculated in rc_input_event_amendment}
-
-\item{dt.time}{(data.table) Table containing all combinations of months and years in the simulation period}
 }
 \description{
 This function combines required inputs into a data.table that is needed as input for the RothC model.
