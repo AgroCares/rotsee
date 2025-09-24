@@ -8,8 +8,8 @@
 #' @details
 #' The crop table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
 #' To run this function, the dt should contain the following columns:
-#' * B_LU_START (date), start of crop growth (formatted YYYY-MM-DD)
-#' * B_LU_END (date), end of crop growth (formatted YYYY-MM-DD)
+#' * B_LU_START (date/character), start of crop growth (formatted YYYY-MM-DD)
+#' * B_LU_END (date/character), end of crop growth (formatted YYYY-MM-DD)
 #' * B_LU (a crop id)
 #' * B_LU_NAME (a crop name, optional):
 #' * B_LU_HC (the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used)

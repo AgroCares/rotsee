@@ -1,4 +1,4 @@
-# rotsee v0.0.5 2025-09-24
+# rotsee v0.1.0 2025-09-24
 ## added
 * B_LU_START and B_LU_END as input parameters in rothc_rotation
 * start_date and end_date to replace simyears

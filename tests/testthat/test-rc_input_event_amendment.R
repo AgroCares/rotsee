@@ -8,7 +8,7 @@ library(data.table)
 create_test_amendment <- function() {
   data.table(
     P_ID = c(1, 2, 3),
-    P_name = c("low", "mid", "high"),
+    P_NAME = c("low", "mid", "high"),
     year = c(2020, 2021, 2022),
     month = c(4, 5, 6),
     cin_tot = c(1000, 1500, 2000),

@@ -2,14 +2,14 @@
 test_that("rc_input_events combines crops and amendment data correctly", {
   crops <- data.table(
     time = c(1, 1, 2, 2),
-    var = c("DPM", "RPM", "DPM", "RPM"), 
+    var = c("CDPM", "CRPM", "CDPM", "CRPM"), 
     method = c("add", "add", "add", "add"),
     value = c(100, 200, 75, 150)
   )
   
   amendment <- data.table(
     time = c(1, 1, 2, 2),
-    var = c("DPM", "RPM", "DPM", "RPM"), 
+    var = c("CDPM", "CRPM", "CDPM", "CRPM"), 
     method = c("add", "add", "add", "add"),
     value = c(50, 75, 60, 80)
   )
@@ -27,7 +27,7 @@ test_that("rc_input_events combines crops and amendment data correctly", {
 test_that("rc_input_events repetition logic works correctly", {
   crops <- data.table(
     time = c(1, 3),
-    var = c("DPM", "RPM"), 
+    var = c("CDPM", "CRPM"), 
     method = c("add", "add"),
     value = c(100, 200)
   )
@@ -52,14 +52,14 @@ test_that("rc_input_events repetition logic works correctly", {
 test_that("rc_input_events removes helper columns correctly", {
   crops <- data.table(
     time = c(1, 2),
-    var = c("DPM", "RPM"), 
+    var = c("CDPM", "CRPM"), 
     method = c("add", "add"),
     value = c(100, 200)
   )
   
   amendment <- data.table(
     time = c(3),
-    var = c("HUM"),
+    var = c("CHUM"),
     method = c("add"), 
     value = c(50)
   )
@@ -76,14 +76,14 @@ test_that("rc_input_events removes helper columns correctly", {
 test_that("rc_input_events orders output by time correctly", {
   crops <- data.table(
     time = c(3, 1, 2),
-    var = c("DPM", "RPM", "HUM"), 
+    var = c("CDPM", "CRPM", "CHUM"), 
     method = c("add", "add", "add"),
     value = c(100, 200, 150)
   )
   
   amendment <- data.table(
     time = c(4, 0.5),
-    var = c("BIO", "DPM"),
+    var = c("CBIO", "CDPM"),
     method = c("add", "add"), 
     value = c(50, 75)
   )
@@ -104,7 +104,7 @@ test_that("rc_input_events handles empty datasets", {
   
   amendment <- data.table(
     time = c(1),
-    var = c("HUM"),
+    var = c("CHUM"),
     method = c("add"), 
     value = c(50)
   )
@@ -116,7 +116,7 @@ test_that("rc_input_events handles empty datasets", {
   
   crops <- data.table(
     time = c(1),
-    var = c("DPM"), 
+    var = c("CDPM"), 
     method = c("add"),
     value = c(100)
   )

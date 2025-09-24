@@ -2,7 +2,7 @@
 #'
 #' This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.
 
-#' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.
+#' @param amendment (data.table) A table with the following column names: P_ID (optional), P_NAME (optional), year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.
 #' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period, with columns year, month, and time
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
@@ -14,7 +14,7 @@
 rc_input_event_amendment <- function(amendment = NULL, dt.time){
   
   # add visual bindings
-  time = cin_hum = cin_rpm = cin_dpm = method = NULL
+  time = cin_hum = cin_rpm = cin_dpm = method = var = NULL
   
   # return empty event table if no amendment provided
   if(is.null(amendment) || nrow(amendment) == 0L){
@@ -43,6 +43,11 @@ rc_input_event_amendment <- function(amendment = NULL, dt.time){
   # add cumulative time vector
   dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)
   
+  # Replace missing carbon inputs with 0 after aligning to time grid
+  dt[is.na(cin_dpm), cin_dpm := 0]
+  dt[is.na(cin_rpm), cin_rpm := 0]
+  dt[is.na(cin_hum), cin_hum := 0]
+  
   # select only those events that manure input occurs
   dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
   
@@ -54,6 +59,8 @@ rc_input_event_amendment <- function(amendment = NULL, dt.time){
   
   # add method how RothC should treat the event
   out[, method := 'add']
+  
+  setorder(out, time, var)
   
   # return output
   return(out)

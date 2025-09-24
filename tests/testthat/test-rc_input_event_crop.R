@@ -14,10 +14,7 @@ test_that("rc_input_event_crop validates input parameters correctly", {
   
   dt.time <- rc_time_period(start_date = "2020-01-01", end_date = "2020-12-01")
   
-  expect_error(
-    rc_input_event_crop(crops_missing_cols, dt.time),
-    class = "simpleError"
-  )
+  expect_error(rc_input_event_crop(crops_missing_cols, dt.time), "Assertion")
 
 })
 
@@ -53,7 +50,7 @@ test_that("rc_input_event_crop handles multiple years correctly", {
     cin_dpm = rep(c(500, 750), 3),
     cin_rpm = rep(c(300, 450), 3)
   )
-  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-08-01")
   
   result_multi <- rc_input_event_crop(crops_multi_year, dt.time)
   

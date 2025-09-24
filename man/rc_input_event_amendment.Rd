@@ -7,7 +7,7 @@
 rc_input_event_amendment(amendment = NULL, dt.time)
 }
 \arguments{
-\item{amendment}{(data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.}
+\item{amendment}{(data.table) A table with the following column names: P_ID (optional), P_NAME (optional), year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.}
 
 \item{dt.time}{(data.table) Table containing all combinations of months and years in the simulation period, with columns year, month, and time}
 }
