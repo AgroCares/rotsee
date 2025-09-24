@@ -105,7 +105,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
 
   # Replace deficit of starting months with next year if there is already soil moisture deficit
   # Check if year starts with a soil moisture deficit
-  if(dt[13, acc_smd] < 0){
+  if(nrow(dt) >= 13 && dt[13, acc_smd] < 0){
    
   dt[1:12, acc_smd :={
     # Create fillter column of the first year

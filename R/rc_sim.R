@@ -156,8 +156,12 @@ rc_sim <- function(soil_properties,
 
 
   # make rate modifying factors input database
+  if(!is.null(dt.crop)){
   dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
- 
+  }else{
+    dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
+    
+  }
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
   
@@ -358,7 +362,7 @@ rc_sim <- function(soil_properties,
   
   # if requested, provide information in the scale of years
   if(poutput=='year'){
-        out <- out[round(time, 5) %% 1 == 0]
+    out <- out[abs(time - round(time)) < 1e-5]
   }
   out <- out[,.SD, .SDcols = !names(out) %in% "time"]
 

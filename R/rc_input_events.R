@@ -17,7 +17,7 @@ rc_input_events <- function(crops,amendment){
   checkmate::assert_names(colnames(crops), must.include = c("time", "var", "value", "method"))
   checkmate::assert_data_table(amendment, any.missing = FALSE)
   checkmate::assert_names(colnames(amendment), must.include = c("time", "var", "value", "method"))
-  
+ 
   # create event
   rothc.event <- rbind(crops,amendment)
   
@@ -25,9 +25,6 @@ rc_input_events <- function(crops,amendment){
   if(nrow(rothc.event) == 0L){
     return(rothc.event)
   }
-
-  # align time for amendment and crop events
-  rothc.event[, time := time - floor(min(time))]
 
   # sum multiple additives that are given at same time
   rothc.event <- rothc.event[,list(value = sum(value)),by = c( 'time','var','method')]

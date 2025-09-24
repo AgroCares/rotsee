@@ -40,16 +40,23 @@ rc_input_event_crop <- function(crops, dt.time){
   # add cumulative time vector
   dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)
   
+  # replace missing carbon inputs by 0 after aligning to time grid
+  dt[is.na(cin_dpm), cin_dpm := 0]
+  dt[is.na(cin_rpm), cin_rpm := 0]
+ 
   # select only relevant columns as output for EVENT crop residue input
   # and select only those time steps where C input is bigger than zero
-  out1 <- dt[cin_dpm > 0 | cin_rpm > 0,list(CDPM = cin_dpm,CRPM = cin_rpm,time = time)]
+  out1 <- dt[cin_dpm > 0 | cin_rpm > 0,list(CDPM = cin_dpm, CRPM = cin_rpm,time = time)]
   
   # melt the output table
   out1 <- melt(out1,id.vars = "time", variable.name = "var")
   
   # add method how RothC should treat the event
   out1[, method := 'add']
- 
+  
+  # ensure deterministic ordering
+  setorder(out1, time, var)
+
   # return output
   return(out1)
 }
