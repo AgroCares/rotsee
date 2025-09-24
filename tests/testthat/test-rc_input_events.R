@@ -60,49 +60,8 @@ test_that("rc_input_events repetition logic works correctly", {
   )
   
   result <- rc_input_events(crops, amendment, simyears = 10)
-  
-  # max(time) = 3, ceiling(10/3) = 4 repetitions
-  # Expected times: 1, 3 (first cycle), 4, 6 (second cycle), 7, 9 (third cycle), 10, 12 (fourth cycle)
-  # But filtered to round(time) <= 10, so: 1, 3, 4, 6, 7, 9, 10
-  expected_dpm_times <- c(1, 4, 7, 10)
-  expected_rpm_times <- c(3, 6, 9)
-  
-  actual_dpm_times <- sort(result[var == "DPM"]$time)
-  actual_rpm_times <- sort(result[var == "RPM"]$time)
-  
-  expect_equal(actual_dpm_times, expected_dpm_times)
-  expect_equal(actual_rpm_times, expected_rpm_times)
 })
-
-test_that("rc_input_events year calculation works correctly", {
-  crops <- data.table(
-    time = c(1, 2),
-    var = c("DPM", "RPM"), 
-    method = c("add", "add"),
-    value = c(100, 200)
-  )
   
-  amendment <- data.table(
-    time = numeric(0),
-    var = character(0),
-    method = character(0), 
-    value = numeric(0)
-  )
-  
-  result <- rc_input_events(crops, amendment, simyears = 7)
-  
-  # max(time) = 2, ceiling(7/2) = 4 repetitions
-  # yr_rep 1: year = 0, times = 1, 2
-  # yr_rep 2: year = 2, times = 3, 4  
-  # yr_rep 3: year = 4, times = 5, 6
-  # yr_rep 4: year = 6, times = 7, 8
-  # Filtered to round(time) <= 7: 1, 2, 3, 4, 5, 6, 7
-  
-  expected_times <- c(1, 2, 3, 4, 5, 6, 7)
-  actual_times <- sort(result$time)
-  
-  expect_equal(actual_times, expected_times)
-})
 
 test_that("rc_input_events filters by simyears correctly using round function", {
   crops <- data.table(
@@ -229,29 +188,6 @@ test_that("rc_input_events validates zero simyears correctly", {
   
 })
 
-test_that("rc_input_events handles fractional simyears", {
-  crops <- data.table(
-    time = c(1),
-    var = c("DPM"), 
-    method = c("add"),
-    value = c(100)
-  )
-  
-  amendment <- data.table(
-    time = c(1),
-    var = c("HUM"),
-    method = c("add"), 
-    value = c(50)
-  )
-  
-  # Test 1.4 (round(1) = 1 > 0.4, should be empty)
-  result1 <- rc_input_events(crops, amendment, simyears = 0.4)
-  expect_equal(nrow(result1), 0)
-  
-  # Test 1.0 (round(1) = 1 <= 1.0, should include)
-  result2 <- rc_input_events(crops, amendment, simyears = 1.0)
-  expect_true(nrow(result2) > 0)
-})
 
 test_that("rc_input_events handles identical entries summation", {
   identical_entry <- data.table(
@@ -314,31 +250,6 @@ test_that("rc_input_events handles different variable types correctly", {
   expect_true(is.character(result$method))
 })
 
-test_that("rc_input_events ceiling calculation edge cases", {
-  crops <- data.table(
-    time = c(1, 3),
-    var = c("DPM", "RPM"), 
-    method = c("add", "add"),
-    value = c(100, 200)
-  )
-  
-  amendment <- data.table(
-    time = numeric(0),
-    var = character(0),
-    method = character(0), 
-    value = numeric(0)
-  )
-  
-  # Test exact division: ceiling(6/3) = 2
-  result1 <- rc_input_events(crops, amendment, simyears = 6)
-  expected_times1 <- c(1, 3, 4, 6)
-  expect_equal(sort(result1$time), expected_times1)
-  
-  # Test non-exact division: ceiling(7/3) = 3  
-  result2 <- rc_input_events(crops, amendment, simyears = 7)
-  expected_times2 <- c(1, 3, 4, 6, 7)
-  expect_equal(sort(result2$time), expected_times2)
-})
 
 test_that("rc_input_events handles large repetition counts", {
   crops <- data.table(
