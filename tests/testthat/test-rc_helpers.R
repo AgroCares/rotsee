@@ -85,6 +85,11 @@ test_that("rc_extend_crops correctly extends crop input file", {
   
   # Check whether crop table is extended with valid data
   expect_no_error(rc_extend_crops(crops = crops, simyears = simyears, start_date = start_date))
+  
+  # Perform check with end_date instead of simyears
+  end_date <- "2072-04-01"
+  expect_no_error(rc_extend_crops(crops = crops, end_date = end_date, start_date = start_date))
+  
 })
 
 
@@ -106,6 +111,10 @@ test_that("rc_extend_amendments correctly extends amendments input file", {
   
   # Check whether crop table is extended with valid data
   expect_no_error(rc_extend_amendments(amendments = amendments, simyears = simyears, start_date = start_date))
+  
+  # Perform check with end_date instead of simyears
+  end_date <- "2072-04-01"
+  expect_no_error(rc_extend_amendments(amendments = amendments, end_date = end_date, start_date = start_date))
 })
 
 # context("cf_ind_importance")

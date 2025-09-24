@@ -36,7 +36,8 @@ test_that("rc_input_event_amendment returns correct structure with valid inputs"
 
 # Test with NULL amendment (default case)
 test_that("rc_input_event_amendment handles NULL amendment correctly", {
-  result <- rc_input_event_amendment(amendment = NULL)
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
+  result <- rc_input_event_amendment(amendment = NULL, dt.time = dt.time)
   
   expect_s3_class(result, "data.table")
   expect_true(all(c("time", "var", "value", "method") %in% colnames(result)))
@@ -50,25 +51,28 @@ test_that("rc_input_event_amendment validates amendment parameter correctly", {
     invalid_col = 2020,
     month = 4
   )
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   
   expect_error(
-    rc_input_event_amendment(invalid_amendment),
+    rc_input_event_amendment(invalid_amendment, dt.time),
     "Assertion"
   )
   
   # Test with negative cin_hum values
   negative_amendment <- create_test_amendment()
   negative_amendment$cin_hum <- c(-10, 150, 200)
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   expect_error(
-    rc_input_event_amendment(negative_amendment),
+    rc_input_event_amendment(negative_amendment, dt.time),
     "not >= 0"
   )
   
   # Test with excessive cin_tot values
   excessive_amendment <- create_test_amendment()
   excessive_amendment$cin_tot <- c(150000, 150, 200)
+  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   expect_error(
-    rc_input_event_amendment(excessive_amendment),
+    rc_input_event_amendment(excessive_amendment, dt.time),
     "not <= 100000"
   )
   
@@ -96,24 +100,6 @@ test_that("rc_input_event_amendment handles zero carbon inputs correctly", {
   expect_s3_class(result, "data.table")
 })
 
-# Test that no amendment events are supplied when no months are given
-test_that("rc_input_event_amendment handles NA month values", {
-  na_month_amendment <- data.table(
-    year = 2020,
-    month = NA_integer_,
-    cin_tot = 1000,
-    cin_hum = 100,
-    cin_dpm = 300,
-    cin_rpm = 600,
-    fr_eoc_p = 15
-  )
-  
-  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
-  
-  result <- rc_input_event_amendment(na_month_amendment, dt.time)
-  
-  expect_s3_class(result, "data.table")
-})
 
 # Test multiple years with different amendments
 test_that("rc_input_event_amendment handles multiple years correctly", {

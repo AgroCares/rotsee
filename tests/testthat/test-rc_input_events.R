@@ -138,7 +138,7 @@ test_that("rc_input_events handles empty datasets", {
 test_that("rc_input_events handles identical entries summation", {
   identical_entry <- data.table(
     time = c(1),
-    var = c("DPM"), 
+    var = c("CDPM"), 
     method = c("add"),
     value = c(100)
   )
@@ -147,7 +147,7 @@ test_that("rc_input_events handles identical entries summation", {
   result <- rc_input_events(identical_entry, identical_entry)
   
   expect_s3_class(result, "data.table")
-  first_entry <- result[time == 0 & var == "DPM" & method == "add"]
+  first_entry <- result[time == 1 & var == "CDPM" & method == "add"]
   expect_equal(nrow(first_entry), 1)
   expect_equal(first_entry$value, 200)
 })
@@ -155,14 +155,14 @@ test_that("rc_input_events handles identical entries summation", {
 test_that("rc_input_events preserves decimal precision", {
   crops <- data.table(
     time = c(1.123),
-    var = c("DPM"), 
+    var = c("CDPM"), 
     method = c("add"),
     value = c(100.456789)
   )
   
   amendment <- data.table(
     time = c(2.789),
-    var = c("HUM"),
+    var = c("CHUM"),
     method = c("add"), 
     value = c(50.123456)
   )
@@ -177,14 +177,14 @@ test_that("rc_input_events preserves decimal precision", {
 test_that("rc_input_events handles different variable types correctly", {
   crops <- data.table(
     time = c(1, 2),
-    var = c("DPM", "RPM"), 
+    var = c("CDPM", "CRPM"), 
     method = c("add", "add"),
     value = c(100.5, 200.7)
   )
   
   amendment <- data.table(
     time = c(1, 3),
-    var = c("HUM", "BIO"),
+    var = c("CHUM", "CBIO"),
     method = c("add", "add"), 
     value = c(50.2, 75.8)
   )
@@ -192,7 +192,7 @@ test_that("rc_input_events handles different variable types correctly", {
   
   result <- rc_input_events(crops, amendment)
   
-  expect_true(all(c("DPM", "RPM", "HUM", "BIO") %in% result$var))
+  expect_true(all(c("CDPM", "CRPM", "CHUM", "CBIO") %in% result$var))
   expect_true(is.numeric(result$value))
   expect_true(is.numeric(result$time))
   expect_true(is.character(result$var))
@@ -204,7 +204,7 @@ test_that("rc_input_events handles different variable types correctly", {
 test_that("rc_input_events handles mixed fractional and integer times", {
   crops <- data.table(
     time = c(0.5, 1.5, 2),
-    var = c("DPM", "RPM", "HUM"), 
+    var = c("CDPM", "CRPM", "CHUM"), 
     method = c("add", "add", "add"),
     value = c(100, 200, 150)
   )
@@ -227,14 +227,14 @@ test_that("rc_input_events handles mixed fractional and integer times", {
 test_that("rc_input_events rbind preserves column structure", {
   crops <- data.table(
     time = c(1),
-    var = c("DPM"), 
+    var = c("CDPM"), 
     method = c("add"),
     value = c(100)
   )
   
   amendment <- data.table(
     time = c(2),
-    var = c("HUM"),
+    var = c("CHUM"),
     method = c("add"), 
     value = c(50)
   )
@@ -243,7 +243,7 @@ test_that("rc_input_events rbind preserves column structure", {
   result <- rc_input_events(crops, amendment)
   
   # Should contain data from both sources
-  expect_true("DPM" %in% result$var)
-  expect_true("HUM" %in% result$var)
+  expect_true("CDPM" %in% result$var)
+  expect_true("CHUM" %in% result$var)
   expect_true(setequal(unique(result$method), "add"))
 })

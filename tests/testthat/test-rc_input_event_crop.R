@@ -11,8 +11,11 @@ test_that("rc_input_event_crop validates input parameters correctly", {
     B_LU = "nl_308",
     year = 2020
   )
+  
+  dt.time <- rc_time_period(start_date = "2020-01-01", end_date = "2020-12-01")
+  
   expect_error(
-    rc_input_event_crop(crops_missing_cols),
+    rc_input_event_crop(crops_missing_cols, dt.time),
     class = "simpleError"
   )
 
