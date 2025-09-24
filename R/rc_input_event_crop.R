@@ -3,10 +3,11 @@
 #'
 #' This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
 #'
-#' @param crops (data.table) Table containing the columns year, cin_dpm, and cin_rpm, with optional column month (if not supplied, defaulted to 9)
+#' @param crops (data.table) Table containing the columns year, month, cin_dpm, and cin_rpm
+#' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period
 #' 
 #' @export
-rc_input_event_crop <- function(crops){
+rc_input_event_crop <- function(crops, dt.time){
   
   # Return empty crop table if no crops have been provided
   if(is.null(crops) || nrow(crops) == 0L){
@@ -33,13 +34,11 @@ rc_input_event_crop <- function(crops){
   # make internal copy
   dt <- copy(crops)
   
-  
-  
   # setorder
   setorder(dt,year,month)
   
   # add cumulative time vector
-  dt[,time := year + (month-1)/12]
+  dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)
   
   # select only relevant columns as output for EVENT crop residue input
   # and select only those time steps where C input is bigger than zero
@@ -50,7 +49,7 @@ rc_input_event_crop <- function(crops){
   
   # add method how RothC should treat the event
   out1[, method := 'add']
-  
+ 
   # return output
   return(out1)
 }

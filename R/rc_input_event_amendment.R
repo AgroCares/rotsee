@@ -2,7 +2,8 @@
 #'
 #' This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.
 
-#' @param amendment (data.table) year, month (optional, defaults to 9), cin_hum, cin_dpm, and cin_rpm, cin_tot (optional)
+#' @param amendment (data.table) A table with the following column names: P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.
+#' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
 #' The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
@@ -10,7 +11,7 @@
 #' The output is an EVENT object.
 #'
 #' @export
-rc_input_event_amendment <- function(amendment = NULL){
+rc_input_event_amendment <- function(amendment = NULL, dt.time){
   
   # add visual bindings
   time = cin_hum = cin_rpm = cin_dpm = method = NULL
@@ -24,7 +25,7 @@ rc_input_event_amendment <- function(amendment = NULL){
   
   # do checks on the input of C due to organic amendments
   checkmate::assert_data_table(dt)
-  required <- c('year','cin_hum','cin_dpm','cin_rpm')
+  required <- c('year', 'month', 'cin_hum','cin_dpm','cin_rpm')
   checkmate::assert_true(all(required %in% colnames(dt)))
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   if("cin_tot" %in% colnames(dt)){
@@ -34,14 +35,8 @@ rc_input_event_amendment <- function(amendment = NULL){
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   checkmate::assert_integerish(dt$year,len = nrow(dt), any.missing = FALSE)
   
-  # Check month column, and if NA set to 9
-  if (!"month" %in% names(dt)) dt[, month := NA_real_]
-  dt[, month := as.numeric(month)]
-  dt[is.na(month), month := 9L]
-  checkmate::assert_numeric(dt$month, lower = 1, upper = 12, any.missing = FALSE, len = nrow(dt))
-  
   # add cumulative time vector
-  dt[,time := year + (month - 1)/ 12]
+  dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)
   
   # select only those events that manure input occurs
   dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
