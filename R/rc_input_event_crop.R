@@ -31,6 +31,13 @@ rc_input_event_crop <- function(crops, dt.time){
   crops[, month := as.integer(month)]
   checkmate::assert_numeric(crops$month, lower = 1, upper = 12, any.missing = FALSE, len = arg.length)
   
+  # check dt.time
+  checkmate::assert_data_table(dt.time, min.rows = 1)
+  checkmate::assert_names(names(dt.time), must.include = c('year','month','time'))
+  checkmate::assert_integerish(dt.time$year, any.missing = FALSE)
+  checkmate::assert_integerish(dt.time$month, lower = 1, upper = 12, any.missing = FALSE)
+  checkmate::assert_numeric(dt.time$time, lower = 0, any.missing = FALSE)
+  
   # make internal copy
   dt <- copy(crops)
   

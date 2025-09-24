@@ -27,6 +27,7 @@ rc_input_event_amendment <- function(amendment = NULL, dt.time){
   checkmate::assert_data_table(dt)
   required <- c('year', 'month', 'cin_hum','cin_dpm','cin_rpm')
   checkmate::assert_true(all(required %in% colnames(dt)))
+  checkmate::assert_integerish(dt$month, lower = 1, upper = 12, len = nrow(dt), any.missing = FALSE)
   checkmate::assert_numeric(dt$cin_hum,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   if("cin_tot" %in% colnames(dt)){
     checkmate::assert_numeric(dt$cin_tot,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
@@ -35,6 +36,10 @@ rc_input_event_amendment <- function(amendment = NULL, dt.time){
   checkmate::assert_numeric(dt$cin_rpm,lower = 0, upper = 100000,len = nrow(dt), any.missing = FALSE)
   checkmate::assert_integerish(dt$year,len = nrow(dt), any.missing = FALSE)
   
+  # validate dt.time
+  checkmate::assert_data_table(dt.time, any.missing = FALSE)
+  checkmate::assert_true(all(c('year','month','time') %in% colnames(dt.time)))
+  
   # add cumulative time vector
   dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)
   
@@ -42,7 +47,7 @@ rc_input_event_amendment <- function(amendment = NULL, dt.time){
   dt <- dt[cin_hum > 0 | cin_rpm > 0 | cin_dpm > 0]
   
   # select only relevant columns, rename them
-  out <- dt[,list(CDPM = cin_dpm,CRPM = cin_rpm,CHUM = cin_hum,time = time)]
+  out <- dt[,list(CDPM = cin_dpm, CRPM = cin_rpm, CHUM = cin_hum,time = time)]
   
   # melt the output table
   out <- melt(out,id.vars = "time", variable.name = "var")

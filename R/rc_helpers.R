@@ -165,13 +165,13 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   
   if(!is.null(parms$start_date)){
     # check start_date 
-    checkmate::assert_date(as.Date(start_date))
+    checkmate::assert_date(as.Date(parms$start_date))
   
     start_date <- parms$start_date
   }
   
   if(!is.null(parms$end_date)){
-    checkmate::assert_date(as.Date(end_date)) 
+    checkmate::assert_date(as.Date(parms$end_date)) 
     
     end_date <- parms$end_date
   }
@@ -408,7 +408,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
   checkmate::assert_date(as.Date(start_date))
-  if(!is.null(end_date)){checkmate::assert_date(as.Date(start_date))}
+  if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   
@@ -501,7 +501,7 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   checkmate::assert_numeric(amendments$P_C_OF, lower = 0, upper = 1000, any.missing = F)
   checkmate::assert_numeric(amendments$P_HC, lower = 0, upper = 1, any.missing = F)
   checkmate::assert_date(as.Date(amendments$P_DATE_FERTILIZATION))
-  if(!is.null(end_date)){checkmate::assert_date(as.Date(start_date))}
+  if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   

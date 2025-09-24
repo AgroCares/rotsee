@@ -31,14 +31,24 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   checkmate::assert_data_table(dt, null.ok = FALSE, min.rows = 1)
   
   req <- c("P_HC","P_DATE_FERTILIZATION")
-  checkmate::assert_true(all(req%in%names(dt)))
+  checkmate::assert(all(req%in%names(dt)),
+                    msg = "Missing required columns: P_HC and/or P_DATE_FERTILIZATION")
     checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
+  if("B_C_OF_INPUT" %in% names(dt)){ 
+    # For any row with NA B_C_OF_INPUT, require P_DOSE & P_C_OF
     checkmate::assert(
-        "B_C_OF_INPUT" %in% names(dt) || all(c("P_DOSE","P_C_OF") %in% names(dt)),
-        msg = "Provide either B_C_OF_INPUT, or both P_DOSE and P_C_OF"
-      )
-  checkmate::assert_true(!anyNA(dt$B_C_OF_INPUT) || (!anyNA(dt$P_DOSE) & !anyNA(dt$P_C_OF)))
- 
+      all(!is.na(dt$B_C_OF_INPUT) | (!is.na(dt$P_DOSE) & !is.na(dt$P_C_OF)),
+          msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided"))
+  }else{
+    checkmate::assert(all(c("P_DOSE","P_C_OF") %in% names(dt)),
+                      msg = "Provide both P_DOSE and P_C_OF when B_C_OF_INPUT is absent")
+    checkmate::assert_true(!anyNA(dt$P_DOSE) & !anyNA(dt$P_C_OF))
+  }
+  
+  
+  if (!'P_ID' %in% names(dt))   dt[, P_ID   := NA_character_]
+  if (!'P_NAME' %in% names(dt)) dt[, P_NAME := NA_character_]
+  
   # Create copy of data table
   dt.org <- copy(dt)
  
@@ -71,7 +81,7 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   dt.org[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
  
   # select only relevant columns
-  dt.org <- dt.org[,list(P_ID = P_ID, P_NAME = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
+  dt.org <- dt.org[,list(P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
 
   # return
   return(dt.org)
