@@ -155,22 +155,15 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   }
   
   # Check the format of start_date and end_date
-  # Set dates in case start_date or end_date is not supplied
-  dates <- c(
-    if (!is.null(crops)) as.Date(crops$B_LU_START) else as.Date(character()),
-    if (!is.null(crops)) as.Date(crops$B_LU_END) else as.Date(character()),
-    if (!is.null(amendments)) as.Date(amendments$P_DATE_FERTILIZATION) else as.Date(character())
-    )
+  # create empty variables
+  start_date <- NULL
+  end_date <- NULL
   
-  dates <- dates[!is.na(dates)]
-  
-  start_date <- min(dates)
-  end_date   <- max(dates)
-
+  # Check and read supplied values
   if(!is.null(parms$start_date)){
     # check start_date 
     checkmate::assert_date(as.Date(parms$start_date))
-  
+    
     start_date <- parms$start_date
   }
   
@@ -179,7 +172,23 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
     
     end_date <- parms$end_date
   }
-
+  # Check if one of start_date or end_date is not supplied, derive from crop/amendment data
+  if (is.null(start_date) || is.null(end_date)) {
+  dates <- c(
+    if (!is.null(crops)) as.Date(crops$B_LU_START) else as.Date(character()),
+    if (!is.null(crops)) as.Date(crops$B_LU_END) else as.Date(character()),
+    if (!is.null(amendments)) as.Date(amendments$P_DATE_FERTILIZATION) else as.Date(character())
+    )
+  
+  dates <- dates[!is.na(dates)]
+  if(length(dates) == 0){
+    stop("No dates found in crops/amendments to derive missing start_date/end_date; supply parms$start_date/end_date.")
+  }
+  start_date <- min(dates)
+  end_date   <- max(dates)
+}
+ 
+# Check is values are logical
   if(as.Date(start_date) > as.Date(end_date)) stop('Start_date is not before end_date')
   
   
@@ -499,7 +508,7 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   id = yr_rep = P_DATE_FERTILIZATION = NULL
   
   # Check input data
-  checkmate::assert_data_table(amendments, null.ok = TRUE)
+  checkmate::assert_data_table(amendments, null.ok = FALSE, min.rows = 1)
   req <- c("P_HC","P_DATE_FERTILIZATION")
   checkmate::assert_names(colnames(amendments), must.include = req)
   if ("P_NAME" %in% names(amendments)) checkmate::assert_character(amendments$P_NAME, any.missing = TRUE)

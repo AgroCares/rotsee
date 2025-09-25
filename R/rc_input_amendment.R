@@ -32,11 +32,22 @@ rc_input_amendment <- function(dt = NULL){
   req <- c("P_HC","P_DATE_FERTILIZATION")
   checkmate::assert_names(names(dt), must.include = req)
   checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
-  if("B_C_OF_INPUT" %in% names(dt)){ 
-    # For any row with NA B_C_OF_INPUT, require P_DOSE & P_C_OF
-    checkmate::assert(
-      all(!is.na(dt$B_C_OF_INPUT) | (!is.na(dt$P_DOSE) & !is.na(dt$P_C_OF))),
-          msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided")
+  if ("B_C_OF_INPUT" %in% names(dt)) { 
+    # Validate B_C_OF_INPUT
+      checkmate::assert_numeric(dt$B_C_OF_INPUT, any.missing = TRUE)
+    # Check P_DOSE and P_C_OF when B_C_OF_INPUT is missing
+      if (anyNA(dt$B_C_OF_INPUT)) {
+         checkmate::assert(
+          all(c("P_DOSE","P_C_OF") %in% names(dt)),
+          msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided"
+          )
+        checkmate::assert(
+          all(!is.na(dt$P_DOSE[is.na(dt$B_C_OF_INPUT)]) &
+              !is.na(dt$P_C_OF[is.na(dt$B_C_OF_INPUT)])),
+          msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided"
+          )
+      }
+    # Check P_DOSE and P_C_OF
     if ("P_DOSE" %in% names(dt)) checkmate::assert_numeric(dt$P_DOSE, any.missing = TRUE)
     if ("P_C_OF" %in% names(dt)) checkmate::assert_numeric(dt$P_C_OF, any.missing = TRUE)
   }else{
