@@ -425,7 +425,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
-  if(max(year(crops$B_LU_END)) >= year(start_date))  stop('crop rotation plan is outside of simulation period')
+  if(max(year(crops$B_LU_END)) < year(start_date))  stop('crop rotation plan is outside of simulation period')
   
   # Copy crops table
   crops <- as.data.table(crops)
@@ -520,7 +520,7 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
-  if(max(year(amendments$P_DATE_FERTILIZATION)) >= year(start_date))  stop ('amendment plan is outside of simulation period')
+  if(max(year(amendments$P_DATE_FERTILIZATION)) < year(start_date))  stop ('amendment plan is outside of simulation period')
   
   # Make copy of amendments table
     amendments <- as.data.table(amendments)
