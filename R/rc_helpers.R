@@ -184,8 +184,8 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if(length(dates) == 0){
     stop("No dates found in crops/amendments to derive missing start_date/end_date; supply parms$start_date/end_date.")
   }
-  start_date <- min(dates)
-  end_date   <- max(dates)
+  if (is.null(start_date)) start_date <- min(dates)
+  if (is.null(end_date)) end_date   <- max(dates)
 }
  
 # Check is values are logical
@@ -198,7 +198,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if(!is.null(parms$unit)){
       # check output format
     checkmate::assert_subset(parms$unit,c('A_SOM_LOI','psoc','cstock','psomperfraction','omb'),empty.ok = FALSE)
-    checkmate::assert_character(unit,len=1)
+    checkmate::assert_character(parms$unit,len=1)
     
     unit <- parms$unit
     
@@ -219,7 +219,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if(!is.null(parms$poutput)){
     # check supplied poutput
     checkmate::assert_subset(parms$poutput, c('year'), empty.ok = FALSE)
-    checkmate::assert_character(poutput, len=1)
+    checkmate::assert_character(parms$poutput, len=1)
     
     poutput <- parms$poutput
   }
