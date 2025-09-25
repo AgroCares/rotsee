@@ -34,7 +34,7 @@ rc_input_amendment <- function(dt = NULL){
   checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
   if("B_C_OF_INPUT" %in% names(dt)){ 
     # For any row with NA B_C_OF_INPUT, require P_DOSE & P_C_OF
-    checkmate::assert_true(
+    checkmate::assert(
       all(!is.na(dt$B_C_OF_INPUT) | (!is.na(dt$P_DOSE) & !is.na(dt$P_C_OF))),
           msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided")
     if ("P_DOSE" %in% names(dt)) checkmate::assert_numeric(dt$P_DOSE, any.missing = TRUE)

@@ -100,8 +100,8 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   
   # Checks names parms
   if(!is.null(parms)){
-    checkmate::assert_subset(colnames(parms), choices = c("dec_rates", "c_fractions", "initialize", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
     checkmate::assert_list(parms)
+    checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "initialize", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
   }
   
   # add checks on decomposition rates
@@ -156,13 +156,17 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   
   # Check the format of start_date and end_date
   # Set dates in case start_date or end_date is not supplied
-  dates <- data.table(date = c(crops$B_LU_START,crops$B_LU_END,amendments$P_DATE_FERTILIZATION))
-  dates[, year := year(date)][, month := month(date)]
-  setorder(dates,year,month)
+  dates <- c(
+    if (!is.null(crops)) as.Date(crops$B_LU_START) else as.Date(character()),
+    if (!is.null(crops)) as.Date(crops$B_LU_END) else as.Date(character()),
+    if (!is.null(amendments)) as.Date(amendments$P_DATE_FERTILIZATION) else as.Date(character())
+    )
   
-  start_date <- dates[1, date]
-  end_date <- dates[nrow(dates), date]
+  dates <- dates[!is.na(dates)]
   
+  start_date <- min(dates)
+  end_date   <- max(dates)
+
   if(!is.null(parms$start_date)){
     # check start_date 
     checkmate::assert_date(as.Date(parms$start_date))
@@ -400,9 +404,10 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   year_start_ext = year_end_ext = NULL
   
   # Check input data
-  checkmate::assert_data_table(crops,null.ok = TRUE)
-  checkmate::assert_subset(colnames(crops),choices = c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC","P_C_OF", "B_C_OF_INPUT", "B_LU_YIELD", "B_LU_DM", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_GREEN_TIMING","M_CROPRESIDUE", "M_IRRIGATION", "M_RENEWAL"), empty.ok = TRUE)
-  checkmate::assert_character(crops$B_LU_NAME, any.missing = F)
+  checkmate::assert_data_table(crops,null.ok = FALSE, min.rows = 1)
+  req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT")
+  checkmate::assert_names(colnames(crops), must.include = req)
+  if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
   checkmate::assert_numeric(crops$B_LU_HC, lower = 0, upper = 1, any.missing = F)
   checkmate::assert_numeric(crops$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
@@ -495,10 +500,11 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   
   # Check input data
   checkmate::assert_data_table(amendments, null.ok = TRUE)
-  checkmate::assert_subset(colnames(amendments),choices = c("P_ID","P_NAME", "P_C_OF_INPUT", "P_DOSE", "P_C_OF", "P_HC", "P_DATE_FERTILIZATION"), empty.ok = TRUE)
-  checkmate::assert_character(amendments$P_NAME, any.missing = T)
-  checkmate::assert_numeric(amendments$P_DOSE, lower = 0, upper = 250000, any.missing = F)
-  checkmate::assert_numeric(amendments$P_C_OF, lower = 0, upper = 1000, any.missing = F)
+  req <- c("P_HC","P_DATE_FERTILIZATION")
+  checkmate::assert_names(colnames(amendments), must.include = req)
+  if ("P_NAME" %in% names(amendments)) checkmate::assert_character(amendments$P_NAME, any.missing = TRUE)
+  if ("P_DOSE" %in% names(amendments)) checkmate::assert_numeric(amendments$P_DOSE, lower = 0, upper = 250000, any.missing = TRUE)
+  if ("P_C_OF" %in% names(amendments)) checkmate::assert_numeric(amendments$P_C_OF, lower = 0, upper = 1000, any.missing = TRUE)
   checkmate::assert_numeric(amendments$P_HC, lower = 0, upper = 1, any.missing = F)
   checkmate::assert_date(as.Date(amendments$P_DATE_FERTILIZATION))
   if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
