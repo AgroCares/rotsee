@@ -4,16 +4,12 @@
 \alias{rc_input_events}
 \title{Combine all EVENT data needed for RothC modelling}
 \usage{
-rc_input_events(crops, amendment, A_CLAY_MI, simyears)
+rc_input_events(crops, amendment)
 }
 \arguments{
-\item{crops}{(data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.}
+\item{crops}{(data.table) Table containing carbon inputs of DPM and RPM from crops across the entire simulation period, as calculated in \link{rc_input_event_crop}}
 
-\item{amendment}{(data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.}
-
-\item{A_CLAY_MI}{(numeric) The clay content of the soil (\%).}
-
-\item{simyears}{(numeric) Amount of years for which the simulation should run, default: 50 years}
+\item{amendment}{(data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments across the entire simulation period, as calculated in \link{rc_input_event_amendment}}
 }
 \description{
 This function combines required inputs into a data.table that is needed as input for the RothC model.

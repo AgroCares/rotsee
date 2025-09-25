@@ -10,7 +10,7 @@ rc_update_weather(dt = NULL)
 \item{dt}{(data.table) Monthly weather table with the following columns:
 *month (1 - 12)
 *W_TEMP_MEAN_MONTH (°C)
-*W_PREC_MEAN_MONTH (mm)
+*W_PREC_SUM_MONTH (mm)
 *W_ET_POT_MONTH (mm)
 *W_ET_ACT_MONTH (mm; can be NA, will be derived based on W_ET_POT_MONTH)
 If not supplied, default monthly weather based on the Netherlands is added}
