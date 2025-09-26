@@ -211,7 +211,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   method <- "adams"
   if(!is.null(parms$method)){
     # check supplied method
-    
+    checkmate::assert_choice(parms$method, choices = c("adams"))
     # define method
     method = parms$method
   }
@@ -416,6 +416,10 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   
   # Check input data
   checkmate::assert_data_table(crops,null.ok = FALSE, min.rows = 1)
+  # Copy crop table and standardize column names
+  crops <- as.data.table(crops)
+  setnames(crops,toupper(colnames(crops)))
+  
   req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT")
   checkmate::assert_names(colnames(crops), must.include = req)
   if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
@@ -434,10 +438,6 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   if(max(year(crops$B_LU_END)) < year(start_date))  stop('crop rotation plan is outside of simulation period')
   if(any(crops$B_LU_START >= crops$B_LU_END)) stop('Crop end date must be after crop start date')
   
-  
-  # Copy crops table
-  crops <- as.data.table(crops)
-  setnames(crops,toupper(colnames(crops)))
   
   # Define total length of crop rotation (years)
   rotation_length <- max(year(crops$B_LU_END)) - year(start_date) + 1
@@ -603,6 +603,9 @@ rc_time_period <- function(start_date, end_date){
   # perform inputs checks
   checkmate::assert_date(as.Date(start_date))
   checkmate::assert_date(as.Date(end_date))
+  if (as.Date(start_date) > as.Date(end_date)) {
+     stop("start_date must be on/before end_date")
+  }
   
   # Create a complete set of year-month combinations for the simulation period
   dt.time <- CJ(year = min(year(start_date)):max(year(end_date)), month = 1:12)
