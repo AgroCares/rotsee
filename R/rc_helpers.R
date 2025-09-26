@@ -424,6 +424,10 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
   checkmate::assert_date(as.Date(start_date))
+  checkmate::assert(
+    !any(grepl("-02-29$", c(crops$B_LU_START, crops$B_LU_END))),
+    msg = "February 29th dates are not allowed in B_LU_START or B_LU_END to avoid leap year complications during date shifting"
+  )
   if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
@@ -530,7 +534,10 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   if(max(year(amendments$P_DATE_FERTILIZATION)) < year(start_date))  stop ('amendment plan is outside of simulation period')
-
+  checkmate::assert(
+    !any(grepl("-02-29$", amendments$P_DATE_FERTILIZATION)),
+    msg = "February 29th dates are not allowed in P_DATE_FERTILIZATION to avoid leap year complications during date shifting"
+  )
   # Make copy of amendments table
     amendments <- as.data.table(amendments)
     setnames(amendments,toupper(colnames(amendments)))
