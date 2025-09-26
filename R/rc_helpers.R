@@ -102,6 +102,8 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if(!is.null(parms)){
     checkmate::assert_list(parms)
     checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "initialize", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
+  }else{
+    parms <- list()
   }
   
   # add checks on decomposition rates
@@ -426,6 +428,8 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   if(max(year(crops$B_LU_END)) < year(start_date))  stop('crop rotation plan is outside of simulation period')
+  if(any(crops$B_LU_START >= crops$B_LU_END)) stop('Crop end date is before crop start date')
+  
   
   # Copy crops table
   crops <- as.data.table(crops)
@@ -443,7 +447,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   }
   
   # Determine number of duplications
-  duplications <- ceiling(simyears / rotation_length)
+  duplications <- max(1L, ceiling(simyears / rotation_length))
   
   # Extend crop table for the number of years
   crops_ext <- crops[rep(id, each = duplications)]
@@ -521,7 +525,7 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   if(max(year(amendments$P_DATE_FERTILIZATION)) < year(start_date))  stop ('amendment plan is outside of simulation period')
-  
+
   # Make copy of amendments table
     amendments <- as.data.table(amendments)
     setnames(amendments,toupper(colnames(amendments)))
@@ -533,15 +537,21 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   amendments[,id := .I]
   
   # Define simyears if not supplied
+  if (is.null(simyears)) {
+        months_diff <- 12L * (year(end_date) - year(start_date)) + (month(end_date) - month(start_date)) + 1L
+        simyears <- months_diff / 12
+      }
+  
+  browser()
   if(is.null(simyears)){
     simyears <- year(end_date) + month(end_date)/12 - (year(start_date) + month(start_date)/12)
   }
   
   # Determine number of duplications
-  duplications <- ceiling(simyears / rotation_length)
+  duplications <- max(1L, ceiling(simyears / rotation_length))
     
   # Extend amendment table for the number of years
-  amendments_ext <- amendments[rep(id, each = ceiling(simyears / rotation_length))]
+  amendments_ext <- amendments[rep(id, each = duplications)]
     
   # Update P_DATE_FERTILIZATION for all repetitions of rotation block
   amendments_ext[, yr_rep := 1:.N, by = id]
