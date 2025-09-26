@@ -428,7 +428,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   if(max(year(crops$B_LU_END)) < year(start_date))  stop('crop rotation plan is outside of simulation period')
-  if(any(crops$B_LU_START >= crops$B_LU_END)) stop('Crop end date is before crop start date')
+  if(any(crops$B_LU_START >= crops$B_LU_END)) stop('Crop end date must be after crop start date')
   
   
   # Copy crops table
@@ -443,8 +443,9 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   
   # Define simyears if not supplied
   if(is.null(simyears)){
-    simyears <- year(end_date) + month(end_date)/12 - (year(start_date) + month(start_date)/12)
-  }
+    months_diff <- 12L * (year(end_date) - year(start_date)) + (month(end_date) - month(start_date)) + 1L
+        simyears <- months_diff / 12
+      }
   
   # Determine number of duplications
   duplications <- max(1L, ceiling(simyears / rotation_length))
@@ -468,8 +469,12 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
                        B_LU_END = paste0(year_end_ext,substr(B_LU_END, start = 5, stop = 10)))]
 
   # filter only the years for simulation
-  this.crops <- crops_ext[year_start_ext <= (year(start_date) + simyears),]
- 
+  if (!is.null(end_date)) {
+     this.crops <- crops_ext[as.Date(B_LU_START) <= as.Date(end_date), ]
+    } else {
+      this.crops <- crops_ext[year_start_ext <= (year(start_date) + simyears),]
+    }
+  
   # Select relevant columns
   this.crops <- this.crops[, .SD, .SDcols =!names(this.crops) %in% c("id", "year_start", "year_end",
                                                        "yr_rep", "year_start_ext", "year_end_ext")
@@ -554,8 +559,12 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   amendments_ext[, P_DATE_FERTILIZATION := paste0(year,substr(P_DATE_FERTILIZATION, start = 5, stop = 10))]
     
   # filter only the years for simulation
-  this.amendments <- amendments_ext[year <= (year(start_date) + simyears),]
-    
+  if (!is.null(end_date)) {
+    this.amendments <- amendments_ext[as.Date(P_DATE_FERTILIZATION) <= as.Date(end_date), ]
+    } else {
+      this.amendments <- amendments_ext[year <= (year(start_date) + simyears),]
+    }
+  
   # Select relevant columns
   this.amendments <- this.amendments[, .SD, .SDcols =!names(this.amendments) %in% 
                                          c("id", "year", "year_start", "year_end",
