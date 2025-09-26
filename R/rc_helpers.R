@@ -24,7 +24,7 @@ cf_ind_importance <- function(x) {
 #' *W_TEMP_MEAN_MONTH (°C)
 #' *W_PREC_SUM_MONTH (mm)
 #' *W_ET_POT_MONTH (mm)
-#' *W_ET_ACT_MONTH (mm; can be NA, will be derived based on W_ET_POT_MONTH)
+#' *W_ET_ACT_MONTH (mm; optional, can be NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' 
 #' @returns
@@ -355,7 +355,7 @@ rc_calculate_bd <- function(dt){
 #' * B_LU_HI (numeric), the harvest index of the crop
 #' * B_LU_HI_RES (numeric), fraction of biomass that is residue
 #' * B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
-#' * M_CROP_RESIDUE (logical), indicator of whether crop residue is incorporated into the soil
+#' * M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
 #' @export
 
@@ -433,7 +433,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
     msg = "February 29th dates are not allowed in B_LU_START or B_LU_END to avoid leap year complications during date shifting"
   )
   if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
-  if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
+  if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1, len = 1, any.missing = FALSE)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   if(max(year(crops$B_LU_END)) < year(start_date))  stop('crop rotation plan is outside of simulation period')
   if(any(crops$B_LU_START >= crops$B_LU_END)) stop('Crop end date must be after crop start date')
