@@ -29,11 +29,11 @@ rc_sim(
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
-\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_HC, and P_C_OF. See details for desired format.}
+\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME,  P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.}
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
-\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
+\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
 }
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
@@ -50,7 +50,7 @@ Includes the columns:
 * A_CLAY_MI (numeric), clay fraction (\%)
 * A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
 
-rothc_amendment: amendment table
+rothc_amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
 Includes the columns:
 * P_ID (character), ID of the soil amendment product
 * P_NAME (character), name of the soil amendment product, optional
@@ -60,9 +60,10 @@ Includes the columns:
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
-rothc_rotation: crop table
+rothc_rotation: crop table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_crops}
 Includes the columns: 
-* year,
+* B_LU_START (start of crop rotation),
+* B_LU_END (end of crop rotation),
 * B_LU (a crop id), 
 * B_LU_NAME (a crop name, optional),
 * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
@@ -73,19 +74,22 @@ May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION
 * M_IRRIGATION (boolean) whether the crop is irrigated.
 * M_RENEWAL (boolean) whether the grassland is renewed (only applicable for grassland)
 
-rothc_parms: simulation parameters
-Table with possible parameters to adapt the calculations. May include the columns initialize, c_fractions, dec_rates, simyears and unit.
-* initialize: scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
-* c_fractions: Distribution over the different C pools.
-* dec_rates: Decomposition rates of the different pools
-* simyears: Duration of simulation (years), default is 50
-* unit: Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
+rothc_parms: parameters to adapt calculations (optional)
+May include the following columns:
+* initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
+* c_fractions (list) Distribution over the different C pools. If not supplied, default RothC distribution is used
+* dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
+* unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
+* method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
+* poutput (character) Resolution of data ouptut. Options: 'year', 'month'
+* start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
+* end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
 
 weather: Weather table. If no table is given, average Dutch conditions are used
 Includes the columns:
 * month
 * W_TEMP_MEAN_MONTH (temperature in °C)
-* W_PREC_MEAN_MONTH (precipitation in mm)
+* W_PREC_SUM_MONTH (precipitation in mm)
 * W_ET_POT_MONTH (potential evapotranspiration in mm)
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 }

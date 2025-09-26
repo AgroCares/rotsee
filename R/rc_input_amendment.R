@@ -3,7 +3,6 @@
 #' Helper function to check the content and format of the amendment input table.
 #'
 #' @param dt (data.table) Table with amendments and amendment properties for Carbon input.
-#' @param B_LU_BRP (numeric) The crop code
 #'
 #' @details
 #' The amendments table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
@@ -20,7 +19,7 @@
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #'
 #' @export
-rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
+rc_input_amendment <- function(dt = NULL){
   
 
   # add visual bindings
@@ -30,18 +29,38 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   # Check amendment table
   checkmate::assert_data_table(dt, null.ok = FALSE, min.rows = 1)
   
-    allowed <- c("P_ID","P_NAME","B_C_OF_INPUT","P_DOSE","P_C_OF","P_HC","P_DATE_FERTILIZATION")
-    checkmate::assert_subset(names(dt), choices = allowed, empty.ok = FALSE)
+  req <- c("P_HC","P_DATE_FERTILIZATION")
+  checkmate::assert_names(names(dt), must.include = req)
+  checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
+  if ("B_C_OF_INPUT" %in% names(dt)) { 
+    # Validate B_C_OF_INPUT
+      checkmate::assert_numeric(dt$B_C_OF_INPUT, any.missing = TRUE)
+    # Check P_DOSE and P_C_OF when B_C_OF_INPUT is missing
+      if (anyNA(dt$B_C_OF_INPUT)) {
+         checkmate::assert(
+          all(c("P_DOSE","P_C_OF") %in% names(dt)),
+          msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided"
+          )
+        checkmate::assert(
+          all(!is.na(dt$P_DOSE[is.na(dt$B_C_OF_INPUT)]) &
+              !is.na(dt$P_C_OF[is.na(dt$B_C_OF_INPUT)])),
+          msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided"
+          )
+      }
+    # Check P_DOSE and P_C_OF
+    if ("P_DOSE" %in% names(dt)) checkmate::assert_numeric(dt$P_DOSE, any.missing = TRUE)
+    if ("P_C_OF" %in% names(dt)) checkmate::assert_numeric(dt$P_C_OF, any.missing = TRUE)
+  }else{
+    checkmate::assert(all(c("P_DOSE","P_C_OF") %in% names(dt)),
+                      msg = "Provide both P_DOSE and P_C_OF when B_C_OF_INPUT is absent")
+    checkmate::assert_true(!anyNA(dt$P_DOSE) & !anyNA(dt$P_C_OF))
+    checkmate::assert_numeric(dt$P_DOSE, any.missing = FALSE)
+    checkmate::assert_numeric(dt$P_C_OF, any.missing = FALSE)
+  }
   
-    checkmate::assert_true("P_DATE_FERTILIZATION" %in% names(dt))
-    checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
-    checkmate::assert_true("P_HC" %in% names(dt))
-    checkmate::assert(
-        "B_C_OF_INPUT" %in% names(dt) || all(c("P_DOSE","P_C_OF") %in% names(dt)),
-        msg = "Provide either B_C_OF_INPUT, or both P_DOSE and P_C_OF"
-      )
-  checkmate::assert_true(!anyNA(dt$B_C_OF_INPUT) || (!anyNA(dt$P_DOSE) & !anyNA(dt$P_C_OF)))
- 
+  
+  if (!'P_ID' %in% names(dt))   dt[, P_ID   := NA_character_]
+  if (!'P_NAME' %in% names(dt)) dt[, P_NAME := NA_character_]
   
   # Create copy of data table
   dt.org <- copy(dt)
@@ -49,12 +68,6 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   # Add year and month of amendment application
   dt.org[, year := year(P_DATE_FERTILIZATION)]
   dt.org[, month := month(P_DATE_FERTILIZATION)]
-
-  # Set years to 1:x
-  dt.org[,year := year - min(year) + 1]
- 
-  # add month = NA when no input given
-  if(!'month' %in% colnames(dt.org)){dt.org[,month := NA_real_]}
  
   # add dpm-rpm ratio
   dt.org[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
@@ -64,9 +77,9 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   
   
   # estimate total Carbon input per crop and year (kg C/ha)
-  if(!is.null(dt.org$B_C_OF_INPUT)){
-    # If supplied, copy value
-    dt.org[, cin_tot := B_C_OF_INPUT]
+    if("B_C_OF_INPUT" %in% names(dt.org)){
+    # If supplied, copy value, calculate from P_DOSE and P_C_OF when NA
+    dt.org[, cin_tot := fifelse(!is.na(B_C_OF_INPUT), B_C_OF_INPUT, P_DOSE * P_C_OF/1000)]
   }else{
     # If not supplied calculate from dose (kg/ha) and organic carbon content (g C/kg)
   dt.org[, cin_tot := P_DOSE * P_C_OF/1000]
@@ -78,7 +91,7 @@ rc_input_amendment <- function(dt = NULL, B_LU_BRP = NULL){
   dt.org[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
  
   # select only relevant columns
-  dt.org <- dt.org[,list(P_ID = P_ID, P_NAME = P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
+  dt.org <- dt.org[,list(P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
 
   # return
   return(dt.org)

@@ -1,4 +1,16 @@
-# rotsee V0.0.4 2025-09-24
+# rotsee v0.1.0 2025-09-24
+## added
+* B_LU_START and B_LU_END as input parameters in rothc_rotation
+* start_date and end_date to replace simyears
+* Helper functions rc_extend_crops and rc_extend_amendments to extend user input tables
+* Helper function rc_time_period to generate a table of all years and months in the simulation period
+
+## changed
+* Base soil cover on user supplied crop growing dates
+* Calculate actual evapotranspiration based on simple rothc correction factor
+* Corrected accumulated soil moisture deficit calculation
+
+# rotsee v0.0.4 2025-09-24
 ## Changed
 * Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
 * Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`

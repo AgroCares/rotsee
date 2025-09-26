@@ -4,35 +4,34 @@
 \alias{rc_input_rmf}
 \title{Estimate the rate modifying factors for the RothC modelling}
 \usage{
-rc_input_rmf(
-  dt = NULL,
-  B_LU_BRP = NULL,
-  B_DEPTH = 0.3,
-  A_CLAY_MI,
-  simyears,
-  cf_yield,
-  dt.weather
-)
+rc_input_rmf(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI, dt.weather, dt.time)
 }
 \arguments{
 \item{dt}{(data.table) Table with crop rotation and related crop properties for Carbon input.}
-
-\item{B_LU_BRP}{(numeric) The crop code}
 
 \item{B_DEPTH}{(numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.}
 
 \item{A_CLAY_MI}{(numeric) The clay content of the soil (\%)}
 
-\item{simyears}{(numeric) Amount of years for which the simulation should run, default: 50 years}
-
-\item{cf_yield}{(numeric) A yield correction factor (fraction) if yield is higher than regional average}
-
 \item{dt.weather}{(data.table) Data table of monthly weather}
+
+\item{dt.time}{(data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}}
 }
 \description{
 This function prepares the rate modifying factors for RothC given crop cover
 }
 \details{
-To run this function, the dt requires as input: B_LU (a crop id), B_LU_NAME (a crop name, optional), B_LU_EOM (the effective organic matter content, kg/ha), B_LU_EOM_RESIDUE (the effective organic matter content for crop residues, kg/ha), and the B_LU_HC (the humification coeffient,-).
-if dt is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
+dt: crop rotation table
+contains at least the following columns:
+* B_LU_START (date), start of crop growth
+* B_LU_END (DATE), end of crop growth
+
+dt.weather: weather table
+contains the following columns:
+* year (optional), monthly weather repeated when not supplied
+* month
+* W_TEMP_MEAN_MONTH
+* W_PREC_SUM_MONTH
+* W_ET_POT_MONTH
+* W_ET_ACT_MONTH (optional), calculated from W_ET_POT_MONTH when not supplied
 }
