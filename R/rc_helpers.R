@@ -542,11 +542,6 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
         simyears <- months_diff / 12
       }
   
-  browser()
-  if(is.null(simyears)){
-    simyears <- year(end_date) + month(end_date)/12 - (year(start_date) + month(start_date)/12)
-  }
-  
   # Determine number of duplications
   duplications <- max(1L, ceiling(simyears / rotation_length))
     
