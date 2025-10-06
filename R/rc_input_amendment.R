@@ -51,7 +51,6 @@ rc_input_amendment <- function(dt = NULL){
   }else{
     checkmate::assert(all(c("P_DOSE","P_C_OF") %in% names(dt)),
                       msg = "Provide both P_DOSE and P_C_OF when B_C_OF_INPUT is absent")
-    checkmate::assert_true(!anyNA(dt$P_DOSE) & !anyNA(dt$P_C_OF))
     checkmate::assert_numeric(dt$P_DOSE, any.missing = FALSE)
     checkmate::assert_numeric(dt$P_C_OF, any.missing = FALSE)
   }
