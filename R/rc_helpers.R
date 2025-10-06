@@ -291,11 +291,11 @@ rc_check_inputs <- function(soil_properties,
     if ("P_NAME" %in% names(rothc_amendment))
       checkmate::assert_character(rothc_amendment$P_NAME, any.missing = TRUE)
     if ("P_DOSE" %in% names(rothc_amendment))
-       checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = FALSE)
+       checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = TRUE)
     if ("P_C_OF" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = FALSE)
+      checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = TRUE)
     if ("B_C_OF_INPUT" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = FALSE)
+      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = TRUE)
   }
 }
 

@@ -3,7 +3,6 @@
 #' Helper function to check the content and format of the crop input table.
 #'
 #' @param dt (data.table) Table with crop rotation and related crop properties for Carbon input. See details for information.
-#' @param cf_yield (numeric) A yield correction factor (fraction) if yield is higher than regional average
 #'
 #' @details
 #' The crop table used as input for carbon modelling requires at minimum data on effective organic matter inputs and related year.
@@ -16,10 +15,10 @@
 #' * B_C_OF_INPUT (the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF})
 #'
 #' @export
-rc_input_crop <- function(dt, cf_yield = 1){
+rc_input_crop <- function(dt){
   # add visual bindings
   M_GREEN_TIMING =  M_IRRIGATION = M_CROPRESIDUE = cin_dpm = B_C_OF_INPUT = cin_rpm = NULL
-  CF_YIELD = YEAR = crft = B_LU  = fr_dpm_rpm = B_LU_HC = B_LU_HI_RES = B_LU_START = B_LU_END = NULL
+  YEAR = crft = B_LU  = fr_dpm_rpm = B_LU_HC = B_LU_HI_RES = B_LU_START = B_LU_END = NULL
   cin_aboveground = B_LU_YIELD =B_LU_DM = B_LU_HI = cin_roots = B_LU_RS_FR = cin_residue = NULL
   
   # check crop table
@@ -29,7 +28,6 @@ rc_input_crop <- function(dt, cf_yield = 1){
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = FALSE)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = FALSE)
   checkmate::assert_numeric(dt$B_C_OF_INPUT, any.missing = FALSE, lower = 0, upper = 15000)
-  checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
   
   # create a copy of the crop table
   dt.crop <- copy(dt)
@@ -43,7 +41,6 @@ rc_input_crop <- function(dt, cf_yield = 1){
   if(!'M_GREEN_TIMING' %in% colnames(dt.crop)){dt.crop[,M_GREEN_TIMING := 'never']}
   if(!'M_CROPRESIDUE' %in% colnames(dt.crop)){dt.crop[,M_CROPRESIDUE := FALSE]}
   if(!'M_IRRIGATION' %in% colnames(dt.crop)){dt.crop[,M_IRRIGATION := FALSE]}
-  if(!'CF_YIELD' %in% colnames(dt.crop)){dt.crop[,CF_YIELD := cf_yield[1]]}
   
   # Get year and month for the end of crop rotation
   dt.crop[,year := year(B_LU_END)]
@@ -67,8 +64,7 @@ rc_input_crop <- function(dt, cf_yield = 1){
 
   # select only relevant columns with C input (kg C/ ha)
   dt.crop <- dt.crop[,list(year = year, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm,
-                           M_GREEN_TIMING,M_IRRIGATION,M_CROPRESIDUE,
-                           cf_yield = CF_YIELD)]
+                           M_GREEN_TIMING,M_IRRIGATION,M_CROPRESIDUE)]
   
   # return
   return(dt.crop)

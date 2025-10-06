@@ -10,7 +10,7 @@
 #'
 #' rothc_amendment: amendment table
 #' Includes the columns:
-#' * P_ID (character), ID of the soil amendment product
+#' * P_ID (character), ID of the soil amendment product, optional
 #' * P_NAME (character), name of the soil amendment product, optional
 #' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
@@ -23,7 +23,7 @@ rc_input_amendment <- function(dt = NULL){
   
 
   # add visual bindings
-  P_C_OF = B_C_OF_INPUT = P_DATE_FERTILIZATION = P_DOSE = P_HC = NULL
+  P_C_OF = B_C_OF_INPUT = P_DATE_FERTILIZATION = P_DOSE = P_HC = rothc_amendment = NULL
   P_ID = P_NAME = cin_dpm = cin_hum = cin_rpm = cin_tot = fr_dpm_rpm = NULL
   
   # Check amendment table
@@ -34,7 +34,7 @@ rc_input_amendment <- function(dt = NULL){
   checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
   if ("B_C_OF_INPUT" %in% names(dt)) { 
     # Validate B_C_OF_INPUT
-      checkmate::assert_numeric(dt$B_C_OF_INPUT, any.missing = TRUE)
+    checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = TRUE)
     # Check P_DOSE and P_C_OF when B_C_OF_INPUT is missing
       if (anyNA(dt$B_C_OF_INPUT)) {
          checkmate::assert(
@@ -48,8 +48,8 @@ rc_input_amendment <- function(dt = NULL){
           )
       }
     # Check P_DOSE and P_C_OF
-    if ("P_DOSE" %in% names(dt)) checkmate::assert_numeric(dt$P_DOSE, any.missing = TRUE)
-    if ("P_C_OF" %in% names(dt)) checkmate::assert_numeric(dt$P_C_OF, any.missing = TRUE)
+    if ("P_DOSE" %in% names(dt)) checkmate::assert_numeric(dt$P_DOSE, lower = 0, upper = 250000, any.missing = TRUE)
+    if ("P_C_OF" %in% names(dt)) checkmate::assert_numeric(dt$P_C_OF, lower = 0, upper = 1000, any.missing = TRUE)
   }else{
     checkmate::assert(all(c("P_DOSE","P_C_OF") %in% names(dt)),
                       msg = "Provide both P_DOSE and P_C_OF when B_C_OF_INPUT is absent")
@@ -57,11 +57,7 @@ rc_input_amendment <- function(dt = NULL){
     checkmate::assert_numeric(dt$P_DOSE, any.missing = FALSE)
     checkmate::assert_numeric(dt$P_C_OF, any.missing = FALSE)
   }
-  
-  
-  if (!'P_ID' %in% names(dt))   dt[, P_ID   := NA_character_]
-  if (!'P_NAME' %in% names(dt)) dt[, P_NAME := NA_character_]
-  
+
   # Create copy of data table
   dt.org <- copy(dt)
  
