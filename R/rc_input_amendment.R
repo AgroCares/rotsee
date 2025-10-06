@@ -23,7 +23,7 @@ rc_input_amendment <- function(dt = NULL){
   
 
   # add visual bindings
-  P_C_OF = B_C_OF_INPUT = P_DATE_FERTILIZATION = P_DOSE = P_HC = rothc_amendment = NULL
+  P_C_OF = B_C_OF_INPUT = P_DATE_FERTILIZATION = P_DOSE = P_HC =  NULL
   P_ID = P_NAME = cin_dpm = cin_hum = cin_rpm = cin_tot = fr_dpm_rpm = NULL
   
   # Check amendment table
@@ -34,7 +34,7 @@ rc_input_amendment <- function(dt = NULL){
   checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
   if ("B_C_OF_INPUT" %in% names(dt)) { 
     # Validate B_C_OF_INPUT
-    checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = TRUE)
+    checkmate::assert_numeric(dt$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = TRUE)
     # Check P_DOSE and P_C_OF when B_C_OF_INPUT is missing
       if (anyNA(dt$B_C_OF_INPUT)) {
          checkmate::assert(
