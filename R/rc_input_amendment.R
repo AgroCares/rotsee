@@ -74,8 +74,11 @@ rc_input_amendment <- function(dt = NULL){
   
   # estimate total Carbon input per crop and year (kg C/ha)
     if("B_C_OF_INPUT" %in% names(dt.org)){
-    # If supplied, copy value, calculate from P_DOSE and P_C_OF when NA
-    dt.org[, cin_tot := fifelse(!is.na(B_C_OF_INPUT), B_C_OF_INPUT, P_DOSE * P_C_OF/1000)]
+      # If supplied, copy value, calculate from P_DOSE and P_C_OF only for NA rows
+      dt.org[, cin_tot := B_C_OF_INPUT]
+      if (anyNA(dt.org$B_C_OF_INPUT)) {
+        dt.org[is.na(cin_tot), cin_tot := P_DOSE * P_C_OF/1000]
+      }
   }else{
     # If not supplied calculate from dose (kg/ha) and organic carbon content (g C/kg)
   dt.org[, cin_tot := P_DOSE * P_C_OF/1000]
