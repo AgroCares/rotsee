@@ -10,8 +10,6 @@
 #'
 #' rothc_amendment: amendment table
 #' Includes the columns:
-#' * P_ID (character), ID of the soil amendment product, optional
-#' * P_NAME (character), name of the soil amendment product, optional
 #' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
 #' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
@@ -24,7 +22,7 @@ rc_input_amendment <- function(dt = NULL){
 
   # add visual bindings
   P_C_OF = B_C_OF_INPUT = P_DATE_FERTILIZATION = P_DOSE = P_HC =  NULL
-  P_ID = P_NAME = cin_dpm = cin_hum = cin_rpm = cin_tot = fr_dpm_rpm = NULL
+  cin_dpm = cin_hum = cin_rpm = cin_tot = fr_dpm_rpm = NULL
   
   # Check amendment table
   checkmate::assert_data_table(dt, null.ok = FALSE, min.rows = 1)
@@ -90,7 +88,7 @@ rc_input_amendment <- function(dt = NULL){
   dt.org[, cin_rpm := (1 - 0.02) * cin_tot - cin_dpm]
  
   # select only relevant columns
-  dt.org <- dt.org[,list(P_ID, P_NAME, year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
+  dt.org <- dt.org[,list( year, month, cin_tot, cin_hum, cin_dpm, cin_rpm)]
 
   # return
   return(dt.org)

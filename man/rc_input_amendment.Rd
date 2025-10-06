@@ -18,8 +18,6 @@ This helper function assists the checking and controlling of amendments properti
 
 rothc_amendment: amendment table
 Includes the columns:
-* P_ID (character), ID of the soil amendment product, optional
-* P_NAME (character), name of the soil amendment product, optional
 * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
 * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
