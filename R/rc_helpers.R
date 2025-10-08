@@ -143,11 +143,12 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   }
   
   # add checks on initialise
-  initialize <- TRUE
+  initialize <- 'spinup_analytical_bodemcoolstof'
   
   if(!is.null(parms$initialize)){
     # check initialize
-    checkmate::assert_logical(parms$initialize,any.missing = FALSE, len = 1)
+    checkmate::assert_character(parms$initialize,any.missing = FALSE, len = 1)
+    checkmate::assert_subset(parms$initialize, choices = c('spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation'))
     
     initialize = parms$initialize
     

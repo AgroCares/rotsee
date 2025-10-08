@@ -68,8 +68,7 @@ rc_initialise <- function(crops = NULL,
   k3 <- rothc.parms$k3
   k4 <- rothc.parms$k4
   
-  abs <- rothc.parms$abc
-  
+  abc <- rothc.parms$abc
   # initialise options
   
   # do a simulation for 150 years to estimate the C fractions assuming system is in equilibrium
@@ -77,6 +76,8 @@ rc_initialise <- function(crops = NULL,
     
     # Set model parameters
     parms <- list(simyears = 150,unit = 'psomperfraction', initialize = FALSE)
+    
+    # Set newly required inputs
     
     # Run initialization run for 150 years
     this.result <- rc_sim(A_SOM_LOI = A_SOM_LOI,
@@ -227,11 +228,13 @@ rc_initialise <- function(crops = NULL,
     # CBIO and CHUM pool
     dt.soc[,cbio.ini := biohum.ini / (1 + k3 / k4)]
     dt.soc[,chum.ini := biohum.ini / (1 + k4 / k3)]
-    
+ 
+    # define fractions
     fractions <- dt.soc[,.(fr_IOM = ciom.ini / toc,
                            fr_DPM = cdpm.ini / toc,
                            fr_RPM = crpm.ini / toc,
-                           fr_BIO = cbio.ini / toc)]
+                           fr_BIO = cbio.ini / toc,
+                           fr_HUM = chum.ini / toc)]
     
     }
   
