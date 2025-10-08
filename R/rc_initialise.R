@@ -3,11 +3,10 @@
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
 #' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.
 #' @param B_LU_BRP (numeric) value of the BRP crop code
-#' @param A_SOM_LOI (numeric) value for the soil organic matter content of the soil
-#' @param A_CLAY_MI (numeric) value for the clay content of the soil
 #' @param dt.soc (data.table) Data table containing information on soil properties. See details for information.
+#' @param dt.time (data.table) Combination of months and years of the entire simulation period. 
 #' @param rothc.parms (list) List with relevant RothC parameters. See details for more information
-#' @param rothc.events (data.table) List with events of C inputs. See details for more information
+#' @param rothc.event (data.table) List with events of C inputs. See details for more information
 #' @param type (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #' @import data.table
@@ -19,11 +18,6 @@
 #' if crops is NULL, then the crop input will be prepared using function \link{rc_input_scenario} using scenario 'BAU'
 #' The same is done for the amendment data.table. This table requires as input:"P_NAME", "year","month","P_OM","P_HC","p_p2o5", and "P_DOSE"
 #' 
-#' Soil: data table on soil properties.
-#' Contains the following columns:
-#' * toc (numeric) total organic carbon content (kg C/ha)
-#' * bd (numeric) soil bulk density (g/cm3)
-#' * A_SOM_LOI (numeric) organic matter content (\%)
 #' 
 #' rothc.parms: list with RothC parameters.
 #' Contains the following columns:
@@ -41,6 +35,15 @@
 #' * method (character) Method of considering listed value, default is add.
 #' * value (numeric) carbon amount added (kg C/ha)
 #' 
+#' dt.soc: data table with soil information
+#' contains at least the following columns:
+#' * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
+#' * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
+#' * A_CLAY_MI (numeric), clay content (\%)
+#' * toc
+#' * A_DENSITY_SA (numeric) bulk density of the soill (g/cm3), can be calculated using \link{rc_calculate_bd}
+#'
+#' 
 #' Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
 #' spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 #' Otherwise one of the other two is fine.
@@ -48,31 +51,16 @@
 #' @export
 rc_initialise <- function(crops = NULL,
                           amendment = NULL,
-                          B_LU_BRP = NULL,
-                          A_SOM_LOI,
-                          A_CLAY_MI,
                           dt.soc,
                           rothc.parms,
-                          rothc.events,
+                          rothc.event,
+                          dt.time,
                           type ='spinup_analytical_bodemcoolstof'){
   
   # add visual bindings
   . = CIOM = CDPM = CRPM = CBIO = B_LU_EOM = M_CROPRESIDUE = B_LU_HC = chum.ini = NULL
   P_DOSE = P_OM = M_GREEN_TIMING = fr_dpm_rpm = P_HC = B_LU_EOM_RESIDUE = NULL
   abc = bd = time = toc = var = cf_abc = ciom.ini = biohum.ini = cbio.ini = NULL
-  
-    
-  # Prepare input for scenario Business As Usual
-  if(is.null(crops) | is.null(amendment)){
-    
-    # get default estimates following the land use BRP
-    scen.inp <- rc_input_scenario(B_LU_BRP = B_LU_BRP, scen = 'BAU')
-    
-  }
-  
-  # get estimates for crop and amendment table
-  if(is.null(crops)){rotation <-  scen.inp$rotation} else {rotation <- crops}
-  if(is.null(amendment)){amendment <- scen.inp$amendment} else {amendment <- amendment}
 
   # Define rothc parameters
   k1 <- rothc.parms$k1
@@ -100,6 +88,7 @@ rc_initialise <- function(crops = NULL,
     # take last two rotations
     this.result.fin <- this.result[year > max(year)-2*nrow(rotation),lapply(.SD,mean)]
     
+    
     fractions <- this.result.fin[,.(fr_IOM = CIOM / (A_SOM_LOI),
                                     fr_DPM = CDPM / A_SOM_LOI,
                                     fr_RPM = CRPM / A_SOM_LOI,
@@ -109,31 +98,36 @@ rc_initialise <- function(crops = NULL,
   
   # calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
   if(type=='spinup_analytical_heuvelink'){
-    
+
     # averaged total C input (kg C/ha/year) from crop, crop residues, catch crops and amendments
-    c_input_crop <- rotation[,sum(B_LU_EOM + fifelse(M_CROPRESIDUE==TRUE, B_LU_EOM* 0.5 / B_LU_HC,0))/max(year)]
-    c_input_man <- amendment[,sum(P_DOSE * P_OM * 0.01 * 0.5)/max(year)]
-    c_input_green <- rotation[,sum(fifelse(M_GREEN_TIMING=='october',300,
-                                       fifelse(M_GREEN_TIMING== 'september',500,
-                                               fifelse(M_GREEN_TIMING=='august',900,0)))* 0.5 / 0.31)/max(year)]
+    c_input_crop <- crops[,sum(B_C_OF_INPUT)/max(dt.time$time)]
+    c_input_man <- if(!is.null(amendment$B_C_OF_INPUT) && all(!is.na(amendment$B_C_OF_INPUT))){
+      amendment[, sum(B_C_OF_INPUT)/max(dt.time$time)]
+    }else{
+      amendment[,sum(P_DOSE * P_C_OF)/max(dt.time$time)]
+    }
 
     # calculate C input ratio of crop and amendments
-    CR_proportion <- (c_input_crop + c_input_green) / (c_input_crop+c_input_man+c_input_green)
-    M_proportion <- c_input_man / (c_input_crop+c_input_man+c_input_green)
+    CR_proportion <- (c_input_crop) / (c_input_crop+c_input_man)
+    M_proportion <- c_input_man / (c_input_crop+c_input_man)
     
     # estimate DPM-RPM ratio of the inputs from crop and amendments
-    rotation[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
+    crops[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
     amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
     
     # calculate average dpm_rpm ratio of C inputs from crop and amendments
-    DR_crop <- rotation[,weighted.mean(fr_dpm_rpm,w=(B_LU_EOM+B_LU_EOM_RESIDUE))]
-    DR_amendment <- amendment[P_DOSE >0,weighted.mean(fr_dpm_rpm,w=(P_DOSE * P_OM))]
-      
+    DR_crop <- crops[,weighted.mean(fr_dpm_rpm,w=(B_C_OF_INPUT))]
+    if(!is.null(amendment$B_C_OF_INPUT) && all(!is.na(amendment$B_C_OF_INPUT))){
+      DR_amendment <- amendment[P_DOSE >0,weighted.mean(fr_dpm_rpm,w=(B_C_OF_INPUT))]
+    }else{
+    DR_amendment <- amendment[P_DOSE >0,weighted.mean(fr_dpm_rpm,w=(P_DOSE * P_C_OF))]
+    }
+    
     # what is length of the crop rotation in years
-    isimyears <- max(rotation$year)
+    isimyears <- max(dt.time$year)
     
     # ratio CO2 / (BIO+HUM)
-    x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * A_CLAY_MI))
+    x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * dt.soc$A_CLAY_MI))
     
     # transfer coefficients (B is BIO, H = HUM)
     B = 0.46/(x + 1)
@@ -160,7 +154,7 @@ rc_initialise <- function(crops = NULL,
     nu <- (1 - 0.02) * 1 / (1 + DR_amendment)
     
     # total SOC stock (ton C / ha) from bulk density 
-    CTOT <- A_SOM_LOI * 100 * 100 * 0.3 * bd * 0.01 * 0.5 
+    CTOT <- dt.soc$A_SOM_LOI * 100 * 100 * 0.3 * dt.soc$A_DENSITY_SA * 0.01 * 0.5 
       
     # IOM pool (ton C / ha) using Falloon method
     FallIOM <- 0.049 * CTOT^1.139
@@ -200,17 +194,8 @@ rc_initialise <- function(crops = NULL,
   
   # calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
   if(type=='spinup_analytical_bodemcoolstof'){
-  
-    #B_LU_BRP <- c(2951,256,233,1932,2951,256,233)
-    
-    # what is length of the crop rotation in years
-    isimyears <- max(rotation$year)
-    
-    # use EVENT object to calculate all C inputs over time 
-    # Dubbel!!!!!! Aanpassen dat rothc.event ingeladen kan worden en dan dates zetten naar max(rotation$year)
-    rothc.event <- rothc.event[, time <= isimyears]
-    
-    # calculate total organic carbon (ton C / ha)
+
+    # recalculate total organic carbon to ton C / ha
     dt.soc[,toc := toc * 1000]
     
     # time correction (is 12 in documentation Chantals' study, not clear why, probably due to fixed time step calculation)

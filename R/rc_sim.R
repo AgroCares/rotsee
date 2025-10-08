@@ -154,7 +154,6 @@ rc_sim <- function(soil_properties,
     dt.org <- NULL
   }
 
-
   # make rate modifying factors input database
   if(!is.null(dt.crop)){
   dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
@@ -162,6 +161,7 @@ rc_sim <- function(soil_properties,
     dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
     
   }
+ 
   # combine RothC input parameters
   rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
   
@@ -180,14 +180,14 @@ rc_sim <- function(soil_properties,
   # Correct A_C_OF for sampling depth 
   dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_C_OF := A_C_OF * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
   dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_C_OF := A_C_OF * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
-  
+ 
   # calculate total organic carbon (kg C / ha)
   if(length(dt.soc$B_C_ST03) != 0) {
     dt.soc[,toc := B_C_ST03 * 1000]
   }else{
     dt.soc[,toc := A_C_OF / 1000 * A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100]
   }
-  
+
   # initialize the RothC pools (kg C / ha)
   if(initialize == FALSE){ 
     
@@ -199,17 +199,16 @@ rc_sim <- function(soil_properties,
     dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
     
     
-    
-    
   } else {
     # the new fractions to be calculated
     cols <- c('fr_IOM','fr_DPM','fr_RPM','fr_BIO')
-    
+
     # derive the initial distribution of C pools (original data.tables are used as input)
     dt.soc[,c(cols) := as.list(rc_initialise(crops = rothc_rotation, 
                                              amendment = rothc_amendment,
-                                             B_LU_BRP = NULL,A_SOM_LOI,A_CLAY_MI,
+                                             dt.time = dt.time,
                                              dt.soc = dt.soc,
+                                             rothc.event = rothc.event,
                                              rothc.parms = rothc.parms,
                                              type = initialize))]
     
@@ -219,17 +218,8 @@ rc_sim <- function(soil_properties,
     dt.soc[,CRPM0 := crpm.ini * 1000]
     dt.soc[,CBIO0 := cbio.ini * 1000]
     dt.soc[,CHUM0 := chum.ini * 1000]
-  } else {
-    
-    # Calculate carbon pools based on provided or default distribution (kg C / ha)
-    dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
-    dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
-    dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
-    dt.soc[,CBIO0 := c_fractions$fr_BIO * (toc-CIOM0)]
-    dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
-    
   }
-  
+
   # extract relevant columns
   rothc.ini <- dt.soc[,list(CIOM0,CDPM0,CRPM0,CBIO0,CHUM0)]
   
@@ -267,8 +257,7 @@ rc_sim <- function(soil_properties,
   # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   
- 
- 
+
   # select type output
   if(unit=='A_SOM_LOI') {
     # Output in organic matter content [\%]
