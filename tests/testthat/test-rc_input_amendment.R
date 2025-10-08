@@ -18,10 +18,7 @@ test_that("rc_input_amendment runs correctly", {
   # Check that the result is a data.table with 2 rows
   expect_s3_class(result_dt, "data.table")
   expect_equal(nrow(result_dt), 2)
-  
-  # Check that the year is normalized to 1
-  expect_true(all(result_dt$year == 1))
-  
+ 
   # Check that months are preserved
   expect_equal(result_dt$month, c(4, 10))
   

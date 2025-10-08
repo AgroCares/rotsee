@@ -4,14 +4,12 @@
 \alias{rc_input_events}
 \title{Combine all EVENT data needed for RothC modelling}
 \usage{
-rc_input_events(crops, amendment, simyears = 50)
+rc_input_events(crops, amendment)
 }
 \arguments{
-\item{crops}{(data.table) Table containing carbon inputs of DPM and RPM from crops, calculated in rc_input_event_crop}
+\item{crops}{(data.table) Table containing carbon inputs of DPM and RPM from crops across the entire simulation period, as calculated in \link{rc_input_event_crop}}
 
-\item{amendment}{(data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments, calculated in rc_input_event_amendment}
-
-\item{simyears}{(numeric) Amount of years for which the simulation should run, Default: 50 years}
+\item{amendment}{(data.table) Table containing carbon inputs of DPM, RPM, and HUM from amendments across the entire simulation period, as calculated in \link{rc_input_event_amendment}}
 }
 \description{
 This function combines required inputs into a data.table that is needed as input for the RothC model.

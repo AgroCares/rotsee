@@ -3,10 +3,11 @@
 #'
 #' This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.
 #'
-#' @param crops (data.table) Table containing the columns year, cin_dpm, and cin_rpm, with optional column month (if not supplied, defaulted to 9)
+#' @param crops (data.table) Table containing the columns year, month, cin_dpm, and cin_rpm. If month is omitted, 9 (September) is assumed.
+#' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period, with columns year, month, and time (cumulative months from the start date)
 #' 
 #' @export
-rc_input_event_crop <- function(crops){
+rc_input_event_crop <- function(crops, dt.time){
   
   # Return empty crop table if no crops have been provided
   if(is.null(crops) || nrow(crops) == 0L){
@@ -14,7 +15,7 @@ rc_input_event_crop <- function(crops){
   }
   
   # add visual bindings
-  time = cin_dpm = cin_rpm = method = NULL
+  time = cin_dpm = cin_rpm = method = var = NULL
   
   # check inputs
   arg.length <- nrow(crops)
@@ -30,20 +31,29 @@ rc_input_event_crop <- function(crops){
   crops[, month := as.integer(month)]
   checkmate::assert_numeric(crops$month, lower = 1, upper = 12, any.missing = FALSE, len = arg.length)
   
+  # check dt.time
+  checkmate::assert_data_table(dt.time, min.rows = 1)
+  checkmate::assert_names(names(dt.time), must.include = c('year','month','time'))
+  checkmate::assert_integerish(dt.time$year, any.missing = FALSE)
+  checkmate::assert_integerish(dt.time$month, lower = 1, upper = 12, any.missing = FALSE)
+  checkmate::assert_numeric(dt.time$time, lower = 0, any.missing = FALSE)
+  
   # make internal copy
   dt <- copy(crops)
-  
-  
   
   # setorder
   setorder(dt,year,month)
   
   # add cumulative time vector
-  dt[,time := year + (month-1)/12]
+  dt <- merge(dt.time, dt, by = c('year','month'), all.x = T)
   
+  # replace missing carbon inputs by 0 after aligning to time grid
+  dt[is.na(cin_dpm), cin_dpm := 0]
+  dt[is.na(cin_rpm), cin_rpm := 0]
+ 
   # select only relevant columns as output for EVENT crop residue input
   # and select only those time steps where C input is bigger than zero
-  out1 <- dt[cin_dpm > 0 | cin_rpm > 0,list(CDPM = cin_dpm,CRPM = cin_rpm,time = time)]
+  out1 <- dt[cin_dpm > 0 | cin_rpm > 0,list(CDPM = cin_dpm, CRPM = cin_rpm,time = time)]
   
   # melt the output table
   out1 <- melt(out1,id.vars = "time", variable.name = "var")
@@ -51,6 +61,9 @@ rc_input_event_crop <- function(crops){
   # add method how RothC should treat the event
   out1[, method := 'add']
   
+  # ensure deterministic ordering
+  setorder(out1, time, var)
+
   # return output
   return(out1)
 }

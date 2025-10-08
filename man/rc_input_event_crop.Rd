@@ -4,10 +4,12 @@
 \alias{rc_input_event_crop}
 \title{Calculate the crop rotation related C inputs of a field on monthly basis}
 \usage{
-rc_input_event_crop(crops)
+rc_input_event_crop(crops, dt.time)
 }
 \arguments{
-\item{crops}{(data.table) Table containing the columns year, cin_dpm, and cin_rpm, with optional column month (if not supplied, defaulted to 9)}
+\item{crops}{(data.table) Table containing the columns year, month, cin_dpm, and cin_rpm. If month is omitted, 9 (September) is assumed.}
+
+\item{dt.time}{(data.table) Table containing all combinations of months and years in the simulation period, with columns year, month, and time (cumulative months from the start date)}
 }
 \description{
 This function determines how much Carbon enters the soil throughout the year given the crop rotation plan.

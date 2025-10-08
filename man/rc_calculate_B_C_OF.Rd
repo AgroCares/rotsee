@@ -22,5 +22,5 @@ Contains the following columns:
 * B_LU_HI (numeric), the harvest index of the crop
 * B_LU_HI_RES (numeric), fraction of biomass that is residue
 * B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
-* M_CROP_RESIDUE (logical), indicator of whether crop residue is incorporated into the soil
+* M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 }

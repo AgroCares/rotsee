@@ -4,10 +4,12 @@
 \alias{rc_input_event_amendment}
 \title{Calculate the monthly timing of carbon inputs for different fertilizer strategies}
 \usage{
-rc_input_event_amendment(amendment = NULL)
+rc_input_event_amendment(amendment = NULL, dt.time)
 }
 \arguments{
-\item{amendment}{(data.table) year, month (optional, defaults to 9), cin_hum, cin_dpm, and cin_rpm, cin_tot (optional)}
+\item{amendment}{(data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.}
+
+\item{dt.time}{(data.table) Table containing all combinations of months and years in the simulation period, with columns year, month, and time}
 }
 \description{
 This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.
@@ -15,6 +17,8 @@ This function calculates the timing of carbon inputs (kg C per ha) based on type
 \details{
 This function increases temporal detail for time series of C inputs of organic amendments.
 The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
+dt. time Must contain integerish columns \code{year} (>= 0) and \code{month} (1..12), numeric column \code{time}, 
+and unique \code{(year, month)} pairs over the simulation window.
 
 The output is an EVENT object.
 }
