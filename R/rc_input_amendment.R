@@ -30,6 +30,7 @@ rc_input_amendment <- function(dt = NULL){
   req <- c("P_HC","P_DATE_FERTILIZATION")
   checkmate::assert_names(names(dt), must.include = req)
   checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
+  checkmate::assert_numeric(dt$P_HC, lower = 0, upper = 1, any.missing = FALSE)
   if ("B_C_OF_INPUT" %in% names(dt)) { 
     # Validate B_C_OF_INPUT
     checkmate::assert_numeric(dt$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = TRUE)

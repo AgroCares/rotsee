@@ -22,7 +22,7 @@ rc_input_crop <- function(dt){
     cin_rpm = fr_dpm_rpm = NULL
   
   # check crop table
-  checkmate::assert_data_table(dt,null.ok = TRUE)
+  checkmate::assert_data_table(dt,null.ok = FALSE)
   req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
   checkmate::assert_names(colnames(dt), must.include = req)
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = FALSE)
@@ -31,13 +31,8 @@ rc_input_crop <- function(dt){
   
   # create a copy of the crop table
   dt.crop <- copy(dt)
-  
-  # Add month column when not supplied
-  if(!"month" %in% colnames(dt.crop)) {
-    dt.crop[, month := NA_integer_]}
 
-  
-  # Get year and month for the end of crop rotation
+    # Get year and month for the end of crop rotation
   dt.crop[,year := year(B_LU_END)]
   dt.crop[,month := month(B_LU_END)]
 
