@@ -16,10 +16,10 @@
 #'
 #' @export
 rc_input_crop <- function(dt){
+  
   # add visual bindings
-  M_GREEN_TIMING =  M_IRRIGATION = M_CROPRESIDUE = cin_dpm = B_C_OF_INPUT = cin_rpm = NULL
-  YEAR = crft = B_LU  = fr_dpm_rpm = B_LU_HC = B_LU_HI_RES = B_LU_START = B_LU_END = NULL
-  cin_aboveground = B_LU_YIELD =B_LU_DM = B_LU_HI = cin_roots = B_LU_RS_FR = cin_residue = NULL
+  B_C_OF_INPUT  = B_LU  = B_LU_END  = B_LU_HC = B_LU_START = cin_dpm = NULL
+    cin_rpm = fr_dpm_rpm = NULL
   
   # check crop table
   checkmate::assert_data_table(dt,null.ok = TRUE)
@@ -35,12 +35,7 @@ rc_input_crop <- function(dt){
   # Add month column when not supplied
   if(!"month" %in% colnames(dt.crop)) {
     dt.crop[, month := NA_integer_]}
-    
-  
-  # update crop basic properties
-  if(!'M_GREEN_TIMING' %in% colnames(dt.crop)){dt.crop[,M_GREEN_TIMING := 'never']}
-  if(!'M_CROPRESIDUE' %in% colnames(dt.crop)){dt.crop[,M_CROPRESIDUE := FALSE]}
-  if(!'M_IRRIGATION' %in% colnames(dt.crop)){dt.crop[,M_IRRIGATION := FALSE]}
+
   
   # Get year and month for the end of crop rotation
   dt.crop[,year := year(B_LU_END)]
@@ -63,8 +58,7 @@ rc_input_crop <- function(dt){
 
 
   # select only relevant columns with C input (kg C/ ha)
-  dt.crop <- dt.crop[,list(year = year, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm,
-                           M_GREEN_TIMING,M_IRRIGATION,M_CROPRESIDUE)]
+  dt.crop <- dt.crop[,list(year = year, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm)]
   
   # return
   return(dt.crop)
