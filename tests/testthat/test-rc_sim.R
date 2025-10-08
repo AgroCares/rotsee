@@ -44,7 +44,7 @@ test_that("rc_sim correctly checks input validity", {
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                       c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-                      initialize = TRUE,
+                      initialize = 'spinup_analytical_bodemcoolstof',
                       unit = "A_SOM_LOI",
                       method = "adams",
                       poutput = "year",
@@ -52,10 +52,10 @@ test_that("rc_sim correctly checks input validity", {
                       end_date = "2040-10-01")
 
   # All correct
- expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
+rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
-                   weather = weather, rothc_parms = parms))
+                   weather = weather, rothc_parms = parms)
   
   # No amendment table (allowed)
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
