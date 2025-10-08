@@ -54,7 +54,6 @@ rc_shi_field <- function(B_LU_BRP, A_SOM_LOI, A_CLAY_MI, simyears = 50, init = F
     # Run simulation
     result <- rc_sim(soil_properties = this.soil,
                             A_DEPTH = 0.3,
-                            cf_yield = if(i=='BAU') {1} else {1.05},
                             M_TILLAGE_SYSTEM = "CT",
                             rothc_rotation = rotation,
                             rothc_amendment = amendment,

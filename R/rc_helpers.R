@@ -24,7 +24,7 @@ cf_ind_importance <- function(x) {
 #' *W_TEMP_MEAN_MONTH (°C)
 #' *W_PREC_SUM_MONTH (mm)
 #' *W_ET_POT_MONTH (mm)
-#' *W_ET_ACT_MONTH (mm; can be NA, will be derived based on W_ET_POT_MONTH)
+#' *W_ET_ACT_MONTH (mm; optional, can be NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' 
 #' @returns
@@ -102,6 +102,8 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if(!is.null(parms)){
     checkmate::assert_list(parms)
     checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "initialize", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
+  }else{
+    parms <- list()
   }
   
   # add checks on decomposition rates
@@ -210,7 +212,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   method <- "adams"
   if(!is.null(parms$method)){
     # check supplied method
-    
+    checkmate::assert_choice(parms$method, choices = c("adams"))
     # define method
     method = parms$method
   }
@@ -290,11 +292,11 @@ rc_check_inputs <- function(soil_properties,
     if ("P_NAME" %in% names(rothc_amendment))
       checkmate::assert_character(rothc_amendment$P_NAME, any.missing = TRUE)
     if ("P_DOSE" %in% names(rothc_amendment))
-       checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = FALSE)
+       checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = TRUE)
     if ("P_C_OF" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = FALSE)
+      checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = TRUE)
     if ("B_C_OF_INPUT" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = FALSE)
+      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = TRUE)
   }
 }
 
@@ -354,7 +356,7 @@ rc_calculate_bd <- function(dt){
 #' * B_LU_HI (numeric), the harvest index of the crop
 #' * B_LU_HI_RES (numeric), fraction of biomass that is residue
 #' * B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
-#' * M_CROP_RESIDUE (logical), indicator of whether crop residue is incorporated into the soil
+#' * M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
 #' @export
 
@@ -415,6 +417,10 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   
   # Check input data
   checkmate::assert_data_table(crops,null.ok = FALSE, min.rows = 1)
+  # Copy crop table and standardize column names
+  crops <- as.data.table(crops)
+  setnames(crops,toupper(colnames(crops)))
+  
   req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT")
   checkmate::assert_names(colnames(crops), must.include = req)
   if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
@@ -423,14 +429,16 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
   checkmate::assert_date(as.Date(start_date))
+  checkmate::assert(
+    !any(grepl("-02-29$", c(crops$B_LU_START, crops$B_LU_END))),
+    msg = "February 29th dates are not allowed in B_LU_START or B_LU_END to avoid leap year complications during date shifting"
+  )
   if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
-  if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
+  if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1, len = 1, any.missing = FALSE)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   if(max(year(crops$B_LU_END)) < year(start_date))  stop('crop rotation plan is outside of simulation period')
+  if(any(crops$B_LU_START >= crops$B_LU_END)) stop('Crop end date must be after crop start date')
   
-  # Copy crops table
-  crops <- as.data.table(crops)
-  setnames(crops,toupper(colnames(crops)))
   
   # Define total length of crop rotation (years)
   rotation_length <- max(year(crops$B_LU_END)) - year(start_date) + 1
@@ -440,11 +448,12 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   
   # Define simyears if not supplied
   if(is.null(simyears)){
-    simyears <- year(end_date) + month(end_date)/12 - (year(start_date) + month(start_date)/12)
-  }
+    months_diff <- 12L * (year(end_date) - year(start_date)) + (month(end_date) - month(start_date)) + 1L
+        simyears <- months_diff / 12
+      }
   
   # Determine number of duplications
-  duplications <- ceiling(simyears / rotation_length)
+  duplications <- max(1L, ceiling(simyears / rotation_length))
   
   # Extend crop table for the number of years
   crops_ext <- crops[rep(id, each = duplications)]
@@ -465,8 +474,12 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
                        B_LU_END = paste0(year_end_ext,substr(B_LU_END, start = 5, stop = 10)))]
 
   # filter only the years for simulation
-  this.crops <- crops_ext[year_start_ext <= (year(start_date) + simyears),]
- 
+  if (!is.null(end_date)) {
+     this.crops <- crops_ext[as.Date(B_LU_START) <= as.Date(end_date), ]
+    } else {
+      this.crops <- crops_ext[year_start_ext <= (year(start_date) + simyears),]
+    }
+  
   # Select relevant columns
   this.crops <- this.crops[, .SD, .SDcols =!names(this.crops) %in% c("id", "year_start", "year_end",
                                                        "yr_rep", "year_start_ext", "year_end_ext")
@@ -522,7 +535,10 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
   if(is.null(end_date) && is.null(simyears)) stop('both end_date and simyears are missing in the input')
   if(max(year(amendments$P_DATE_FERTILIZATION)) < year(start_date))  stop ('amendment plan is outside of simulation period')
-  
+  checkmate::assert(
+    !any(grepl("-02-29$", amendments$P_DATE_FERTILIZATION)),
+    msg = "February 29th dates are not allowed in P_DATE_FERTILIZATION to avoid leap year complications during date shifting"
+  )
   # Make copy of amendments table
     amendments <- as.data.table(amendments)
     setnames(amendments,toupper(colnames(amendments)))
@@ -534,15 +550,16 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   amendments[,id := .I]
   
   # Define simyears if not supplied
-  if(is.null(simyears)){
-    simyears <- year(end_date) + month(end_date)/12 - (year(start_date) + month(start_date)/12)
-  }
+  if (is.null(simyears)) {
+        months_diff <- 12L * (year(end_date) - year(start_date)) + (month(end_date) - month(start_date)) + 1L
+        simyears <- months_diff / 12
+      }
   
   # Determine number of duplications
-  duplications <- ceiling(simyears / rotation_length)
+  duplications <- max(1L, ceiling(simyears / rotation_length))
     
   # Extend amendment table for the number of years
-  amendments_ext <- amendments[rep(id, each = ceiling(simyears / rotation_length))]
+  amendments_ext <- amendments[rep(id, each = duplications)]
     
   # Update P_DATE_FERTILIZATION for all repetitions of rotation block
   amendments_ext[, yr_rep := 1:.N, by = id]
@@ -550,8 +567,12 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   amendments_ext[, P_DATE_FERTILIZATION := paste0(year,substr(P_DATE_FERTILIZATION, start = 5, stop = 10))]
     
   # filter only the years for simulation
-  this.amendments <- amendments_ext[year <= (year(start_date) + simyears),]
-    
+  if (!is.null(end_date)) {
+    this.amendments <- amendments_ext[as.Date(P_DATE_FERTILIZATION) <= as.Date(end_date), ]
+    } else {
+      this.amendments <- amendments_ext[year <= (year(start_date) + simyears),]
+    }
+  
   # Select relevant columns
   this.amendments <- this.amendments[, .SD, .SDcols =!names(this.amendments) %in% 
                                          c("id", "year", "year_start", "year_end",
@@ -583,6 +604,9 @@ rc_time_period <- function(start_date, end_date){
   # perform inputs checks
   checkmate::assert_date(as.Date(start_date))
   checkmate::assert_date(as.Date(end_date))
+  if (as.Date(start_date) > as.Date(end_date)) {
+     stop("start_date must be on/before end_date")
+  }
   
   # Create a complete set of year-month combinations for the simulation period
   dt.time <- CJ(year = min(year(start_date)):max(year(end_date)), month = 1:12)

@@ -12,8 +12,7 @@ test_that("rc_sim correctly checks input validity", {
   A_DEPTH = 0.3
   
   B_DEPTH = 0.3
-  
-  cf_yield = 1
+
   
   M_TILLAGE_SYSTEM = 'CT'
   
@@ -52,20 +51,20 @@ test_that("rc_sim correctly checks input validity", {
                       end_date = "2040-10-01")
 
   # All correct
-rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                   B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+ expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
+                   B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                    weather = weather, rothc_parms = parms)
   
   # No amendment table (allowed)
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                          weather = weather, rothc_parms = parms))
   
     # No crop table (not allowed)
   expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                   B_DEPTH = B_DEPTH, cf_yield = cf_yield, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                   B_DEPTH = B_DEPTH,  M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = NULL, rothc_amendment = rothc_amendment, 
                    weather = weather))
   

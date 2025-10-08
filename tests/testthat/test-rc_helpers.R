@@ -66,56 +66,282 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
 })
 
 
-test_that("rc_extend_crops correctly extends crop input file", {
-  # Create a valid crop table
+test_that("rc_extend_crops validates inputs correctly", {
+  # Empty data
+  expect_error(rc_extend_crops(data.table(), as.Date("2020-01-01")), "Must have at least 1 row")
+  
+  # Missing required columns
+  bad_crops <- data.table(B_LU_START = "2020-01-01", B_LU_END = "2020-12-31")
+  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "must.include")
+  
+  # Invalid B_LU_HC
+  bad_crops <- data.table(
+    B_LU_START = "2020-01-01",
+    B_LU_END = "2020-12-31",
+    B_LU = "Crop1",
+    B_LU_HC = 1.1,
+    B_C_OF_INPUT = 100
+  )
+  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "Element 1 is not <= ")
+  
+  # February 29th
+  bad_crops <- data.table(
+    B_LU_START = "2020-02-29",
+    B_LU_END = "2020-12-31",
+    B_LU = "Crop1",
+    B_LU_HC = 0.5,
+    B_C_OF_INPUT = 100
+  )
+  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "February 29th")
+  
+  # Crop end date before start date
+  bad_crops <- data.table(
+    B_LU_START = "2020-12-31",
+    B_LU_END = "2020-01-01",
+    B_LU = "Crop1",
+    B_LU_HC = 0.5,
+    B_C_OF_INPUT = 100
+  )
+  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01"), simyears = 1), "Crop end date must be after crop start date")
+  
+  # Crop rotation plan outside simulation period
+  bad_crops <- data.table(
+    B_LU_START = "2019-01-01",
+    B_LU_END = "2019-12-31",
+    B_LU = "Crop1",
+    B_LU_HC = 0.5,
+    B_C_OF_INPUT = 100
+  )
+  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01"), simyears = 1), "crop rotation plan is outside of simulation period")
+})
+
+test_that("rc_extend_crops extends crops correctly with end_date", {
   crops <- data.table(
-    B_LU_START = c("2022-04-01", "2023-04-01"),
-    B_LU_END = c("2022-10-01", "2023-10-01"),
-    B_LU = c("nl_308", "nl_308"),
-    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
-    B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
+    B_LU_START = c("2020-01-01", "2020-06-01"),
+    B_LU_END = c("2020-03-31", "2020-08-31"),
+    B_LU = c("Crop1", "Crop2"),
+    B_LU_HC = c(0.5, 0.3),
+    B_C_OF_INPUT = c(100, 200)
   )
   
-  # Define valid simyears
-  simyears <- 50
+  result <- rc_extend_crops(crops, as.Date("2020-01-01"), as.Date("2022-12-31"))
   
-  # Define valid start_date
-  start_date <- "2022-04-01"
+  # Check number of rows
+  expect_equal(nrow(result), 6)
   
-  # Check whether crop table is extended with valid data
-  expect_no_error(rc_extend_crops(crops = crops, simyears = simyears, start_date = start_date))
+  # Check dates are extended correctly
+  expect_equal(result$B_LU_START, c(
+    "2020-01-01", "2020-06-01",
+    "2021-01-01", "2021-06-01",
+    "2022-01-01", "2022-06-01"
+  ))
   
-  # Perform check with end_date instead of simyears
-  end_date <- "2072-04-01"
-  expect_no_error(rc_extend_crops(crops = crops, end_date = end_date, start_date = start_date))
+  expect_equal(result$B_LU_END, c(
+    "2020-03-31", "2020-08-31",
+    "2021-03-31", "2021-08-31",
+    "2022-03-31", "2022-08-31"
+  ))
   
+  # Check columns are preserved
+  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT"))
+})
+
+test_that("rc_extend_crops extends crops correctly with simyears", {
+  crops <- data.table(
+    B_LU_START = c("2020-01-01", "2020-06-01"),
+    B_LU_END = c("2020-03-31", "2020-08-31"),
+    B_LU = c("Crop1", "Crop2"),
+    B_LU_HC = c(0.5, 0.3),
+    B_C_OF_INPUT = c(100, 200)
+  )
+  
+  result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 3)
+  
+  # Check number of rows
+  expect_equal(nrow(result), 6)
+  
+  # Check dates are extended correctly
+  expect_equal(result$B_LU_START, c(
+    "2020-01-01", "2020-06-01",
+    "2021-01-01", "2021-06-01",
+    "2022-01-01", "2022-06-01"
+  ))
+  
+  expect_equal(result$B_LU_END, c(
+    "2020-03-31", "2020-08-31",
+    "2021-03-31", "2021-08-31",
+    "2022-03-31", "2022-08-31"
+  ))
+  
+  # Check columns are preserved
+  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT"))
+})
+
+test_that("rc_extend_crops handles single year rotation", {
+  crops <- data.table(
+    B_LU_START = c("2020-01-01", "2020-06-01"),
+    B_LU_END = c("2020-03-31", "2020-08-31"),
+    B_LU = c("Crop1", "Crop2"),
+    B_LU_HC = c(0.5, 0.3),
+    B_C_OF_INPUT = c(100, 200)
+  )
+  
+  result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
+  
+  # Check number of rows
+  expect_equal(nrow(result), 2)
+  
+  # Check dates are not extended
+  expect_equal(result$B_LU_START, c("2020-01-01", "2020-06-01"))
+  expect_equal(result$B_LU_END, c("2020-03-31", "2020-08-31"))
+})
+
+test_that("rc_extend_crops orders output by start date", {
+  crops <- data.table(
+    B_LU_START = c("2020-06-01", "2020-01-01"),
+    B_LU_END = c("2020-08-31", "2020-03-31"),
+    B_LU = c("Crop2", "Crop1"),
+    B_LU_HC = c(0.3, 0.5),
+    B_C_OF_INPUT = c(200, 100)
+  )
+  
+  result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
+  
+  # Check order
+  expect_equal(result$B_LU_START, c("2020-01-01", "2020-06-01"))
+})
+
+test_that("rc_extend_crops removes temporary columns", {
+  crops <- data.table(
+    B_LU_START = c("2020-01-01", "2020-06-01"),
+    B_LU_END = c("2020-03-31", "2020-08-31"),
+    B_LU = c("Crop1", "Crop2"),
+    B_LU_HC = c(0.5, 0.3),
+    B_C_OF_INPUT = c(100, 200)
+  )
+  
+  result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
+  
+  # Check no temp columns
+  expect_false(any(c("id", "year_start", "year_end", "yr_rep", "year_start_ext", "year_end_ext") %in% names(result)))
 })
 
 
-test_that("rc_extend_amendments correctly extends amendments input file", {
-  # Create a valid crop table
+test_that("rc_extend_amendments validates inputs correctly", {
+  # Empty data
+  expect_error(rc_extend_amendments(data.table(), as.Date("2020-01-01")), "Must have at least 1 row")
+  
+  # Missing required columns
+  bad_amendments <- data.table(P_HC = 0.5, P_DATE_FERTILIZATION = as.Date("2020-01-01"))
+  names(bad_amendments) <- c("P_HC", "WRONG_NAME")
+  expect_error(rc_extend_amendments(bad_amendments, as.Date("2020-01-01")), "must.include")
+  
+  # Invalid P_HC
+  bad_amendments <- data.table(P_HC = 1.1, P_DATE_FERTILIZATION = as.Date("2020-01-01"))
+  expect_error(rc_extend_amendments(bad_amendments, "2020-01-01"), "Element 1 is not <= 1")
+  
+  # February 29th
+  bad_amendments <- data.table(P_HC = 0.5, P_DATE_FERTILIZATION = as.Date("2020-02-29"))
+  expect_error(rc_extend_amendments(bad_amendments, "2020-01-01", end_date = "2030-01-01"), "February 29th")
+  
+  # Both end_date and simyears missing
+  expect_error(rc_extend_amendments(bad_amendments, "2020-01-01", NULL, NULL), "both end_date and simyears are missing")
+})
+
+test_that("rc_extend_amendments extends amendments correctly with end_date", {
   amendments <- data.table(
-    P_ID = c(1, 1),
-    P_NAME = c('cattle_slurry', 'cattle_slurry'),
-    P_DOSE = c(63300, 63300),
-    P_HC = c(0.7,0.7),
-    P_C_OF = c(35, 35),
-    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+    P_HC = c(0.5, 0.3),
+    P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
+    P_NAME = c("Amend1", "Amend2"),
+    P_DOSE = c(100, 200)
+  )
   
-  # Define valid simyears
-  simyears <- 50
+  result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), as.Date("2022-12-31"))
   
-  # Define valid start_date
-  start_date <- "2022-04-01"
+  # Check number of rows
+  expect_equal(nrow(result), 6)
   
-  # Check whether crop table is extended with valid data
-  expect_no_error(rc_extend_amendments(amendments = amendments, simyears = simyears, start_date = start_date))
+  # Check dates are extended correctly
+  expect_equal(result$P_DATE_FERTILIZATION, c(
+    "2020-01-01", "2020-06-01",
+    "2021-01-01", "2021-06-01",
+    "2022-01-01", "2022-06-01"
+  ))
   
-  # Perform check with end_date instead of simyears
-  end_date <- "2072-04-01"
-  expect_no_error(rc_extend_amendments(amendments = amendments, end_date = end_date, start_date = start_date))
+  # Check columns are preserved
+  expect_equal(names(result), c("P_HC", "P_DATE_FERTILIZATION", "P_NAME", "P_DOSE"))
 })
+
+test_that("rc_extend_amendments extends amendments correctly with simyears", {
+  amendments <- data.table(
+    P_HC = c(0.5, 0.3),
+    P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
+    P_NAME = c("Amend1", "Amend2"),
+    P_DOSE = c(100, 200)
+  )
+  
+  result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), simyears = 3)
+  
+  # Check number of rows
+  expect_equal(nrow(result), 6)
+  
+  # Check dates are extended correctly
+  expect_equal(result$P_DATE_FERTILIZATION, c(
+    "2020-01-01", "2020-06-01",
+    "2021-01-01", "2021-06-01",
+    "2022-01-01", "2022-06-01"
+  ))
+  
+  # Check columns are preserved
+  expect_equal(names(result), c("P_HC", "P_DATE_FERTILIZATION", "P_NAME", "P_DOSE"))
+})
+
+test_that("rc_extend_amendments handles single year rotation", {
+  amendments <- data.table(
+    P_HC = c(0.5, 0.3),
+    P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
+    P_NAME = c("Amend1", "Amend2"),
+    P_DOSE = c(100, 200)
+  )
+  
+  result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), simyears = 1)
+  
+  # Check number of rows
+  expect_equal(nrow(result), 2)
+  
+  # Check dates are not extended
+  expect_equal(result$P_DATE_FERTILIZATION, c("2020-01-01", "2020-06-01"))
+})
+
+test_that("rc_extend_amendments orders output by date", {
+  amendments <- data.table(
+    P_HC = c(0.5, 0.3),
+    P_DATE_FERTILIZATION = as.Date(c("2020-06-01", "2020-01-01")),
+    P_NAME = c("Amend2", "Amend1"),
+    P_DOSE = c(200, 100)
+  )
+  
+  result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), simyears = 1)
+  
+  # Check order
+  expect_equal(result$P_DATE_FERTILIZATION, c("2020-01-01", "2020-06-01"))
+})
+
+test_that("rc_extend_amendments removes temporary columns", {
+  amendments <- data.table(
+    P_HC = c(0.5, 0.3),
+    P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
+    P_NAME = c("Amend1", "Amend2"),
+    P_DOSE = c(100, 200)
+  )
+  
+  result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), simyears = 1)
+  
+  # Check no temp columns
+  expect_false(any(c("id", "year", "yr_rep") %in% names(result)))
+})
+
+
 
 # context("cf_ind_importance")
 #

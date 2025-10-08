@@ -2,7 +2,7 @@
 #'
 #' This function calculates the timing of carbon inputs (kg C per ha) based on type of amendment application.
 
-#' @param amendment (data.table) A table with the following column names: P_ID (optional), P_NAME (optional), year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.
+#' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, and cin_rpm.
 #' @param dt.time (data.table) Table containing all combinations of months and years in the simulation period, with columns year, month, and time
 #'
 #' @details This function increases temporal detail for time series of C inputs of organic amendments.
