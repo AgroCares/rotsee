@@ -30,7 +30,7 @@ rc_shi_field <- function(B_LU_BRP, A_SOM_LOI, A_CLAY_MI, simyears = 50, init = F
                     A_CLAY_MI = this.clay) 
   
   # initialize RothC with BAU for 150 years
-  pool_fractions <- rc_initialise(B_LU_BRP = B_LU_BRP, soil_properties = this.soil)
+  pool_fractions <- rc_initialise(soil_properties = this.soil)
   
   # run simulations for the desire scenarios
   sim <- list(); count <- 0
@@ -54,7 +54,6 @@ rc_shi_field <- function(B_LU_BRP, A_SOM_LOI, A_CLAY_MI, simyears = 50, init = F
     # Run simulation
     result <- rc_sim(soil_properties = this.soil,
                             A_DEPTH = 0.3,
-                            M_TILLAGE_SYSTEM = "CT",
                             rothc_rotation = rotation,
                             rothc_amendment = amendment,
                             rothc_parms = list(simyears = simyears + spinup,
