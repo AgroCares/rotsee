@@ -188,11 +188,13 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   type <- 'spinup_analytical_bodemcoolstof'
   
   if(!is.null(parms$type)){
-    # check initialize
+    # check type
     checkmate::assert_character(parms$type,any.missing = FALSE, len = 1)
     checkmate::assert_subset(parms$type, choices = c('spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'FALSE'))
    
+    # define type
     type = parms$type
+   
   }
   
   # Add checks on unit

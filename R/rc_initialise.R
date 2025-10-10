@@ -82,7 +82,7 @@ rc_initialise <- function(crops = NULL,
                           dt.soc,
                           rothc.parms,
                           rothc.event,
-                          dt.time,
+                          dt.time = NULL,
                           start_date = NULL,
                           soil_properties = NULL,
                           dt.weather = NULL,
@@ -94,7 +94,19 @@ rc_initialise <- function(crops = NULL,
   abc = bd = time = toc = var = cf_abc = ciom.ini = biohum.ini = cbio.ini = NULL
   A_SOM_LOI = B_C_OF_INPUT = P_C_OF = NULL
 
- 
+  # Input validation by type
+  if (type == 'spinup_simulation') {
+    if (is.null(start_date)) stop("start_date is required for spinup_simulation")
+    if (is.null(crops)) stop("crops is required for spinup_simulation")
+    if (is.null(soil_properties)) stop("soil_properties is required for spinup_simulation")
+  }
+  
+  if (type %in% c('spinup_analytical_heuvelink','spinup_analytical_bodemcoolstof')) {
+    if (missing(dt.time) || is.null(dt.time)) stop("dt.time is required for analytical spin-up types")
+    if (missing(dt.soc) || is.null(dt.soc)) stop("dt.soc is required for analytical spin-up types")
+    }
+  
+  
   # Define rothc parameters
   k1 <- rothc.parms$k1
   k2 <- rothc.parms$k2
@@ -130,7 +142,7 @@ rc_initialise <- function(crops = NULL,
     this.result.fin <- this.result[year > max(year)-2*nrow(crops),lapply(.SD,mean)]
   
   
-    fractions <- this.result.fin[,.(fr_IOM = CIOM / (A_SOM_LOI),
+    fractions <- this.result.fin[,.(fr_IOM = CIOM / A_SOM_LOI,
                                     fr_DPM = CDPM / A_SOM_LOI,
                                     fr_RPM = CRPM / A_SOM_LOI,
                                     fr_BIO = CBIO / A_SOM_LOI)]
