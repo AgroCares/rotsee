@@ -186,15 +186,15 @@ rc_sim <- function(soil_properties,
                                         start_date = start_date,
                                         dt.weather = dt.weather,
                                         rothc.parms = rothc.parms,
-                                        type = 'spinup_analytical_bodemcoolstof'))
+                                        type = type))
     
   
   } 
 
-dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
-dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
-dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
-dt.soc[,CBIO0 := c_fractions$fr_BIO * (toc-CIOM0)]
+dt.soc[,CIOM0 := c_fractions$fr_IOM * toc]
+dt.soc[,CDPM0 := c_fractions$fr_DPM * toc]
+dt.soc[,CRPM0 := c_fractions$fr_RPM * toc]
+dt.soc[,CBIO0 := c_fractions$fr_BIO * toc]
 dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
  
 

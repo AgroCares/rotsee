@@ -10,7 +10,7 @@ rc_initialise(
   dt.soc,
   rothc.parms,
   rothc.event,
-  dt.time,
+  dt.time = NULL,
   start_date = NULL,
   soil_properties = NULL,
   dt.weather = NULL,

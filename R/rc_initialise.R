@@ -216,7 +216,7 @@ rc_initialise <- function(crops = NULL,
     nu <- (1 - 0.02) * 1 / (1 + DR_amendment)
     
     # total SOC stock (ton C / ha) from bulk density 
-    CTOT <- dt.soc$toc * 1000
+    CTOT <- dt.soc$toc / 1000
       
     # IOM pool (ton C / ha) using Falloon method
     FallIOM <- 0.049 * CTOT^1.139
@@ -265,15 +265,23 @@ rc_initialise <- function(crops = NULL,
 
     # CDPM pool (ton C / ha)
     cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]
+    if(nrow(cdpm.ini) >0){
     cdpm.ini[,cf_abc := abc(time)]
     cdpm.ini <- cdpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k1]
     dt.soc[, cdpm.ini := mean(cdpm.ini)]
+    }else{
+      dt.soc[,cdpm.ini := 0]
+    }
     
     # CRPM pool (ton C / ha)
     crpm.ini = rothc.event[var == 'CRPM',list(time,value)]
+    if(nrow(crpm.ini) > 0) {
     crpm.ini[,cf_abc := abc(time)]
     crpm.ini <- crpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k2]
     dt.soc[, crpm.ini := mean(crpm.ini)]
+    }else{
+      dt.soc[,crpm.ini := 0]
+    }
     
     # CIOM pool (ton C / ha)
     dt.soc[, ciom.ini := 0.049 * toc^1.139]
@@ -291,12 +299,13 @@ rc_initialise <- function(crops = NULL,
     dt.soc[,chum.ini := biohum.ini / (1 + k4 / k3)]
  
     # define fractions
-    fractions <- dt.soc[,.(fr_IOM = ciom.ini / toc,
-                           fr_DPM = cdpm.ini / toc,
-                           fr_RPM = crpm.ini / toc,
-                           fr_BIO = cbio.ini / toc)]
+    fractions <- dt.soc[,.(
+      fr_IOM = fifelse(toc >0, ciom.ini / toc, 0),
+      fr_DPM = fifelse(toc >0, cdpm.ini / toc, 0),
+      fr_RPM = fifelse(toc >0, crpm.ini / toc, 0),
+      fr_BIO = fifelse(toc >0, cbio.ini / toc, 0))]
     
-    }
+  }
   
   # unlist fractions
   fractions <- unlist(fractions)
