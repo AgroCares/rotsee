@@ -152,16 +152,24 @@ rc_initialise <- function(crops = NULL,
   # calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
   if(type=='spinup_analytical_heuvelink'){
 
-    # averaged total C input (kg C/ha/year) from crop, crop residues, catch crops and amendments
-    c_input_crop <- crops[,sum(B_C_OF_INPUT)/max(dt.time$time)]
-    c_input_man <- if(!is.null(amendment$B_C_OF_INPUT) && all(!is.na(amendment$B_C_OF_INPUT))){
-      amendment[, sum(B_C_OF_INPUT)/max(dt.time$time)]
+    # averaged total C input (kg C/ha/year) from crops and amendments
+    if (is.null(crops) || nrow(crops) == 0) {
+      c_input_crop <- 0
     }else{
-      amendment[,sum(P_DOSE * P_C_OF)/max(dt.time$time)]
+    c_input_crop <- crops[,sum(B_C_OF_INPUT)/max(dt.time$time)]
     }
+    
+    if (is.null(amendment) || nrow(amendment) == 0) {
+       c_input_man <- 0
+    } else if (!is.null(amendment$B_C_OF_INPUT) && all(!is.na(amendment$B_C_OF_INPUT))) {
+        c_input_man <- amendment[, sum(B_C_OF_INPUT)/max(dt.time$time)]
+    } else {
+          c_input_man <- amendment[, sum(P_DOSE * P_C_OF, na.rm = TRUE)/max(dt.time$time)]
+    }
+  
 
     # calculate C input ratio of crop and amendments
-    CR_proportion <- (c_input_crop) / (c_input_crop+c_input_man)
+    CR_proportion <- c_input_crop / (c_input_crop+c_input_man)
     M_proportion <- c_input_man / (c_input_crop+c_input_man)
     
     # estimate DPM-RPM ratio of the inputs from crop and amendments
@@ -170,7 +178,10 @@ rc_initialise <- function(crops = NULL,
     
     # calculate average dpm_rpm ratio of C inputs from crop and amendments
     DR_crop <- crops[,weighted.mean(fr_dpm_rpm,w=(B_C_OF_INPUT))]
-    if(!is.null(amendment$B_C_OF_INPUT) && all(!is.na(amendment$B_C_OF_INPUT))){
+    
+    if(is.null(amendment) || nrow(amendment) == 0){
+      DR_amendment == 0
+    }else if(!is.null(amendment$B_C_OF_INPUT) && all(!is.na(amendment$B_C_OF_INPUT))){
       DR_amendment <- amendment[P_DOSE >0,weighted.mean(fr_dpm_rpm,w=(B_C_OF_INPUT))]
     }else{
     DR_amendment <- amendment[P_DOSE >0,weighted.mean(fr_dpm_rpm,w=(P_DOSE * P_C_OF))]
