@@ -64,7 +64,6 @@
 rc_sim <- function(soil_properties,
                    A_DEPTH = 0.3,
                    B_DEPTH = 0.3,
-                   M_TILLAGE_SYSTEM = 'CT',
                    rothc_rotation = NULL,
                    rothc_amendment = NULL,
                    rothc_parms = NULL,

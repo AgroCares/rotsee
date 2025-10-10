@@ -17,6 +17,8 @@ rothc.event <- data.table(
   
 dt.time <- rc_time_period(start_date = "2022-04-01", end_date = "2040-10-01")
 
+start_date <- "2022-04-01"
+
 crops <- data.table(
   B_LU_START = c("2022-04-01", "2023-04-01"),
   B_LU_END = c("2022-10-01", "2023-10-01"),
@@ -34,6 +36,12 @@ amendment <- data.table(
   P_C_OF = c(35, 35),
   P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
 
+soil_properties <- list(
+  A_C_OF = 50,
+  B_C_ST03 = 210,
+  A_CLAY_MI = 18,
+  A_DENSITY_SA = 1.4
+)
 
 # Calculate rothc.parms
 dt.weather <- data.table(month = 1:12,
@@ -68,15 +76,33 @@ expect_no_error(rc_initialise(crops = crops,
                               dt.soc = dt.soc,
                               rothc.parms = rothc.parms,
                               rothc.event = rothc.event,
+                              start_date = start_date,
                               dt.time = dt.time,
+                              soil_properties = soil_properties,
+                              dt.weather = dt.weather,
                               type = 'spinup_analytical_bodemcoolstof'))
 
 # spinup_analytical_heuvelink
-rc_initialise(crops = crops,
+expect_no_error(rc_initialise(crops = crops,
                               amendment = amendment,
                               dt.soc = dt.soc,
                               rothc.parms = rothc.parms,
                               rothc.event = rothc.event,
+                              start_date = start_date,
                               dt.time = dt.time,
-                              type = 'spinup_analytical_heuvelink')
+                              soil_properties = soil_properties,
+                              dt.weather = dt.weather,
+                              type = 'spinup_analytical_heuvelink'))
+
+# spinup_simulation
+expect_no_error(rc_initialise(crops = crops,
+                              amendment = amendment,
+                              dt.soc = dt.soc,
+                              rothc.parms = rothc.parms,
+                              rothc.event = rothc.event,
+                              start_date = start_date,
+                              dt.time = dt.time,
+                              soil_properties = soil_properties,
+                              dt.weather = dt.weather,
+                              type = 'spinup_simulation'))
 })
