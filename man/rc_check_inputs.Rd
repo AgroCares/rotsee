@@ -4,7 +4,7 @@
 \alias{rc_check_inputs}
 \title{Function to check input tables of soil, crop, and amendment data}
 \usage{
-rc_check_inputs(soil_properties, rothc_rotation, rothc_amendment)
+rc_check_inputs(soil_properties, rothc_rotation = NULL, rothc_amendment = NULL)
 }
 \arguments{
 \item{soil_properties}{(list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)}

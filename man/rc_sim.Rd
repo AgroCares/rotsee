@@ -8,7 +8,6 @@ rc_sim(
   soil_properties,
   A_DEPTH = 0.3,
   B_DEPTH = 0.3,
-  M_TILLAGE_SYSTEM = "CT",
   rothc_rotation = NULL,
   rothc_amendment = NULL,
   rothc_parms = NULL,
@@ -21,8 +20,6 @@ rc_sim(
 \item{A_DEPTH}{(numeric) Depth for which soil sample is taken (m). Default set to 0.3.}
 
 \item{B_DEPTH}{(numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.}
-
-\item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till).}
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
