@@ -115,7 +115,7 @@ rc_sim <- function(soil_properties,
   poutput <- rothc_parms$poutput
   
   # Define initialize
-  initialize <- rothc_parms$initialize
+  type <- rothc_parms$type
   
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = 0, upper = 0.6, any.missing = FALSE, len = 1)
@@ -176,16 +176,19 @@ rc_sim <- function(soil_properties,
   }
 
   # initialize the RothC pools (kg C / ha)
-  if(initialize != FALSE){ 
+  if(type != 'FALSE'){ 
     
     # derive the initial distribution of C pools (original data.tables are used as input)
     c_fractions = as.list(rc_initialise(crops = rothc_rotation, 
-                                             amendment = rothc_amendment,
-                                             dt.time = dt.time,
-                                             dt.soc = dt.soc,
-                                             rothc.event = rothc.event,
-                                             rothc.parms = rothc.parms,
-                                             type = 'spinup_analytical_bodemcoolstof'))
+                                        amendment = rothc_amendment,
+                                        dt.time = dt.time,
+                                        dt.soc = dt.soc,
+                                        soil_properties = soil_properties,
+                                        rothc.event = rothc.event,
+                                        start_date = start_date,
+                                        dt.weather = dt.weather,
+                                        rothc.parms = rothc.parms,
+                                        type = 'spinup_analytical_bodemcoolstof'))
     
   
   } 
