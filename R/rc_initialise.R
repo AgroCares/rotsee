@@ -137,25 +137,23 @@ rc_initialise <- function(crops = NULL,
     # rates of the five pools, DPM, RPM, BIO, HUM and IOM 
     ks <- c(k1, k2, k3, k4, 0)
     
-    # make C flow matrix
+    # make C flow matrix based on k (removed) and transfer coefficients (added)
     A = diag(-ks)
     A[3, ] = A[3, ] + B * ks
     A[4, ] = A[4, ] + H * ks
-    
+ 
     # averaged rate modifying factor over the crop rotation 
     xi <- mean(abc(1:(12*isimyears)/12))
     
     # rho is fraction plant material as DPM
     rho <- DR_crop / (1 + DR_crop)
     
-    # fraction of FYM, 49% DPM (tau) and 49% RPM (nu), and 2% HUM as being used in RothC
-    # adjust this to our implementation where FYM fractions also depend on DPM-RPM ratio
-    #tau <- 0.49 ; nu <- 0.49
+    # fraction of DPM (tau), RPM (nu), and 2% HUM in FYM
     tau <- (1 - 0.02) * DR_amendment / (1 + DR_amendment)
     nu <- (1 - 0.02) * 1 / (1 + DR_amendment)
     
     # total SOC stock (ton C / ha) from bulk density 
-    CTOT <- dt.soc$A_SOM_LOI * 100 * 100 * 0.3 * dt.soc$A_DENSITY_SA * 0.01 * 0.5 
+    CTOT <- dt.soc$toc * 1000
       
     # IOM pool (ton C / ha) using Falloon method
     FallIOM <- 0.049 * CTOT^1.139
@@ -190,14 +188,14 @@ rc_initialise <- function(crops = NULL,
                       fr_DPM = Cpools[1] / Ctotal,
                       fr_RPM = Cpools[2] / Ctotal,
                       fr_BIO = Cpools[3] / Ctotal)
-    
+
   }
   
   # calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
   if(type=='spinup_analytical_bodemcoolstof'){
 
-    # recalculate total organic carbon to ton C / ha
-    dt.soc[,toc := toc * 1000]
+    # recalculate total organic carbon from kg to ton C / ha
+    dt.soc[,toc := toc/1000]
     
     # time correction (is 12 in documentation Chantals' study, not clear why, probably due to fixed time step calculation)
     timecor = 1
@@ -233,8 +231,7 @@ rc_initialise <- function(crops = NULL,
     fractions <- dt.soc[,.(fr_IOM = ciom.ini / toc,
                            fr_DPM = cdpm.ini / toc,
                            fr_RPM = crpm.ini / toc,
-                           fr_BIO = cbio.ini / toc,
-                           fr_HUM = chum.ini / toc)]
+                           fr_BIO = cbio.ini / toc)]
     
     }
   

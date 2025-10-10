@@ -97,7 +97,7 @@ rc_sim <- function(soil_properties,
   k4 <- rothc_parms$dec_rates[["k4"]]
   
   # Define C fractions
-  c_fractions <- rothc_parms$c_fractions
+  c_fractions <- as.list(rothc_parms$c_fractions)
   
   # Define unit of output
   unit <- rothc_parms$unit
@@ -176,36 +176,26 @@ rc_sim <- function(soil_properties,
   }
 
   # initialize the RothC pools (kg C / ha)
-  if(initialize == FALSE){ 
+  if(initialize != FALSE){ 
     
-    # Calculate carbon pools based on default distribution (kg C / ha)
-    dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
-    dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
-    dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
-    dt.soc[,CBIO0 := c_fractions$fr_BIO * (toc-CIOM0)]
-    dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
-    
-    
-  } else {
-    # the new fractions to be calculated
-    cols <- c('fr_IOM','fr_DPM','fr_RPM','fr_BIO')
-
     # derive the initial distribution of C pools (original data.tables are used as input)
-    dt.soc[,c(cols) := as.list(rc_initialise(crops = rothc_rotation, 
+    c_fractions = as.list(rc_initialise(crops = rothc_rotation, 
                                              amendment = rothc_amendment,
                                              dt.time = dt.time,
                                              dt.soc = dt.soc,
                                              rothc.event = rothc.event,
                                              rothc.parms = rothc.parms,
-                                             type = initialize))]
+                                             type = 'spinup_analytical_bodemcoolstof'))
     
-    # Set the intial C pools (kg C / ha)
-    dt.soc[,CIOM0 := ciom.ini * 1000]
-    dt.soc[,CDPM0 := cdpm.ini * 1000]
-    dt.soc[,CRPM0 := crpm.ini * 1000]
-    dt.soc[,CBIO0 := cbio.ini * 1000]
-    dt.soc[,CHUM0 := chum.ini * 1000]
-  }
+  
+  } 
+
+dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
+dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
+dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
+dt.soc[,CBIO0 := c_fractions$fr_BIO * (toc-CIOM0)]
+dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
+ 
 
   # extract relevant columns
   rothc.ini <- dt.soc[,list(CIOM0,CDPM0,CRPM0,CBIO0,CHUM0)]
