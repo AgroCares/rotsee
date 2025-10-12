@@ -136,7 +136,7 @@ rc_initialise <- function(crops = NULL,
     
     # Set model parameters
     parms <- list(unit = 'psomperfraction',
-                  type = 'FALSE')
+                  type = 'none')
     
     # Set newly required inputs
   

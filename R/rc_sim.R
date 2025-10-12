@@ -174,7 +174,7 @@ rc_sim <- function(soil_properties,
   }
 
   # initialize the RothC pools (kg C / ha)
-  if(type != 'FALSE'){ 
+  if(type != 'none'){ 
     
     # derive the initial distribution of C pools (original data.tables are used as input)
     c_fractions = as.list(rc_initialise(crops = rothc_rotation, 
