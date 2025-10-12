@@ -170,7 +170,7 @@ rc_initialise <- function(crops = NULL,
     
     if (is.null(amendment) || nrow(amendment) == 0) {
        c_input_man <- 0
-    } else if (!is.null(amendment$B_C_OF_INPUT) && all(!is.na(amendment$B_C_OF_INPUT))) {
+    } else if (!is.null(amendment$B_C_OF_INPUT) && any(!is.na(amendment$B_C_OF_INPUT))) {
         c_input_man <- amendment[, sum(B_C_OF_INPUT)/max(dt.time$time)]
     } else {
           c_input_man <- amendment[, sum(P_DOSE * P_C_OF, na.rm = TRUE)/max(dt.time$time)]

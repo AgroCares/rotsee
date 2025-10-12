@@ -195,7 +195,7 @@ dt.soc[,CIOM0 := c_fractions$fr_IOM * toc]
 dt.soc[,CDPM0 := c_fractions$fr_DPM * toc]
 dt.soc[,CRPM0 := c_fractions$fr_RPM * toc]
 dt.soc[,CBIO0 := c_fractions$fr_BIO * toc]
-dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
+dt.soc[,CHUM0 := pmax(0, toc-CIOM0-CDPM0-CRPM0-CBIO0)]
  
 
   # extract relevant columns
