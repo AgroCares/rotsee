@@ -286,6 +286,9 @@ rc_initialise <- function(crops = NULL,
   # calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
   if(type=='spinup_analytical_bodemcoolstof'){
 
+    # create local copy
+    dt.soc <- copy(dt.soc)
+    
     # recalculate total organic carbon from kg to ton C / ha
     dt.soc[,toc := toc/1000]
     
