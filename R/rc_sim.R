@@ -303,7 +303,7 @@ dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
     # select output variables
     out <- rothc.soc[,.(time = time, A_SOM_LOI = soc,CDPM,CRPM,CBIO,CHUM,CIOM)]
     
-  } else if (unit=='Cstock'){
+  } else if (unit=='cstock'){
     # Output in kg C/ha
     out <- out[,list(time = time, soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
       }

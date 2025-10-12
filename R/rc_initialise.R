@@ -121,8 +121,17 @@ rc_initialise <- function(crops = NULL,
   if(type =='spinup_simulation'){
    
    # Extend crop and amendment files to include entire 150 year simulation
-    crop_extend <- rc_extend_crops(start_date = start_date, simyears = 150, crops = crops)
-    amendment_extend <- rc_extend_amendments(start_date = start_date, simyears = 150, amendments = amendment)
+    crop_extend <- if(!is.null(crops)){
+      rc_extend_crops(start_date = start_date, simyears = 150, crops = crops)
+    }else{
+      NULL
+    }
+    
+    amendment_extend <- if(!is.null(amendment)){
+      rc_extend_amendments(start_date = start_date, simyears = 150, amendments = amendment)
+    }else{
+      NULL
+    }
  
     
     # Set model parameters
@@ -169,28 +178,48 @@ rc_initialise <- function(crops = NULL,
   
 
     # calculate C input ratio of crop and amendments
-    CR_proportion <- c_input_crop / (c_input_crop+c_input_man)
-    M_proportion <- c_input_man / (c_input_crop+c_input_man)
+    c_input_tot <- c_input_crop+c_input_man
     
-    # estimate DPM-RPM ratio of the inputs from crop and amendments
-    crops[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
-    amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
-    
-    # calculate average dpm_rpm ratio of C inputs from crop and amendments
-    DR_crop <- crops[,weighted.mean(fr_dpm_rpm,w=(B_C_OF_INPUT))]
-    
-    if(is.null(amendment) || nrow(amendment) == 0){
-      DR_amendment == 0
-    }else if(!is.null(amendment$B_C_OF_INPUT) && all(!is.na(amendment$B_C_OF_INPUT))){
-      DR_amendment <- amendment[P_DOSE >0,weighted.mean(fr_dpm_rpm,w=(B_C_OF_INPUT))]
+    if(c_input_tot <= 0 || !is.finite(c_input_tot)){
+      # if there are no C inputs, continue calculation based on crops only to prevent NaNs
+      CR_proportion <- 1
+      M_proportion <- 0
     }else{
-    DR_amendment <- amendment[P_DOSE >0,weighted.mean(fr_dpm_rpm,w=(P_DOSE * P_C_OF))]
+    CR_proportion <- c_input_crop / (c_input_tot)
+    M_proportion <- c_input_man / (c_input_tot)
     }
     
-    # what is length of the crop rotation in years
+    # estimate DPM-RPM ratio of the inputs from crop and amendments
+    if (!is.null(crops) && nrow(crops) > 0) {
+    crops[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
+    }
+    
+    if (!is.null(amendment) && nrow(amendment) > 0) {
+    amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
+    }
+    
+    # calculate average dpm_rpm ratio of C inputs from crop and amendments
+    if (is.null(crops) || nrow(crops) == 0) {
+      DR_crop <- 0
+    } else {
+      DR_crop <- crops[, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+      if (!is.finite(DR_crop)) DR_crop <- 0
+    }
+    
+    
+    if (is.null(amendment) || nrow(amendment) == 0) {
+      DR_amendment <- 0  
+    } else if (!is.null(amendment$B_C_OF_INPUT) && any(!is.na(amendment$B_C_OF_INPUT))) {
+      DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+    } else {
+      DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = (P_DOSE * P_C_OF), na.rm = TRUE)]
+    }
+    if (!is.finite(DR_amendment) || length(DR_amendment) == 0) DR_amendment <- 0
+    
+     # establish simyear based on time data table
     isimyears <- max(dt.time$year)
     
-    # ratio CO2 / (BIO+HUM)
+    # Define ratio CO2 / (BIO+HUM)
     x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * dt.soc$A_CLAY_MI))
     
     # transfer coefficients (B is BIO, H = HUM)
