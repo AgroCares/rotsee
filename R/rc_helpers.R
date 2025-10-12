@@ -265,7 +265,7 @@ rc_check_inputs <- function(soil_properties,
   if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = 0.1, upper = 600, any.missing = FALSE, len = 1)
   if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = 0.1, upper = 3000, any.missing = FALSE, len = 1)
   if((is.null(soil_properties$A_C_OF) || is.na(soil_properties$A_C_OF)) &&
-     (is.null(soil_properties$B_C_ST03) == 0 || is.na(soil_properties$B_C_ST03))){
+     (is.null(soil_properties$B_C_ST03) || is.na(soil_properties$B_C_ST03))){
        stop('Both A_C_OF and B_C_ST03 are missing in soil_properties')}
   checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = 0.1, upper = 75, len = 1)
   checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = 0.5, upper = 3, len = 1)
