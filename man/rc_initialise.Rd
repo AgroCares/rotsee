@@ -98,6 +98,7 @@ Includes the columns:
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 
 Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
+
 spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 Otherwise one of the other two is fine.
 }
