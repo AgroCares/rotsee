@@ -104,6 +104,8 @@ rc_initialise <- function(crops = NULL,
   if (type %in% c('spinup_analytical_heuvelink','spinup_analytical_bodemcoolstof')) {
     if (missing(dt.time) || is.null(dt.time)) stop("dt.time is required for analytical spin-up types")
     if (missing(dt.soc) || is.null(dt.soc)) stop("dt.soc is required for analytical spin-up types")
+    if (is.null(dt.soc$A_CLAY_MI)) stop("dt.soc must contain A_CLAY_MI column")
+    if (is.null(dt.soc$toc)) stop("dt.soc must contain toc column")
     }
   
   
@@ -117,7 +119,7 @@ rc_initialise <- function(crops = NULL,
   
   # initialise options
   
-  # do a simulation for 150 years to estimate the C fractions assuming system is in equilibrium
+  ## do a simulation for 150 years to estimate the C fractions assuming system is in equilibrium
   if(type =='spinup_simulation'){
    
    # Extend crop and amendment files to include entire 150 year simulation
@@ -158,7 +160,7 @@ rc_initialise <- function(crops = NULL,
     
   }
   
-  # calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
+  ## calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
   if(type=='spinup_analytical_heuvelink'){
 
     # averaged total C input (kg C/ha/year) from crops and amendments
@@ -198,7 +200,7 @@ rc_initialise <- function(crops = NULL,
     amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
     }
     
-    # calculate average dpm_rpm ratio of C inputs from crop and amendments
+    # calculate average dpm_rpm ratio of C inputs from crops and amendments
     if (is.null(crops) || nrow(crops) == 0) {
       DR_crop <- 0
     } else {
@@ -234,23 +236,23 @@ rc_initialise <- function(crops = NULL,
     A[3, ] = A[3, ] + B * ks
     A[4, ] = A[4, ] + H * ks
  
-    # averaged rate modifying factor over the crop rotation 
+    # Define average rate modifying factor over the crop rotation 
     xi <- mean(abc(1:(12*isimyears)/12))
     
-    # rho is fraction plant material as DPM
+    # Establish fraction of plant material ending in the DPM pool
     rho <- DR_crop / (1 + DR_crop)
     
-    # fraction of DPM (tau), RPM (nu), and 2% HUM in FYM
+    # Establish fractions of amendment ending in DPM (tau), RPM (nu), and HUM (2%) pool
     tau <- (1 - 0.02) * DR_amendment / (1 + DR_amendment)
     nu <- (1 - 0.02) * 1 / (1 + DR_amendment)
     
-    # total SOC stock (ton C / ha) from bulk density 
+    # Recalculate total SOC stock to ton C/ha 
     CTOT <- dt.soc$toc / 1000
       
-    # IOM pool (ton C / ha) using Falloon method
+    # Calculate IOM pool (ton C / ha) based on Falloon method
     FallIOM <- 0.049 * CTOT^1.139
     
-    # Active SOC pool (ton C / ha)
+    # Calculate active SOC pool (ton C / ha)
     CTOT4 <- CTOT - FallIOM
     
     # vector where crop inputs ends up: rho % DPM, (1-rho) % RPM, 0% BIO, 0% HUM
@@ -297,10 +299,9 @@ rc_initialise <- function(crops = NULL,
                       fr_DPM = Cpools[1] / Ctotal,
                       fr_RPM = Cpools[2] / Ctotal,
                       fr_BIO = Cpools[3] / Ctotal)
-
   }
   
-  # calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
+  ## calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
   if(type=='spinup_analytical_bodemcoolstof'){
 
     # create local copy
@@ -338,7 +339,7 @@ rc_initialise <- function(crops = NULL,
     # CBIOHUM pool (ton C /ha)
     dt.soc[,biohum.ini := toc - ciom.ini - crpm.ini - cdpm.ini]
     
-    # set to defaults when RPM and DPM inputs exceeds 70% / 50% of total C to avoid negative values for initial C pools
+    # set to defaults (see RothC documentation) when RPM and DPM inputs exceeds 70% / 50% of total C to avoid negative values for initial C pools
     dt.soc[biohum.ini <0, cdpm.ini := 0.015 * (toc-ciom.ini)]
     dt.soc[biohum.ini <0, crpm.ini := 0.125 * (toc-ciom.ini)]
     dt.soc[, biohum.ini := toc-ciom.ini - crpm.ini - cdpm.ini]
