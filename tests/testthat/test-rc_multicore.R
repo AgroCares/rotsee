@@ -90,49 +90,6 @@ test_that("rc_multicore throws error if soil_properties is not a data.table", {
   expect_error(rc_multicore(soil_properties = data.frame(ID = "test")))
 })
 
-test_that("rc_multicore throws error if rotation/amendment IDs do not match soil_properties", {
-  soil_properties <- data.table(ID = c('high', 'low', 'mid'))
-  rothc_rotation <- data.table(ID = c('high', 'low', 'extra'))
-  
-  expect_error(
-    rc_multicore(soil_properties = soil_properties,
-                 rotation = rothc_rotation)
-  )
-})
-
-test_that("rc_multicore handles missing rotation/amendment", {
-  soil_properties <- data.table(
-    ID = c('high', 'low', 'mid'),
-    A_C_OF = rep(50,3),
-    B_C_ST03 = rep(210,3),
-    A_CLAY_MI = rep(18,3),
-    A_DENSITY_SA = rep(1.4,3)
-  )
-  
-  weather <- data.table(month = 1:12,
-                        W_TEMP_MEAN_MONTH = rep(10, 12),
-                        W_PREC_SUM_MONTH = rep(50, 12),
-                        W_ET_POT_MONTH = rep(10, 12),
-                        W_ET_ACT_MONTH = NA_real_)
-  
-  parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
-                c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-                initialize = TRUE,
-                simyears = 50,
-                unit = "A_SOM_LOI",
-                method = "adams",
-                poutput = "year",
-                start_date = "2022-04-01",
-                end_date = "2040-10-01")
-  
-  # Test with NULL rotation and amendment
-  result <- rc_multicore(soil_properties = soil_properties,
-                         parms = parms,
-                         weather = weather)
-  
-  expect_s3_class(result, "data.table")
-  expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))
-})
 
 test_that("rc_multicore handles progress reporting", {
   soil_properties <- data.table(

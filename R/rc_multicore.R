@@ -20,12 +20,12 @@
 #'
 #' @export
 rc_multicore <- function(soil_properties,
-                         rotation = NULL,
-                         amendment = NULL,
+                         rotation,
+                         amendment,
                          A_DEPTH = 0.3,
                          B_DEPTH = 0.3,
-                         parms = NULL,
-                         weather = NULL,
+                         parms,
+                         weather,
                          final = FALSE,
                          quiet = TRUE){
   
@@ -39,14 +39,11 @@ ID = NULL
   # Check inputs (for input value checks, see rc_sim)
 checkmate::assert_data_table(soil_properties)
 checkmate::assert_true(length(soil_properties$ID) >= 1)
-if(!is.null(rotation)){
 checkmate::assert_data_table(rotation)
-  checkmate::assert_true(length(unique(rotation$ID)) == length(unique(soil_properties$ID)))
-}
-if(!is.null(amendment)){
-  checkmate::assert_data_table(amendment)
-  checkmate::assert_true(length(unique(amendment$ID)) == length(unique(amendment$ID)))
-}
+checkmate::assert_true(length(unique(rotation$ID)) == length(unique(soil_properties$ID)))
+checkmate::assert_data_table(amendment)
+checkmate::assert_true(length(unique(amendment$ID)) == length(unique(soil_properties$ID)))
+
 # Ensure soil properties only has one value
 
   
