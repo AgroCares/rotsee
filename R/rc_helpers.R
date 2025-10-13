@@ -39,7 +39,8 @@ rc_update_weather <- function(dt = NULL){
     
     # Check inputs
     checkmate::assert_data_table(dt, nrows = 12)
-    checkmate::assert_subset(c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH"), colnames(dt))
+    req <- c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH")
+    checkmate::assert_names(colnames(dt), must.include = req)
     checkmate::assert(
       any(c("W_ET_POT_MONTH", "W_ET_ACT_MONTH") %in% names(dt)),
       msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided."
