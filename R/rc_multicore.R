@@ -20,12 +20,13 @@
 #'
 #' @export
 rc_multicore <- function(soil_properties,
-                         rotation = NA_real_,
-                         amendment = NA_real_,
+                         rotation = NULL,
+                         amendment = NULL,
                          A_DEPTH = 0.3,
                          B_DEPTH = 0.3,
-                         parms = NA_real_,
-                         weather = NA_real_,
+                         parms = NULL,
+                         weather = NULL,
+                         final = FALSE,
                          quiet = TRUE){
   
   # add visual bindings
@@ -156,8 +157,6 @@ rc_parallel <- function(this.xs,
                   soil_properties = this.soil,
                   A_DEPTH = 0.3,
                   B_DEPTH = 0.3,
-                  cf_yield = 1,
-                  M_TILLAGE_SYSTEM = "CT",
                   rothc_rotation = this.rotation,
                   rothc_amendment = this.amendment,
                   rothc_parms = parms)
@@ -171,21 +170,21 @@ rc_parallel <- function(this.xs,
     if (! is.null(p)) {if (this.xs %% 10 == 0) p(sprintf('id = %g', this.xs))}
     
     result <- copy(out)
- 
+
     return(result)
    
   }, error = function (e) {
     
-    
+  
     if(final){
-      result <- data.table(year = year(parms$end_date), A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
+      result <- data.table(year = year(parms$end_date), A_SOM_LOI = 0, soc = 0,xs = this.xs)
     } else{
-      result <- data.table(A_SOM_LOI_BAU = 0, A_SOM_LOI_ALL = 0,xs = this.xs)
+      result <- data.table(A_SOM_LOI = 0, soc = 0,xs = this.xs)
     }
     result$error <- as.character(e)
     
     if (! is.null(p)) {p(sprintf('id %g has error: %s', this.xs, as.character(e)))}
-    
+   
     return(result)
   })
 
