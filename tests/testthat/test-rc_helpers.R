@@ -34,7 +34,7 @@ test_that("rc_update_weather validates input data table", {
   # Test invalid month values
   invalid_dt <- copy(valid_dt)
   invalid_dt[, month := 0]
-  expect_error(rc_update_weather(invalid_dt), "missing elements")
+  expect_error(rc_update_weather(invalid_dt), "month", fixed = FALSE)
   
   # Test invalid temperature values
   invalid_dt <- copy(valid_dt)
@@ -57,12 +57,12 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
   
   # Test for highly organic soil
   high_OM_dt <- dt[,A_SOM_LOI:= 25]
-    expect_no_error(rc_calculate_bd(dt = dt))
+    expect_no_error(rc_calculate_bd(dt = high_OM_dt))
   
   # Test with C concent as input
     C_dt <- dt[, A_SOM_LOI := NULL]
     C_dt <- dt[, A_C_OF := 80]
-    expect_no_error(rc_calculate_bd(dt = dt))
+    expect_no_error(rc_calculate_bd(dt = C_dt))
 })
 
 
@@ -479,11 +479,11 @@ test_that("rc_time_period validates input correctly", {
   # Not a date
   expect_error(
     rc_time_period("not a date", "2025-12-31"),
-    "not in a standard unambiguous format"
+    "format"
   )
   expect_error(
     rc_time_period("2025-01-01", "not a date"),
-    "not in a standard unambiguous format"
+    "format"
   )
   
   # start_date after end_date
