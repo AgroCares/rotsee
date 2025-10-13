@@ -10,6 +10,7 @@
 #' @param parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For inputs, see \link{rc_sim}.
 #' @param weather (data.table) Table with weather information. For inputs, see \link{rc_sim}. 
 #' @param quiet (boolean) showing progress bar for calculation RothC C-saturation for each field
+#' @param final (boolean) option to select only the average of the last 10 years
 #'
 #' @import data.table
 #' @import progressr
@@ -80,6 +81,7 @@ if(!is.null(amendment)){
                                            parms = parms,
                                            p = p,
                                            weather = weather,
+                                           final = final,
                                            future.seed = TRUE,
                                            future.packages = c('rotsee'))
   })
@@ -113,7 +115,7 @@ if(!is.null(amendment)){
 #' @param parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For inputs, see \link{rc_sim}.
 #' @param weather (data.table) Table with weather information. For inputs, see \link{rc_sim}.
 #' @param p (progress bar) progress bar
-#' @param final (boolean) option to select only the last year
+#' @param final (boolean) option to select only the average of the last 10 years
 #'
 #' @export
 rc_parallel <- function(this.xs,
