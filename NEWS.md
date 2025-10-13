@@ -9,19 +9,31 @@
 ## removed
 * `rc_shi_field`, with core functions incorporated into `rc_parallel`
 
-# rotsee v0.0.4 2025-09-05
+# rotsee v0.1.2 2025-10-13
+## added
+* unit tests for `rc_calculate_B_C_OF` and `rc_time_period`
+
+## changed
+* Loosened checks for `rc_calculate_B_C_OF` and `rc_update_weather` to allow additional input columns
+
+# rotsee v0.1.0 2025-09-24
 ## added
 * B_LU_START and B_LU_END as input parameters in rothc_rotation
 * start_date and end_date to replace simyears
 * Helper functions rc_extend_crops and rc_extend_amendments to extend user input tables
-* Helper function rc_time_period to generate a table of all years and months in te simulation period
+* Helper function rc_time_period to generate a table of all years and months in the simulation period
 
 ## changed
 * Base soil cover on user supplied crop growing dates
 * Calculate actual evapotranspiration based on simple rothc correction factor
 * Corrected accumulated soil moisture deficit calculation
 
-
+# rotsee v0.0.4 2025-09-24
+## Changed
+* Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
+* Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
+* Expand README with some introductory text about the package
+  
 # rotsee v0.0.3 2025-09-01
 ## Added
 * function rc_check_inputs to check input data
@@ -40,11 +52,8 @@
 * Added helper functions to check input weather and parameter data, and insert default values when not supplied
 * Added unit tests for helper functions
 
-## Changed
-* Expand README with some introductory text about the package
-
 ## Fixed
-* Add missing dependenies for `roxygen2`, `devtools` and `usethis`
+* Add missing dependencies for `roxygen2`, `devtools` and `usethis`
 
 # rotsee v0.0.1 2025-07-31
 

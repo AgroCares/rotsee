@@ -14,7 +14,7 @@ rc_update_parms(parms = NULL, crops = NULL, amendments = NULL)
 \item{amendments}{(data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD)}
 }
 \value{
-A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, simyears, unit, method and poutput
+A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
 }
 \description{
 Function to check user given RothC simulation parameters, or provide default if none are given
