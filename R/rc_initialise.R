@@ -73,6 +73,7 @@
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 #' 
 #' Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
+#' 
 #' spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 #' Otherwise one of the other two is fine.
 #'
@@ -219,8 +220,7 @@ rc_initialise <- function(crops = NULL,
     if (!is.finite(DR_amendment) || length(DR_amendment) == 0) DR_amendment <- 0
     
      # establish simyear based on time data table
-    isimyears <- max(dt.time$year)
-    
+    isimyears <- max(dt.time$year) - min(dt.time$year) + 1
     # Define ratio CO2 / (BIO+HUM)
     x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * dt.soc$A_CLAY_MI))
     
@@ -339,7 +339,7 @@ rc_initialise <- function(crops = NULL,
     # CBIOHUM pool (ton C /ha)
     dt.soc[,biohum.ini := toc - ciom.ini - crpm.ini - cdpm.ini]
     
-    # set to defaults (see RothC documentation) when RPM and DPM inputs exceeds 70% / 50% of total C to avoid negative values for initial C pools
+    # set to defaults (see RothC documentation) when calculated RPM + DPM pools exceed available carbon
     dt.soc[biohum.ini <0, cdpm.ini := 0.015 * (toc-ciom.ini)]
     dt.soc[biohum.ini <0, crpm.ini := 0.125 * (toc-ciom.ini)]
     dt.soc[, biohum.ini := toc-ciom.ini - crpm.ini - cdpm.ini]
