@@ -66,6 +66,139 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
 })
 
 
+
+test_that("rc_calculate_B_C_OF correctly validates input", {
+  # Missing required column
+  expect_error(
+    rc_calculate_B_C_OF(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
+    "must include"
+  )
+  
+  # B_LU_YIELD out of bounds
+  expect_error(
+    rc_calculate_B_C_OF(data.table(
+      B_LU_YIELD = -1,
+      B_LU_HI = 0.6,
+      B_LU_HI_RES = 0.5,
+      B_LU_RS_FR = 1,
+      M_CROPRESIDUE = TRUE
+    )),
+    "is not >= 0"
+  )
+  
+  # B_LU_HI out of bounds
+  expect_error(
+    rc_calculate_B_C_OF(data.table(
+      B_LU_YIELD = 30000,
+      B_LU_HI = 0,
+      B_LU_HI_RES = 0.5,
+      B_LU_RS_FR = 1,
+      M_CROPRESIDUE = TRUE
+    )),
+    "is not >= 0.01"
+  )
+  
+  # B_LU_HI_RES out of bounds
+  expect_error(
+    rc_calculate_B_C_OF(data.table(
+      B_LU_YIELD = 30000,
+      B_LU_HI = 0.6,
+      B_LU_HI_RES = 1.1,
+      B_LU_RS_FR = 1,
+      M_CROPRESIDUE = TRUE
+    )),
+    "is not <= 1"
+  )
+  
+  # B_LU_RS_FR out of bounds
+  expect_error(
+    rc_calculate_B_C_OF(data.table(
+      B_LU_YIELD = 30000,
+      B_LU_HI = 0.6,
+      B_LU_HI_RES = 0.5,
+      B_LU_RS_FR = 0,
+      M_CROPRESIDUE = TRUE
+    )),
+    "is not >= 0.01"
+  )
+  
+  # M_CROPRESIDUE not logical
+  expect_error(
+    rc_calculate_B_C_OF(data.table(
+      B_LU_YIELD = 30000,
+      B_LU_HI = 0.6,
+      B_LU_HI_RES = 0.5,
+      B_LU_RS_FR = 1,
+      M_CROPRESIDUE = "TRUE"
+    )),
+    "Must be of type 'logical'"
+  )
+})
+
+test_that("rc_calculate_B_C_OF correctly calculates C inputs", {
+  # Set correct input data
+  valid_dt <- data.table(
+    B_LU_YIELD = 30000,
+    B_LU_HI = 0.6,
+    B_LU_HI_RES = 0.5,
+    B_LU_RS_FR = 1,
+    M_CROPRESIDUE = TRUE
+  )
+  
+  # Run function with valid DT
+  valid <- rc_calculate_B_C_OF(valid_dt)
+  
+  # Check if everything went correctly
+  expect_s3_class(valid, "data.table")
+  expect_equal(valid$cin_aboveground, 30000 / 0.6 * 0.5, tolerance = 0.001)
+  expect_equal(valid$cin_roots, valid$cin_aboveground * 1, tolerance = 0.001)
+  expect_equal(valid$cin_residue, valid$cin_aboveground * 0.5, tolerance = 0.001)
+  expect_equal(valid$B_C_OF_INPUT, valid$cin_roots + valid$cin_residue, tolerance = 0.001)
+})
+
+test_that("rc_calculate_B_C_OF handles edge cases", {
+  # Zero yield
+  zero_yield_dt <- data.table(
+    B_LU_YIELD = 0,
+    B_LU_HI = 0.6,
+    B_LU_HI_RES = 0.5,
+    B_LU_RS_FR = 1,
+    M_CROPRESIDUE = TRUE
+  )
+  zero_yield <- rc_calculate_B_C_OF(zero_yield_dt)
+  expect_equal(zero_yield$cin_aboveground, 0)
+  expect_equal(zero_yield$cin_roots, 0)
+  expect_equal(zero_yield$cin_residue, 0)
+  expect_equal(zero_yield$B_C_OF_INPUT, 0)
+  
+  # No residue
+  no_residue_dt <- data.table(
+    B_LU_YIELD = 30000,
+    B_LU_HI = 0.6,
+    B_LU_HI_RES = 0.5,
+    B_LU_RS_FR = 1,
+    M_CROPRESIDUE = FALSE
+  )
+  no_residue <- rc_calculate_B_C_OF(no_residue_dt)
+  expect_equal(no_residue$cin_residue, 0)
+  expect_equal(no_residue$B_C_OF_INPUT, no_residue$cin_roots)
+  
+  # Max values
+  max_dt <- data.table(
+    B_LU_YIELD = 150000,
+    B_LU_HI = 1,
+    B_LU_HI_RES = 1,
+    B_LU_RS_FR = 5,
+    M_CROPRESIDUE = TRUE
+  )
+  max_result <- rc_calculate_B_C_OF(max_dt)
+  expect_equal(max_result$cin_aboveground, 150000 / 1 * 0.5, tolerance = 0.001)
+  expect_equal(max_result$cin_roots, max_result$cin_aboveground * 5, tolerance = 0.001)
+  expect_equal(max_result$cin_residue, max_result$cin_aboveground * 1, tolerance = 0.001)
+  expect_equal(max_result$B_C_OF_INPUT, max_result$cin_roots + max_result$cin_residue, tolerance = 0.001)
+})
+
+
 test_that("rc_extend_crops validates inputs correctly", {
   # Empty data
   expect_error(rc_extend_crops(data.table(), as.Date("2020-01-01")), "Must have at least 1 row")
