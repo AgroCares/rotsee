@@ -26,15 +26,15 @@ test_that("rc_update_weather validates input data table", {
   expect_no_error(rc_update_weather(invalid_dt)) # only one of W_ET_POT_MONTH or W_ET_ACT_MONTH must be provided
   
   invalid_dt <- valid_dt[, month := NULL]
-  expect_error(rc_update_weather(invalid_dt), "Must be a subset of") # month must be provided
+  expect_error(rc_update_weather(invalid_dt), "missing elements") # month must be provided
   
   invalid_dt <- valid_dt[, `:=`(W_TEMP_MEAN_MONTH = NULL, W_PREC_SUM_MONTH = NULL)]
-  expect_error(rc_update_weather(invalid_dt), "Must be a subset of") # W_TEMP_MEAN_MONTH and W_PREC_SUM_MONTH must be provided
+  expect_error(rc_update_weather(invalid_dt), "missing elements") # W_TEMP_MEAN_MONTH and W_PREC_SUM_MONTH must be provided
   
   # Test invalid month values
   invalid_dt <- copy(valid_dt)
   invalid_dt[, month := 0]
-  expect_error(rc_update_weather(invalid_dt), "Must be a subset of")
+  expect_error(rc_update_weather(invalid_dt), "missing elements")
   
   # Test invalid temperature values
   invalid_dt <- copy(valid_dt)
