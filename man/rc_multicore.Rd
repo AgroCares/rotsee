@@ -6,12 +6,13 @@
 \usage{
 rc_multicore(
   soil_properties,
-  rotation = NA_real_,
-  amendment = NA_real_,
+  rotation,
+  amendment,
   A_DEPTH = 0.3,
   B_DEPTH = 0.3,
-  parms = NA_real_,
-  weather = NA_real_,
+  parms,
+  weather,
+  final = FALSE,
   quiet = TRUE
 )
 }
@@ -29,6 +30,8 @@ rc_multicore(
 \item{parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For inputs, see \link{rc_sim}.}
 
 \item{weather}{(data.table) Table with weather information. For inputs, see \link{rc_sim}.}
+
+\item{final}{(boolean) option to select only the average of the last 10 years}
 
 \item{quiet}{(boolean) showing progress bar for calculation RothC C-saturation for each field}
 }

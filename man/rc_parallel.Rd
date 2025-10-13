@@ -36,7 +36,7 @@ rc_parallel(
 
 \item{p}{(progress bar) progress bar}
 
-\item{final}{(boolean) option to select only the last year}
+\item{final}{(boolean) option to select only the average of the last 10 years}
 }
 \description{
 Function to run RothC parallel for a series of fields

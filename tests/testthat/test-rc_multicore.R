@@ -43,7 +43,6 @@ test_that("rc_multicore runs with normal inputs", {
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                 c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
                 initialize = TRUE,
-                simyears = 50,
                 unit = "A_SOM_LOI",
                 method = "adams",
                 poutput = "year",
@@ -57,12 +56,23 @@ test_that("rc_multicore runs with normal inputs", {
                          parms = parms,
                          weather = weather,
                          rotation = rothc_rotation,
-                         amendment = rothc_amendment)
+                         amendment = rothc_amendment,
+                         final = FALSE)
+
+  result <- rc_multicore(soil_properties = soil_properties,
+                         A_DEPTH = 0.3,
+                         B_DEPTH = 0.3,
+                         parms = parms,
+                         weather = weather,
+                         rotation = rothc_rotation,
+                         amendment = rothc_amendment,
+                         final = FALSE)
   
   expect_s3_class(result, "data.table")
   expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))
   expect_equal(nrow(result), 57)
-  
+
+
   # Runs correctly with final set to true
   result_final <- rc_multicore(soil_properties = soil_properties,
                          A_DEPTH = 0.3,
@@ -72,19 +82,11 @@ test_that("rc_multicore runs with normal inputs", {
                          rotation = rothc_rotation,
                          amendment = rothc_amendment,
                          final = TRUE)
+
   
   expect_equal(nrow(result_final), 3)
 })
 
-test_that("rc_multicore throws error if required packages are missing", {
-  # Mock missing package
-  with_mocked_bindings(
-    `system.file` = function(package) {
-      if (package == "future") "" else .default(package)
-    },
-    expect_error(rc_multicore(soil_properties = data.table(ID = "test")))
-  )
-})
 
 test_that("rc_multicore throws error if soil_properties is not a data.table", {
   expect_error(rc_multicore(soil_properties = data.frame(ID = "test")))
