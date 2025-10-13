@@ -1,3 +1,10 @@
+# rotsee v0.1.2 2025-10-13
+## added
+* unit tests for `rc_calculate_B_C_OF` and `rc_time_period`
+
+## changed
+* Loosened checks for `rc_calculate_B_C_OF` and `rc_update_weather` to allow additional input columns
+
 # rotsee v0.1.0 2025-09-24
 ## added
 * B_LU_START and B_LU_END as input parameters in rothc_rotation
