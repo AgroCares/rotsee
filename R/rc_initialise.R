@@ -262,16 +262,33 @@ rc_initialise <- function(crops = NULL,
     # Combined input vector to know fraction of total C inputs ending up in pools
     input_vector <- CR_proportion * rho_vector + M_proportion * tau_nu_vector
     
-    # calculate carbon input
-    I4 <- matrix(c(1, 1, 1, 1), nrow = 1, ncol = 4)
-    A4 <- A[1:4, 1:4]
-    A4inv <- solve(A4)
+    ## calculate carbon inputs
+    I4 <- matrix(c(1, 1, 1, 1), nrow = 1, ncol = 4) 
+    A4 <- A[1:4, 1:4] # Input matrix without IOM flow
+
+    # Check if input matrix is invertible
+    if (det(A4) == 0) {
+      stop("Matrix A4 is singular - check decomposition rates in rothc.parms")
+    }
+    
+    # Invert A4
+    A4inv <- tryCatch(
+      solve(A4),
+      error = function(e)stop("Failed to invert matrix A4: ", e$message)
+    )
+    
+    # Calculate carbon inputs from amendments/crops
     I <- as.numeric(CTOT4 / (-(1 / xi) * I4 %*% A4inv %*% input_vector))
     
-    # carbon pool calculation
-    Q <- input_vector * I
-    C <- -(1 / xi) * A4inv %*% Q
+    # Check if I is finite and positive
+    if (!is.finite(I) || I <= 0) {
+      stop("spinup_Heuvelink initialisation produced invalid results. Check input data and parameters.")
+      }
     
+    # carbon pool calculation
+    Q <- input_vector * I 
+    C <- -(1 / xi) * A4inv %*% Q
+  
     # calculate carbon pool at equilibrium state
     Cpools <- c(C, FallIOM)
     Ctotal <- sum(Cpools)
