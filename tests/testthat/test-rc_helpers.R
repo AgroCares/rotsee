@@ -475,7 +475,81 @@ test_that("rc_extend_amendments removes temporary columns", {
 })
 
 
+test_that("rc_time_period validates input correctly", {
+  # Not a date
+  expect_error(
+    rc_time_period("not a date", "2025-12-31"),
+    "not in a standard unambiguous format"
+  )
+  expect_error(
+    rc_time_period("2025-01-01", "not a date"),
+    "not in a standard unambiguous format"
+  )
+  
+  # start_date after end_date
+  expect_error(
+    rc_time_period("2025-12-31", "2025-01-01"),
+    "start_date must be on/before end_date"
+  )
+})
 
-# context("cf_ind_importance")
-#
-# test_that("cf_ind_importance() works", {
+test_that("rc_time_period returns correct structure and values", {
+  # Same year, same month
+  same_month <- rc_time_period("2025-01-01", "2025-01-31")
+  expect_s3_class(same_month, "data.table")
+  expect_equal(nrow(same_month), 1)
+  expect_equal(same_month$year, 2025)
+  expect_equal(same_month$month, 1)
+  expect_equal(same_month$time, 0, tolerance = 0.001)
+  
+  # Same year, different months
+  same_year <- rc_time_period("2025-01-01", "2025-06-30")
+  expect_s3_class(same_year, "data.table")
+  expect_equal(nrow(same_year), 6)
+  expect_equal(same_year$year, rep(2025, 6))
+  expect_equal(same_year$month, 1:6)
+  expect_equal(same_year$time, (1:6 - 1) / 12, tolerance = 0.001)
+  
+  # Different years, same month
+  diff_year_same_month <- rc_time_period("2025-01-01", "2026-01-31")
+  expect_s3_class(diff_year_same_month, "data.table")
+  expect_equal(nrow(diff_year_same_month), 13)
+  expect_equal(diff_year_same_month$year, c(rep(2025, 12), 2026))
+  expect_equal(diff_year_same_month$month, c(1:12, 1))
+  expect_equal(diff_year_same_month$time, (1:13 - 1) / 12, tolerance = 0.001)
+  
+  # Different years, different months
+  diff_year_diff_month <- rc_time_period("2025-01-01", "2026-06-30")
+  expect_s3_class(diff_year_diff_month, "data.table")
+  expect_equal(nrow(diff_year_diff_month), 18)
+  expect_equal(diff_year_diff_month$year, c(rep(2025, 12), rep(2026, 6)))
+  expect_equal(diff_year_diff_month$month, c(1:12, 1:6))
+  expect_equal(diff_year_diff_month$time, (1:18 - 1) / 12, tolerance = 0.001)
+})
+
+test_that("rc_time_period handles edge cases", {
+  # Single day in month
+  single_day <- rc_time_period("2025-01-15", "2025-01-15")
+  expect_s3_class(single_day, "data.table")
+  expect_equal(nrow(single_day), 1)
+  expect_equal(single_day$year, 2025)
+  expect_equal(single_day$month, 1)
+  expect_equal(single_day$time, 0, tolerance = 0.001)
+  
+  # Leap year
+  leap_year <- rc_time_period("2024-01-01", "2024-12-31")
+  expect_s3_class(leap_year, "data.table")
+  expect_equal(nrow(leap_year), 12)
+  expect_equal(leap_year$year, rep(2024, 12))
+  expect_equal(leap_year$month, 1:12)
+  expect_equal(leap_year$time, (1:12 - 1) / 12, tolerance = 0.001)
+  
+  # Start and end on last day of month
+  end_of_month <- rc_time_period("2025-01-31", "2025-02-28")
+  expect_s3_class(end_of_month, "data.table")
+  expect_equal(nrow(end_of_month), 2)
+  expect_equal(end_of_month$year, rep(2025, 2))
+  expect_equal(end_of_month$month, 1:2)
+  expect_equal(end_of_month$time, (1:2 - 1) / 12, tolerance = 0.001)
+})
+
