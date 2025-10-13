@@ -61,10 +61,6 @@ checkmate::assert_true(length(unique(amendment$ID)) == length(unique(soil_proper
   # Run the simulations
   future::plan(future::multisession, workers = parallelly::availableCores()-1)
 
-  # add group
-  rotation[,xs := .GRP,by = ID]
-  amendment[,xs := .GRP,by = ID]
-  soil_properties[,xs := .GRP,by = ID]
 
   # run RothC function
   progressr::with_progress({
