@@ -1,3 +1,12 @@
+# rotsee v0.1.1 2025-10-08
+
+## added
+* Added multiple initialisation options to `rc_initialise`, called under "type"
+* linked `rc_sim` and `rc_initialise`
+
+## changed
+* Input checks on multiple functions
+
 # rotsee v0.1.0 2025-09-24
 ## added
 * B_LU_START and B_LU_END as input parameters in rothc_rotation

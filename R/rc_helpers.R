@@ -81,12 +81,12 @@ rc_update_weather <- function(dt = NULL){
 
 #' Function to check user given RothC simulation parameters, or provide default if none are given
 #'
-#' @param parms (list) List containing the columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
+#' @param parms (list) List containing the columns dec_rates, c_fractions, type, unit, method, poutput, start_date, end_date
 #' @param crops (data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD)
 #' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD)
 #' 
 #' @returns
-#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
+#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, type, unit, method, poutput, start_date, end_date
 #' 
 #' 
 #' @export
@@ -101,7 +101,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   # Checks names parms
   if(!is.null(parms)){
     checkmate::assert_list(parms)
-    checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "initialize", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
+    checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "type", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
   }else{
     parms <- list()
   }
@@ -133,7 +133,8 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   # if c_fractions supplied, check input and overwrite defaults
   if(!is.null(parms$c_fractions)){
     # check inputs: initial C distribution over pools
-    checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = FALSE, len = 4,null.ok = FALSE)
+    checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = FALSE, 
+                              min.len = 1, max.len = 4, null.ok = FALSE)
     checkmate::assert_subset(names(parms$c_fractions),choices = c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"),empty.ok = TRUE)
     
     # Use supplied distribution
@@ -144,17 +145,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
     if('fr_BIO' %in% rcp){fr_BIO <- parms$c_fractions[['fr_BIO']]}
   }
   
-  # add checks on initialise
-  initialize <- TRUE
-  
-  if(!is.null(parms$initialize)){
-    # check initialize
-    checkmate::assert_logical(parms$initialize,any.missing = FALSE, len = 1)
-    
-    initialize = parms$initialize
-    
-   
-  }
+ 
   
   # Check the format of start_date and end_date
   # create empty variables
@@ -194,6 +185,19 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if(as.Date(start_date) > as.Date(end_date)) stop('Start_date is not before end_date')
   
   
+  # add checks on type
+  type <- 'spinup_analytical_bodemcoolstof'
+  
+  if(!is.null(parms$type)){
+    # check type
+    checkmate::assert_character(parms$type,any.missing = FALSE, len = 1)
+    checkmate::assert_subset(parms$type, choices = c('spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none'))
+   
+    # define type
+    type <- parms$type
+   
+  }
+  
   # Add checks on unit
   unit <- "A_SOM_LOI"
   
@@ -226,7 +230,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
     poutput <- parms$poutput
   }
   
-  out = list(initialize = initialize,
+  out = list(type = type,
              dec_rates = c(k1 = k1, k2 = k2, k3 = k3, k4 = k4),
              c_fractions = c(fr_IOM = fr_IOM, fr_DPM = fr_DPM, fr_RPM = fr_RPM, fr_BIO = fr_BIO),
              unit = unit,
@@ -251,8 +255,8 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 #' @export
 #'
 rc_check_inputs <- function(soil_properties,
-                            rothc_rotation,
-                            rothc_amendment){
+                            rothc_rotation = NULL,
+                            rothc_amendment = NULL){
   
   # Add visual bindings
   
@@ -260,8 +264,8 @@ rc_check_inputs <- function(soil_properties,
   checkmate::assert_list(soil_properties, min.len = 3)
   if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = 0.1, upper = 600, any.missing = FALSE, len = 1)
   if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = 0.1, upper = 3000, any.missing = FALSE, len = 1)
-  if((length(soil_properties$A_C_OF) == 0 || is.na(soil_properties$A_C_OF)) &&
-     (length(soil_properties$B_C_ST03) == 0 || is.na(soil_properties$B_C_ST03))){
+  if((is.null(soil_properties$A_C_OF) || is.na(soil_properties$A_C_OF)) &&
+     (is.null(soil_properties$B_C_ST03) || is.na(soil_properties$B_C_ST03))){
        stop('Both A_C_OF and B_C_ST03 are missing in soil_properties')}
   checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = 0.1, upper = 75, len = 1)
   checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = 0.5, upper = 3, len = 1)
