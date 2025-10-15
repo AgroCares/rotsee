@@ -1,6 +1,6 @@
 #' Parallel RothC calculations
 #' 
-#' Function to perform parallel RothC calculations via \link{rc_sim} using multicore processing. Required inputs and parameters should be identical to \link{rc_sim}
+#' Function to perform RothC calculation for multiple scenarios via \link{rc_sim} with optional parallel processing. Input parameters are similar to \link{rc_sim}, with data.table inputs requiring an additional ID column to identify each scenario.
 #'
 #' @param soil_properties (data.table) Data table with soil properties. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.
 #' @param rotation (data.table) Table with crop rotation details and crop management actions that have been taken. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.
@@ -19,7 +19,10 @@
 #' @import future.apply
 #' @import future
 #' @import parallelly
-#'
+#' 
+#' @returns
+#' A data.table containing RothC simulation results for all scenarios, with columns including the ID column from inputs plus simulation outputs from \link{rc_sim}. If final=TRUE, returns only the average of the last 10 years of simulation for each scenario.
+#' 
 #' @export
 rc_sim_multi <- function(soil_properties,
                          rotation,
@@ -58,6 +61,9 @@ if(!is.null(cores)) {
   checkmate::assert_integerish(cores, lower = 1)
   checkmate::assert_true(cores <= parallelly::availableCores())
 }
+
+  # Make a copy of soil_properties
+soil_properties <- copy(soil_properties)
 
   # add group (xs)
   soil_properties[,xs := .GRP,by = ID]

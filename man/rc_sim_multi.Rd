@@ -41,6 +41,9 @@ rc_sim_multi(
 
 \item{cores}{(numeric) number of cores that can be used for multi-step calculations.}
 }
+\value{
+A data.table containing RothC simulation results for all scenarios, with columns including the ID column from inputs plus simulation outputs from \link{rc_sim}. If final=TRUE, returns only the average of the last 10 years of simulation for each scenario.
+}
 \description{
-Function to perform parallel RothC calculations via \link{rc_sim} using multicore processing. Required inputs and parameters should be identical to \link{rc_sim}
+Function to perform RothC calculation for multiple scenarios via \link{rc_sim} with optional parallel processing. Input parameters are similar to \link{rc_sim}, with data.table inputs requiring an additional ID column to identify each scenario.
 }
