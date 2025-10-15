@@ -7,12 +7,12 @@
 rc_sim_multistep(
   this.xs,
   soil_properties,
-  rotation = NA_real_,
-  amendment = NA_real_,
+  rotation = NULL,
+  amendment = NULL,
   A_DEPTH = 0.3,
   B_DEPTH = 0.3,
-  parms = NA_real_,
-  weather = NA_real_,
+  parms = NULL,
+  weather = NULL,
   p,
   final = FALSE
 )

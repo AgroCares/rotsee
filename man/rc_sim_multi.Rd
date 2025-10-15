@@ -14,7 +14,7 @@ rc_sim_multi(
   weather,
   final = FALSE,
   quiet = TRUE,
-  strategy,
+  strategy = "sequential",
   cores = NULL
 )
 }
