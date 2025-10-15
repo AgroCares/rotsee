@@ -105,7 +105,7 @@ rc_sim <- function(soil_properties,
   k4 <- rothc_parms$dec_rates[["k4"]]
   
   # Define C fractions
-  c_fractions <- rothc_parms$c_fractions
+  c_fractions <- as.list(rothc_parms$c_fractions)
   
   # Define unit of output
   unit <- rothc_parms$unit
@@ -241,7 +241,6 @@ rc_sim <- function(soil_properties,
     dt.soc[,CBIO0 := cbio.ini * 1000]
     dt.soc[,CHUM0 := chum.ini * 1000]
   } else {
-    
     # Calculate carbon pools based on provided or default distribution (kg C / ha)
     dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
     dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
