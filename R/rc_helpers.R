@@ -66,7 +66,7 @@ rc_update_weather <- function(dt = NULL){
     } else if ("W_ET_POT_MONTH" %in% colnames(dt)) {
       # Only potential ET provided: no NA allowed
       checkmate::assert_numeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = FALSE)
-    } else if ("W_ET_act_MONTH" %in% colnames(dt)) {
+    } else if ("W_ET_ACT_MONTH" %in% colnames(dt)) {
       # Only actual ET provided: no NA allowed
       checkmate::assert_numeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
     }
