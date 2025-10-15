@@ -2,7 +2,7 @@
 % Please edit documentation in R/rc_sim_multi.R
 \name{rc_sim_multistep}
 \alias{rc_sim_multistep}
-\title{RothC parallel function}
+\title{RothC multistep function}
 \usage{
 rc_sim_multistep(
   this.xs,

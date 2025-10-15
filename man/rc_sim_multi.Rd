@@ -42,5 +42,5 @@ rc_sim_multi(
 \item{cores}{(numeric) number of cores that can be used for multi-step calculations.}
 }
 \description{
-Function to perform parallel RothC calculations via \link{rc_sim} using multicore processing.
+Function to perform parallel RothC calculations via \link{rc_sim} using multicore processing. Required inputs and parameters should be identical to \link{rc_sim}
 }
