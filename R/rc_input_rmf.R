@@ -66,8 +66,14 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   checkmate::assert_numeric(dt.irrigation$B_IRR_AMOUNT, lower = 0, upper = 1000)
   }
   
-  # Establish months of crop cover based on start and end of crop rotation
-  dt.growth <- dt[, {
+  
+  # Establish months of crop cover
+  if(is.null(dt)){
+    # if no crop file is supplied, assume bare soil
+    dt.growth <- dt.time[, .(year, month, crop_cover = 0)]
+  }else{
+    # base crop cover on supplied start and end dates of crop growth
+    dt.growth <- dt[, {
     
     # Create a sequence of year-month combinations when crops are growing
     seq_dates <- seq.Date(as.Date(B_LU_START), as.Date(B_LU_END), by = 'month')
@@ -75,27 +81,32 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
     # Extract year and month
     list(year = year(seq_dates), month = month(seq_dates), crop_cover = 1)
   }, by = list(B_LU_START,B_LU_END)] 
-
+  }
+  
   # Merge and fill missing crop_cover values with 0
    dt <- merge(dt.time, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
    
       if(!is.null(dt.irrigation)){
-   # Derive year and month from irrigation data
+   # Derive year and month from irrigation data, aggregate per month
    dt.irrigation[, year := year(B_DATE_IRRIGATION)]
    dt.irrigation[,month := month(B_DATE_IRRIGATION)]
+   dt.irr.month <- dt.irrigation[, .(B_IRR_AMOUNT = sum(B_IRR_AMOUNT, na.rm = TRUE)), by = .(year, month)]
+   
   
    # Merge irrigation and crop cover data
-   dt <- merge(dt, dt.irrigation, by = c('year', 'month'), all.x = TRUE)[, B_IRR_AMOUNT := fifelse(is.na(B_IRR_AMOUNT), 0, B_IRR_AMOUNT)]
+   dt <- merge(dt, dt.irr.month, by = c('year', 'month'), all.x = TRUE)[
+     , B_IRR_AMOUNT := fifelse(is.na(B_IRR_AMOUNT), 0, B_IRR_AMOUNT)]
       }else{
-        # Set irrigation inputs to 0
+        # Set irrigation inputs to 0 when not supplied
       dt[, B_IRR_AMOUNT:= 0]  
       }
 
    # Select required columns
-   dt <- unique(dt[,list(year, month, time, crop_cover, B_IRR_AMOUNT)])
+   dt <- unique(dt[,.(year, month, time, crop_cover, B_IRR_AMOUNT)])
 
   # Merge time and weather table
-  weather <- merge(dt.time, dt.weather, by = 'month', all.x=TRUE)
+  weather_cols <- if ("year" %in% colnames(dt.weather)) c("year","month") else "month"
+  weather <- merge(dt.time, dt.weather, by = weather_cols, all.x=TRUE)
 
   # combine weather and crop cover data
   dt <- merge(weather, dt, by = c('time', 'year', 'month'))
@@ -116,6 +127,8 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   dt[, tsmdmax_cor := fifelse(crop_cover==1,tsmdmax,tsmdmax/1.8)]
 
   # Calculate actual evapotranspiration for months where only potential is provided (general rothc calculation)
+  if (!"W_POT_TO_ACT" %in% colnames(dt)) dt[, W_POT_TO_ACT := NA_real_]
+  dt[is.na(W_ET_ACT_MONTH) & is.na(W_POT_TO_ACT), W_POT_TO_ACT := 0.75]
   dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_POT_MONTH * W_POT_TO_ACT]
 
   # Calculate the monthly soil moisture deficit
