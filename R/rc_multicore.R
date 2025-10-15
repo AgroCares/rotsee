@@ -55,19 +55,25 @@ checkmate::assert_data_table(weather)
   # multithreading
   cm.versions <- c('CM4')
 
-  # add group
+  # add group (xs)
   rotation[,xs := .GRP,by = ID]
   amendment[,xs := .GRP,by = ID]
   soil_properties[,xs := .GRP,by = ID]
+  rotation <- merge(rotation, soil_properties[, .(ID, xs)], by = "ID", all.x = TRUE)
+  amendment <- merge(amendment, soil_properties[, .(ID, xs)], by = "ID", all.x = TRUE)
+
 
   # Run the simulations
-  future::plan(future::multisession, workers = parallelly::availableCores()-1)
+  oplan <- future::plan() # define current plan
+  on.exit(future::plan(oplan), add = TRUE) # Restore plan to current after simulations
+  workers <- max(1L, parallelly::availableCores() - 1L) # Define workers
+  future::plan(future::multisession, workers = workers)
 
 
   # run RothC function
   progressr::with_progress({
-    xs <- sort(unique(rotation$xs))
-    if(quiet){p = NULL} else {p <- progressr::progressor(along = xs)}
+    xs <- sort(unique(soil_properties$xs))
+    if(quiet){p <- NULL} else {p <- progressr::progressor(along = xs)}
     
     results <- future.apply::future_lapply(X = xs,
                                            FUN = rotsee::rc_parallel,
@@ -162,10 +168,13 @@ rc_parallel <- function(this.xs,
     out[,xs := this.xs]
 
     # if final is true, calculate mean of last 10 years
-    if(final){out <- out[year > max(year) - 10,lapply(.SD,mean)]}
+    if (final) {
+      num_cols <- names(out)[vapply(out, is.numeric, logical(1))] # select all numeric columns
+      out <- out[year > max(year) - 10, lapply(.SD, mean), .SDcols = num_cols][, xs := this.xs]
+      }
 
     # show progress
-    if (! is.null(p)) {if (this.xs %% 10 == 0) p(sprintf('id = %g', this.xs))}
+    if (!is.null(p)) p(sprintf('id = %g', this.xs))
     
     result <- copy(out)
 
