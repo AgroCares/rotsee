@@ -128,6 +128,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
 
   # Calculate actual evapotranspiration for months where only potential is provided (general rothc calculation)
   if (!"W_POT_TO_ACT" %in% colnames(dt)) dt[, W_POT_TO_ACT := NA_real_]
+  if(!"W_ET_ACT_MONTH" %in% colnames(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
   dt[is.na(W_ET_ACT_MONTH) & is.na(W_POT_TO_ACT), W_POT_TO_ACT := 0.75]
   dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_POT_MONTH * W_POT_TO_ACT]
 

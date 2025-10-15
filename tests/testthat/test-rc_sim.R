@@ -351,7 +351,7 @@ test_that("rc_sim handles irrigation with different output units", {
   
   # Test with Cstock output
   parms_cstock <- list(
-    unit = "Cstock",
+    unit = "cstock",
     start_date = "2022-04-01",
     end_date = "2023-10-01"
   )
