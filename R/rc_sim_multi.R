@@ -1,6 +1,6 @@
-#' Multicore RothC simulation
+#' Parallel RothC calculations
 #' 
-#' Function to perform parallel RothC calculations via \link{rc_sim} using multicore processing.
+#' Function to perform parallel RothC calculations via \link{rc_sim} using multicore processing. Required inputs and parameters should be identical to \link{rc_sim}
 #'
 #' @param soil_properties (data.table) Data table with soil properties. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.
 #' @param rotation (data.table) Table with crop rotation details and crop management actions that have been taken. For inputs, see \link{rc_sim} with additional ID column used to identify scenario.
@@ -11,6 +11,8 @@
 #' @param weather (data.table) Table with weather information. For inputs, see \link{rc_sim}. 
 #' @param quiet (boolean) showing progress bar for calculation RothC C-saturation for each field
 #' @param final (boolean) option to select only the average of the last 10 years
+#' @param strategy (character) select strategy for multistep calculations. Options are 'sequential' (single step calculation), 'multicore' (linux) and 'multisession' (windows)
+#' @param cores (numeric) number of cores that can be used for multi-step calculations. 
 #'
 #' @import data.table
 #' @import progressr
@@ -19,7 +21,7 @@
 #' @import parallelly
 #'
 #' @export
-rc_multicore <- function(soil_properties,
+rc_sim_multi <- function(soil_properties,
                          rotation,
                          amendment,
                          A_DEPTH = 0.3,
@@ -27,7 +29,9 @@ rc_multicore <- function(soil_properties,
                          parms,
                          weather,
                          final = FALSE,
-                         quiet = TRUE){
+                         quiet = TRUE,
+                         strategy,
+                         cores = NULL){
   
   # add visual bindings
 ID = . = NULL
@@ -48,7 +52,9 @@ checkmate::assert_names(colnames(amendment), must.include = "ID")
 checkmate::assert_set_equal(sort(unique(rotation$ID)), sort(unique(soil_properties$ID)))
 checkmate::assert_set_equal(sort(unique(amendment$ID)), sort(unique(soil_properties$ID)))
 checkmate::assert_data_table(weather)
-
+checkmate::assert_character(strategy)
+if(!is.null(cores)) assert(cores >= parallelly::availableCores(),
+                           msg = 'requested cores exceed available cores')
 
 
   # add group (xs)
@@ -58,19 +64,27 @@ checkmate::assert_data_table(weather)
 
 
   # Run the simulations
-  oplan <- future::plan() # define current plan
-  on.exit(future::plan(oplan), add = TRUE) # Restore plan to current after simulations
+ 
+  # Define number of cores used
+  if(!is.null(cores)){
+    workers <- max(1L, cores)
+  }else{
+  # Base used cores on those available
   workers <- max(1L, parallelly::availableCores() - 1L) # Define workers
-  future::plan(future::multisession, workers = workers)
-
-
+  }
+  
+  # Define plan based on supplied strategy
+  if(strategy == 'multisession') future::plan(future::multisession, workers = workers)
+  if(strategy == 'multicore') future::plan(future::multicore(), workers = workers)
+  if(strategy == 'sequential') future::plan(future::sequential())
+  
   # run RothC function
   progressr::with_progress({
     xs <- sort(unique(soil_properties$xs))
     if(quiet){p <- NULL} else {p <- progressr::progressor(along = xs)}
     
     results <- future.apply::future_lapply(X = xs,
-                                           FUN = rotsee::rc_parallel,
+                                           FUN = rc_sim_multistep,
                                            soil_properties = soil_properties,
                                            rotation = rotation,
                                            amendment = amendment,
@@ -84,6 +98,9 @@ checkmate::assert_data_table(weather)
                                            future.packages = c('rotsee'))
   })
 
+  # Return plan to sequential
+  future::plan(sequential)
+  
   # combine outputs
   dt.res <- rbindlist(results, fill = TRUE)
 
@@ -97,9 +114,9 @@ checkmate::assert_data_table(weather)
 }
 
 
-#' RothC parallel function
+#' RothC multistep function
 #' 
-#' Function to run RothC parallel for a series of fields
+#' Intermediary function called by \link{rc_sim_multi} to perform parallel rothc calculations
 #' 
 #' @param this.xs (numeric) selected id for a single field
 #' @param soil_properties (data.table) Data table with soil properties. For inputs, see \link{rc_sim} with additional column 'xs' as identifier for separate scenario's
@@ -111,9 +128,8 @@ checkmate::assert_data_table(weather)
 #' @param weather (data.table) Table with weather information. For inputs, see \link{rc_sim}.
 #' @param p (progress bar) progress bar
 #' @param final (boolean) option to select only the average of the last 10 years
-#'
-#' @export
-rc_parallel <- function(this.xs,
+
+rc_sim_multistep <- function(this.xs,
                         soil_properties,
                         rotation = NA_real_,
                         amendment = NA_real_,
