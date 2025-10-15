@@ -37,19 +37,28 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
   tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = acc_smd = NULL
   W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
-  B_DATE_IRRIGATION = B_IRR_AMOUNT = W_POT_TO_ACT = NULL
+  B_DATE_IRRIGATION = B_IRR_AMOUNT = W_POT_TO_ACT = . = NULL
  
-  # Input tables
+  # Check input tables
+  # crop table
   checkmate::assert_data_table(dt,null.ok = TRUE)
   if(!is.null(dt)){
   checkmate::assert_true(all(c('B_LU_START', 'B_LU_END') %in% colnames(dt)))
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = F)
   }
+  
+  # weather table
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
-  checkmate::assert_subset(colnames(dt.weather), choices = c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH", "W_POT_TO_ACT"))
-  checkmate::assert(any(c("W_ET_POT_MONTH","W_ET_ACT_MONTH") %in% colnames(dt.weather)),
-                         msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided.")
+  req <- c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH")
+  checkmate::assert_names(colnames(dt.weather), must.include = req)
+  checkmate::assert(
+    "W_ET_ACT_MONTH" %in% colnames(dt.weather) ||
+      all(c("W_ET_POT_MONTH","W_POT_TO_ACT") %in% colnames(dt.weather)),
+    msg = "Provide 'W_ET_ACT_MONTH' or both 'W_ET_POT_MONTH' and 'W_POT_TO_ACT' in dt.weather."
+    )
+  
+    # irrigation table
   checkmate::assert_data_table(dt.irrigation, null.ok = TRUE)
   if(!is.null(dt.irrigation)){
   checkmate::assert_true(all(c('B_DATE_IRRIGATION', 'B_IRR_AMOUNT') %in% colnames (dt.irrigation)))
