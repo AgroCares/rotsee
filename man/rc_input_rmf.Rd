@@ -24,7 +24,7 @@ rc_input_rmf(
 
 \item{dt.time}{(data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}}
 
-\item{dt.irrigation}{(data.table) Data table of irrigiation events}
+\item{dt.irrigation}{(data.table) Data table of irrigation events}
 }
 \description{
 This function prepares the rate modifying factors for RothC given crop cover

@@ -1,4 +1,5 @@
-rotse UNRELEASED
+rotsee v0.1.4 2025-10-15
+
 ## added
 * function to input irrigation rates for soil moisture deficit calculations
 * Option to input own recalculation factors for potential to actual evapotranspiration
