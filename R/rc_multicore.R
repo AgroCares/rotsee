@@ -74,6 +74,8 @@ checkmate::assert_true(length(unique(amendment$ID)) == length(unique(soil_proper
                                            amendment = amendment,
                                            parms = parms,
                                            p = p,
+                                           A_DEPTH = A_DEPTH,
+                                           B_DEPTH = B_DEPTH,
                                            weather = weather,
                                            final = final,
                                            future.seed = TRUE,
@@ -148,10 +150,11 @@ rc_parallel <- function(this.xs,
     # Run the RothC model
     out <- rotsee::rc_sim(
                   soil_properties = this.soil,
-                  A_DEPTH = 0.3,
-                  B_DEPTH = 0.3,
+                  A_DEPTH = A_DEPTH,
+                  B_DEPTH = B_DEPTH,
                   rothc_rotation = this.rotation,
                   rothc_amendment = this.amendment,
+                  weather = weather,
                   rothc_parms = parms)
     
     out[,xs := this.xs]
