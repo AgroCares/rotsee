@@ -56,8 +56,7 @@ checkmate::assert_character(strategy)
 checkmate::assert_choice(strategy, c("sequential", "multisession", "multicore"))
 if(!is.null(cores)) {
   checkmate::assert_integerish(cores, lower = 1)
-  checkmate::assert(cores <= parallelly::availableCores(),
-                          msg = 'requested cores exceed available cores')
+  checkmate::assert_true(cores <= parallelly::availableCores())
 }
 
   # add group (xs)
@@ -80,8 +79,8 @@ if(!is.null(cores)) {
   prev_plan <- future::plan() # Define original plan
   on.exit(future::plan(prev_plan), add = TRUE) # return plan to original after calculations
   if(strategy == 'multisession') future::plan(future::multisession, workers = workers)
-  if(strategy == 'multicore') future::plan(future::multicore(), workers = workers)
-  if(strategy == 'sequential') future::plan(future::sequential())
+  if(strategy == 'multicore') future::plan(future::multicore, workers = workers)
+  if(strategy == 'sequential') future::plan(future::sequential)
   
   # run RothC function
   progressr::with_progress({
