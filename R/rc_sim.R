@@ -9,7 +9,8 @@
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
-#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.
+#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH, W_POT_TO_ACT. For more information, see details.
+#' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
 #'
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
@@ -58,6 +59,12 @@
 #' * W_PREC_SUM_MONTH (precipitation in mm)
 #' * W_ET_POT_MONTH (potential evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
+#' * W_POT_TO_ACT (factor to recalculate potential to actual evapotranspiration, default 0.75)
+#' 
+#' Irrigation: Irrigation table, optional.
+#' Includes the columns:
+#' * B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
+#' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'
 #' @import deSolve
 #'
@@ -69,7 +76,8 @@ rc_sim <- function(soil_properties,
                    rothc_rotation = NULL,
                    rothc_amendment = NULL,
                    rothc_parms = NULL,
-                   weather = NULL){
+                   weather = NULL,
+                   irrigation = NULL){
   
   # add visual bindings
   a_depth = toc = A_CLAY_MI = A_C_OF = B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
@@ -97,7 +105,7 @@ rc_sim <- function(soil_properties,
   k4 <- rothc_parms$dec_rates[["k4"]]
   
   # Define C fractions
-  c_fractions <- rothc_parms$c_fractions
+  c_fractions <- as.list(rothc_parms$c_fractions)
   
   # Define unit of output
   unit <- rothc_parms$unit
@@ -144,9 +152,19 @@ rc_sim <- function(soil_properties,
 
   # make rate modifying factors input database
   if(!is.null(dt.crop)){
-  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
+  dt.rmf <- rc_input_rmf(dt = dt.crop,
+                         A_CLAY_MI = soil_properties$A_CLAY_MI,
+                         B_DEPTH = B_DEPTH,
+                         dt.time = dt.time,
+                         dt.weather = dt.weather,
+                         dt.irrigation = irrigation)
+ 
   }else{
-    dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
+    dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI,
+                           B_DEPTH = B_DEPTH,
+                           dt.time = dt.time,
+                           dt.weather = dt.weather,
+                           dt.irrigation = irrigation)
     
   }
   # combine RothC input parameters
@@ -223,7 +241,6 @@ rc_sim <- function(soil_properties,
     dt.soc[,CBIO0 := cbio.ini * 1000]
     dt.soc[,CHUM0 := chum.ini * 1000]
   } else {
-    
     # Calculate carbon pools based on provided or default distribution (kg C / ha)
     dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
     dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
