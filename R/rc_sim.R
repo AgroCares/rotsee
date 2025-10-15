@@ -160,7 +160,10 @@ rc_sim <- function(soil_properties,
                          dt.irrigation = irrigation)
  
   }else{
-    dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
+    dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI,
+                           B_DEPTH = B_DEPTH,
+                           dt.time = dt.time,
+                           dt.weather = dt.weather)
     
   }
   # combine RothC input parameters

@@ -42,7 +42,7 @@ contains the following columns:
 * W_TEMP_MEAN_MONTH
 * W_PREC_SUM_MONTH
 * W_ET_POT_MONTH
-* W_ET_ACT_MONTH
+* W_ET_ACT_MONTH (optional), calculated from W_ET_POT_MONTH when not supplied
 * W_POT_TO_ACT
 
 dt.irrigation: irrigation table
