@@ -6,7 +6,7 @@
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param dt.weather (data.table) Data table of monthly weather
-#' @param dt.time (data.table) table with all combinations of year and month in the simulation period
+#' @param dt.time (data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}
 #' @param dt.irrigation (data.table) Data table of irrigiation events
 #'
 #' @details
@@ -17,12 +17,12 @@
 #' 
 #' dt.weather: weather table
 #' contains the following columns:
-#' * year (optional)
+#' * year (optional), monthly weather repeated when not supplied
 #' * month
 #' * W_TEMP_MEAN_MONTH
 #' * W_PREC_SUM_MONTH
 #' * W_ET_POT_MONTH
-#' * W_ET_ACT_MONTH
+#' * W_ET_ACT_MONTH (optional), calculated from W_ET_POT_MONTH when not supplied
 #' * W_POT_TO_ACT
 #'
 #' dt.irrigation: irrigation table
@@ -48,6 +48,8 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   }
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
   checkmate::assert_subset(colnames(dt.weather), choices = c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH", "W_POT_TO_ACT"))
+  checkmate::assert(any(c("W_ET_POT_MONTH","W_ET_ACT_MONTH") %in% colnames(dt.weather)),
+                         msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided.")
   checkmate::assert_data_table(dt.irrigation, null.ok = TRUE)
   if(!is.null(dt.irrigation)){
   checkmate::assert_true(all(c('B_DATE_IRRIGATION', 'B_IRR_AMOUNT') %in% colnames (dt.irrigation)))
@@ -133,7 +135,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
 
   # Replace deficit of starting months with next year if there is already soil moisture deficit
   # Check if year starts with a soil moisture deficit
-  if(dt[13, acc_smd] < 0){
+  if(nrow(dt) >= 13 && dt[13, acc_smd] < 0){
    
   dt[1:12, acc_smd :={
     # Create fillter column of the first year

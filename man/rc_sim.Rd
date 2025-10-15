@@ -8,7 +8,6 @@ rc_sim(
   soil_properties,
   A_DEPTH = 0.3,
   B_DEPTH = 0.3,
-  cf_yield = 1,
   M_TILLAGE_SYSTEM = "CT",
   rothc_rotation = NULL,
   rothc_amendment = NULL,
@@ -24,13 +23,11 @@ rc_sim(
 
 \item{B_DEPTH}{(numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.}
 
-\item{cf_yield}{(numeric) A relative yield correction factor (fraction) if yield is higher than regional average}
-
 \item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till).}
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
-\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_HC, and P_C_OF. See details for desired format.}
+\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.}
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
@@ -55,11 +52,9 @@ Includes the columns:
 
 rothc_amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
 Includes the columns:
-* P_ID (character), ID of the soil amendment product
-* P_NAME (character), name of the soil amendment product, optional
-* P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
-* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
+* B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
+* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
@@ -71,16 +66,11 @@ Includes the columns:
 * B_LU_NAME (a crop name, optional),
 * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
 * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
-May additionally include the columns M_GREEN_TIMING, M_CROPRESIDUE, M_IRRIGATION and M_RENEWAL, all in upper case.
-* M_GREEN_TIMING (character) the month in which the catch crop is sown, options: (august,september,october,november,never)
-* M_CROPRESIDUE (boolean) whether crop residues are amended to the soil after harvest.
-* M_IRRIGATION (boolean) whether the crop is irrigated.
-* M_RENEWAL (boolean) whether the grassland is renewed (only applicable for grassland)
 
 rothc_parms: parameters to adapt calculations (optional)
 May include the following columns:
 * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
-* c_fractions (list) Distribution over the different C pools. If not supplied, default RothC distribution is used
+* c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
 * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
