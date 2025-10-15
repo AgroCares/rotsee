@@ -70,13 +70,15 @@ if(!is.null(cores)) {
  
   # Define number of cores used
   if(!is.null(cores)){
-    workers <- max(1L, cores)
+    workers <- min(parallelly::availableCores(), max(1L, as.integer(cores)))
   }else{
   # Base used cores on those available
   workers <- max(1L, parallelly::availableCores() - 1L) # Define workers
   }
   
   # Define plan based on supplied strategy
+  prev_plan <- future::plan() # Define original plan
+  on.exit(future::plan(prev_plan), add = TRUE) # return plan to original after calculations
   if(strategy == 'multisession') future::plan(future::multisession, workers = workers)
   if(strategy == 'multicore') future::plan(future::multicore(), workers = workers)
   if(strategy == 'sequential') future::plan(future::sequential())
