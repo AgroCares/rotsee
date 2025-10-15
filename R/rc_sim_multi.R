@@ -30,11 +30,11 @@ rc_sim_multi <- function(soil_properties,
                          weather,
                          final = FALSE,
                          quiet = TRUE,
-                         strategy,
+                         strategy = "sequential",
                          cores = NULL){
   
   # add visual bindings
-ID = . = NULL
+ID = . = xs = NULL
   # Check if relevant packages are installed
   if (system.file(package = 'future') == '') {stop('multicore processing requires future to be installed')}
   if (system.file(package = 'future.apply') == '') {stop('multicore processing requires the package future.apply to be installed')}
@@ -53,10 +53,12 @@ checkmate::assert_set_equal(sort(unique(rotation$ID)), sort(unique(soil_properti
 checkmate::assert_set_equal(sort(unique(amendment$ID)), sort(unique(soil_properties$ID)))
 checkmate::assert_data_table(weather)
 checkmate::assert_character(strategy)
-checkmate::assert_subset(strategy, choices = c("sequential", "multisession", "multicore"))
-if(!is.null(cores)) checkmate::assert(cores >= parallelly::availableCores(),
-                           msg = 'requested cores exceed available cores')
-
+checkmate::assert_choice(strategy, c("sequential", "multisession", "multicore"))
+if(!is.null(cores)) {
+  checkmate::assert_integerish(cores, lower = 1)
+  checkmate::assert(cores <= parallelly::availableCores(),
+                          msg = 'requested cores exceed available cores')
+}
 
   # add group (xs)
   soil_properties[,xs := .GRP,by = ID]
@@ -100,7 +102,7 @@ if(!is.null(cores)) checkmate::assert(cores >= parallelly::availableCores(),
   })
 
   # Return plan to sequential
-  future::plan(sequential)
+  future::plan(future::sequential)
   
   # combine outputs
   dt.res <- rbindlist(results, fill = TRUE)
@@ -132,12 +134,12 @@ if(!is.null(cores)) checkmate::assert(cores >= parallelly::availableCores(),
 
 rc_sim_multistep <- function(this.xs,
                         soil_properties,
-                        rotation = NA_real_,
-                        amendment = NA_real_,
+                        rotation = NULL,
+                        amendment = NULL,
                         A_DEPTH = 0.3,
                         B_DEPTH = 0.3,
-                        parms = NA_real_,
-                        weather = NA_real_,
+                        parms = NULL,
+                        weather = NULL,
                         p,
                         final = FALSE){
   
