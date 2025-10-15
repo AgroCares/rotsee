@@ -9,7 +9,7 @@
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
-#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_MEAN_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH, W_POT_TO_ACT. For more information, see details.
+#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH, W_POT_TO_ACT. For more information, see details.
 #' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
 #'
 #' @details
@@ -163,7 +163,8 @@ rc_sim <- function(soil_properties,
     dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI,
                            B_DEPTH = B_DEPTH,
                            dt.time = dt.time,
-                           dt.weather = dt.weather)
+                           dt.weather = dt.weather,
+                           dt.irrigation = irrigation)
     
   }
   # combine RothC input parameters
