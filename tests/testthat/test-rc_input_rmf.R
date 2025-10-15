@@ -116,13 +116,13 @@ test_that("rc_input_rmf validates irrigation input correctly", {
     B_C_OF_INPUT = c(1500)
   )
   
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
+  
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
@@ -170,13 +170,12 @@ test_that("rc_input_rmf validates irrigation amount ranges", {
     B_C_OF_INPUT = c(1500)
   )
   
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
@@ -226,13 +225,12 @@ test_that("rc_input_rmf handles boundary irrigation amounts", {
     B_C_OF_INPUT = c(1500)
   )
   
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
@@ -280,13 +278,12 @@ test_that("rc_input_rmf handles multiple irrigation events", {
     B_C_OF_INPUT = c(1500, 1500)
   )
   
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
   
   # Multiple irrigation events across different months and years
   irrigation <- data.table(
@@ -318,13 +315,12 @@ test_that("rc_input_rmf handles irrigation dates correctly", {
     B_C_OF_INPUT = c(1500)
   )
   
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
@@ -385,14 +381,12 @@ test_that("rc_input_rmf uses W_POT_TO_ACT in ET calculations with irrigation", {
   )
   
   # Weather with custom W_POT_TO_ACT
-  weather_custom <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(100, 12),
-    W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.8, 12)  # Custom factor
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.8, 12))
   
   irrigation <- data.table(
     B_DATE_IRRIGATION = c("2022-07-01"),
@@ -423,13 +417,12 @@ test_that("rc_input_rmf handles irrigation at different times of year", {
     B_C_OF_INPUT = c(1500)
   )
   
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
@@ -477,13 +470,12 @@ test_that("rc_input_rmf handles same month multiple irrigation events", {
     B_C_OF_INPUT = c(1500)
   )
   
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
   
   # Multiple irrigation events in the same month
   irrigation_same_month <- data.table(
@@ -516,13 +508,12 @@ test_that("rc_input_rmf irrigation integration with crop cover", {
     B_C_OF_INPUT = c(1500)
   )
   
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
+  weather <- data.table(month = 1:12,
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_POT_TO_ACT = rep(0.75, 12))
   
   # Irrigation during crop cover
   irrigation_during_crop <- data.table(
