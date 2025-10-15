@@ -30,8 +30,8 @@ rc_multicore <- function(soil_properties,
                          quiet = TRUE){
   
   # add visual bindings
-ID = NULL
-  # Check if relevant packes are installed
+ID = . = NULL
+  # Check if relevant packages are installed
   if (system.file(package = 'future') == '') {stop('multicore processing requires future to be installed')}
   if (system.file(package = 'future.apply') == '') {stop('multicore processing requires the package future.apply to be installed')}
   if (system.file(package = 'parallelly') == '') {stop('multicore processing requires the package parallelly to be installed')}
@@ -48,16 +48,10 @@ checkmate::assert_names(colnames(amendment), must.include = "ID")
 checkmate::assert_set_equal(sort(unique(rotation$ID)), sort(unique(soil_properties$ID)))
 checkmate::assert_set_equal(sort(unique(amendment$ID)), sort(unique(amendment$ID)))
 checkmate::assert_data_table(weather)
-  
-  # Set RothC run parameters
-  simulation_time <- 50L
-  
-  # multithreading
-  cm.versions <- c('CM4')
+
+
 
   # add group (xs)
-  rotation[,xs := .GRP,by = ID]
-  amendment[,xs := .GRP,by = ID]
   soil_properties[,xs := .GRP,by = ID]
   rotation <- merge(rotation, soil_properties[, .(ID, xs)], by = "ID", all.x = TRUE)
   amendment <- merge(amendment, soil_properties[, .(ID, xs)], by = "ID", all.x = TRUE)
@@ -90,9 +84,6 @@ checkmate::assert_data_table(weather)
                                            future.packages = c('rotsee'))
   })
 
-  # close cluster
-  future::plan(future::sequential)
-  
   # combine outputs
   dt.res <- rbindlist(results, fill = TRUE)
 
@@ -151,9 +142,6 @@ rc_parallel <- function(this.xs,
     
     # set seed
     set.seed(mc)
- 
-    # run simulations for the desire scenarios
-    sim <- list(); count <- 0
 
     # Run the RothC model
     out <- rotsee::rc_sim(

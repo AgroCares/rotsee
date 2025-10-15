@@ -277,7 +277,7 @@ rc_check_inputs <- function(soil_properties,
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = FALSE)
     checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = FALSE)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
-  checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
+    checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
     }
 
   # Check amendment properties if supplied

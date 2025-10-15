@@ -79,7 +79,7 @@ test_that("rc_parallel handles correct inputs", {
                         final = FALSE)
   
   expect_s3_class(result_finalf, "data.table")
-  expect_true(all(c("A_SOM_LOI", "soc", "xs") %in% names(result)))
+  expect_true(all(c("A_SOM_LOI", "soc", "xs") %in% names(result_finalf)))
   expect_gt(nrow(result_finalf), 1)
   
   

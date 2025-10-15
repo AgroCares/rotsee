@@ -59,14 +59,6 @@ test_that("rc_multicore runs with normal inputs", {
                          amendment = rothc_amendment,
                          final = FALSE)
 
-  result <- rc_multicore(soil_properties = soil_properties,
-                         A_DEPTH = 0.3,
-                         B_DEPTH = 0.3,
-                         parms = parms,
-                         weather = weather,
-                         rotation = rothc_rotation,
-                         amendment = rothc_amendment,
-                         final = FALSE)
   
   expect_s3_class(result, "data.table")
   expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))

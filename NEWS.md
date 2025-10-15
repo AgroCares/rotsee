@@ -1,4 +1,4 @@
-#rotsee v0.0.6 2025-09-17
+# rotsee v0.0.6 2025-09-17
 ## added
 * unit tests for `rc_multicore` and `rc_parallel`
 
