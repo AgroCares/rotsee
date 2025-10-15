@@ -1,6 +1,6 @@
 
 
-test_that("rc_parallel handles correct inputs", {
+test_that("rc_sim_multistep handles correct inputs", {
   this.xs <- 1
   
   soil_properties <- data.table(
@@ -50,7 +50,7 @@ test_that("rc_parallel handles correct inputs", {
                 end_date = "2040-10-01")
   
   # Test with all correct values, final = TRUE
-  result <- rc_parallel(this.xs = this.xs,
+  result <- rc_sim_multistep(this.xs = this.xs,
                         soil_properties = soil_properties,
                         A_DEPTH = 0.3,
                         B_DEPTH = 0.3,
@@ -66,8 +66,8 @@ test_that("rc_parallel handles correct inputs", {
   expect_equal(nrow(result), 1)
   
   
-  # test if rc_parallel handles final = FALSE can be run
-  result_finalf <- rc_parallel(this.xs = this.xs,
+  # test if rc_sim_multistep handles final = FALSE can be run
+  result_finalf <- rc_sim_multistep(this.xs = this.xs,
                         soil_properties = soil_properties,
                         A_DEPTH = 0.3,
                         B_DEPTH = 0.3,
@@ -83,9 +83,9 @@ test_that("rc_parallel handles correct inputs", {
   expect_gt(nrow(result_finalf), 1)
   
   
-  # Test if rc_parallel handles xs not present in soil_properties
+  # Test if rc_sim_multistep handles xs not present in soil_properties
   
-  result_noxs <- rc_parallel(this.xs = 99,
+  result_noxs <- rc_sim_multistep(this.xs = 99,
                         soil_properties = soil_properties,
                         A_DEPTH = 0.3,
                         B_DEPTH = 0.3,
@@ -104,7 +104,7 @@ test_that("rc_parallel handles correct inputs", {
   broken_parms <- parms
   broken_parms$dec_rates <- "not a numeric vector"
   
-  result <- rc_parallel(this.xs = this.xs,
+  result <- rc_sim_multistep(this.xs = this.xs,
                         soil_properties = soil_properties,
                         A_DEPTH = 0.3,
                         B_DEPTH = 0.3,

@@ -1,6 +1,6 @@
-# Unit tests to check if multicore simultaneous RothC calculations work
+# Unit tests to check if parallel rothc
 
-test_that("rc_multicore runs with normal inputs", {
+test_that("rc_sim_multi runs with normal inputs", {
   soil_properties <- data.table(
     ID = c('high', 'low', 'mid'),
     A_C_OF = rep(50,3),
@@ -49,15 +49,17 @@ test_that("rc_multicore runs with normal inputs", {
                 start_date = "2022-04-01",
                 end_date = "2040-10-01")
   
+  
   # Run with all correct values
-  result <- rc_multicore(soil_properties = soil_properties,
+  result <- rc_sim_multi(soil_properties = soil_properties,
                          A_DEPTH = 0.3,
                          B_DEPTH = 0.3,
                          parms = parms,
                          weather = weather,
                          rotation = rothc_rotation,
                          amendment = rothc_amendment,
-                         final = FALSE)
+                         final = FALSE,
+                         strategy = 'multisession')
 
   
   expect_s3_class(result, "data.table")
@@ -66,26 +68,27 @@ test_that("rc_multicore runs with normal inputs", {
 
 
   # Runs correctly with final set to true
-  result_final <- rc_multicore(soil_properties = soil_properties,
+  result_final <- rc_sim_multi(soil_properties = soil_properties,
                          A_DEPTH = 0.3,
                          B_DEPTH = 0.3,
                          parms = parms,
                          weather = weather,
                          rotation = rothc_rotation,
                          amendment = rothc_amendment,
-                         final = TRUE)
+                         final = TRUE,
+                         strategy = 'multisession')
 
   
   expect_equal(nrow(result_final), 3)
 })
 
 
-test_that("rc_multicore throws error if soil_properties is not a data.table", {
-  expect_error(rc_multicore(soil_properties = data.frame(ID = "test")))
+test_that("rc_sim_multi throws error if soil_properties is not a data.table", {
+  expect_error(rc_sim_multi(soil_properties = data.frame(ID = "test")))
 })
 
 
-test_that("rc_multicore handles progress reporting", {
+test_that("rc_sim_multi handles progress reporting", {
   soil_properties <- data.table(
     ID = c('high', 'low', 'mid'),
     A_C_OF = rep(50,3),
@@ -131,14 +134,15 @@ test_that("rc_multicore handles progress reporting", {
                 end_date = "2040-10-01")
   
   # Test with progress reporting
-  result <- rc_multicore(soil_properties = soil_properties,
+  result <- rc_sim_multi(soil_properties = soil_properties,
                          A_DEPTH = 0.3,
                          B_DEPTH = 0.3,
                          parms = parms,
                          weather = weather,
                          rotation = rothc_rotation,
                          amendment = rothc_amendment,
-                         quiet = FALSE)
+                         quiet = FALSE,
+                         strategy = 'multisession')
   
   expect_s3_class(result, "data.table")
 })
