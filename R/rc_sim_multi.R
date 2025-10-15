@@ -155,14 +155,11 @@ rc_sim_multistep <- function(this.xs,
   this.amendment <- amendment[xs == this.xs]
   this.soil <- soil_properties[xs == this.xs]
   
-  # set seed
-  mc <- 111
-  
   # do RothC simulation
   result <- tryCatch({
     
     # set seed
-    set.seed(mc)
+    set.seed(111)
 
     # Run the RothC model
     out <- rotsee::rc_sim(
@@ -178,8 +175,10 @@ rc_sim_multistep <- function(this.xs,
 
     # if final is true, calculate mean of last 10 years
     if (final) {
-      num_cols <- names(out)[vapply(out, is.numeric, logical(1))] # select all numeric columns
-      out <- out[year > max(year) - 10, lapply(.SD, mean), .SDcols = num_cols][, xs := this.xs]
+      num_cols <- setdiff(names(out)[vapply(out, is.numeric, logical(1))], c("year", "xs")) # select all numeric columns
+      out <- out[year > max(year) - 10,
+                 c(list(year = max(year)), lapply(.SD, mean)),
+                   .SDcols = num_cols][, xs := this.xs]
       }
 
     # show progress
