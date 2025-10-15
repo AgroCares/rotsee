@@ -1,3 +1,9 @@
+rotse UNRELEASED
+## added
+* function to input irrigation rates for soil moisture deficit calculations
+* Option to input own recalculation factors for potential to actual evapotranspiration
+
+
 # rotsee v0.0.4 2025-09-05
 ## added
 * B_LU_START and B_LU_END as input parameters in rothc_rotation

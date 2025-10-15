@@ -4,7 +4,14 @@
 \alias{rc_input_rmf}
 \title{Estimate the rate modifying factors for the RothC modelling}
 \usage{
-rc_input_rmf(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI, dt.weather, dt.time)
+rc_input_rmf(
+  dt = NULL,
+  B_DEPTH = 0.3,
+  A_CLAY_MI,
+  dt.weather,
+  dt.time,
+  dt.irrigation = NULL
+)
 }
 \arguments{
 \item{dt}{(data.table) Table with crop rotation and related crop properties for Carbon input.}
@@ -16,6 +23,8 @@ rc_input_rmf(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI, dt.weather, dt.time)
 \item{dt.weather}{(data.table) Data table of monthly weather}
 
 \item{dt.time}{(data.table) table with all combinations of year and month in the simulation period}
+
+\item{dt.irrigation}{(data.table) Data table of irrigiation events}
 }
 \description{
 This function prepares the rate modifying factors for RothC given crop cover
@@ -34,4 +43,10 @@ contains the following columns:
 * W_PREC_SUM_MONTH
 * W_ET_POT_MONTH
 * W_ET_ACT_MONTH
+* W_POT_TO_ACT
+
+dt.irrigation: irrigation table
+contains the following columns:
+* B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
+* B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 }
