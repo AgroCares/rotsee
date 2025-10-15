@@ -53,7 +53,7 @@ checkmate::assert_set_equal(sort(unique(rotation$ID)), sort(unique(soil_properti
 checkmate::assert_set_equal(sort(unique(amendment$ID)), sort(unique(soil_properties$ID)))
 checkmate::assert_data_table(weather)
 checkmate::assert_character(strategy)
-if(!is.null(cores)) assert(cores >= parallelly::availableCores(),
+if(!is.null(cores)) checkmate::assert(cores >= parallelly::availableCores(),
                            msg = 'requested cores exceed available cores')
 
 
