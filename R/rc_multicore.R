@@ -38,14 +38,16 @@ ID = NULL
 
   # Check inputs (for input value checks, see rc_sim)
 checkmate::assert_data_table(soil_properties)
-checkmate::assert_true(length(soil_properties$ID) >= 1)
+checkmate::assert_true(nrow(soil_properties) >= 1)
+checkmate::assert_names(colnames(soil_properties), must.include = "ID")
+checkmate::assert_true(!anyDuplicated(soil_properties$ID)) # Allow only one row per ID
 checkmate::assert_data_table(rotation)
-checkmate::assert_true(length(unique(rotation$ID)) == length(unique(soil_properties$ID)))
+checkmate::assert_names(colnames(rotation), must.include = "ID")
 checkmate::assert_data_table(amendment)
-checkmate::assert_true(length(unique(amendment$ID)) == length(unique(soil_properties$ID)))
-
-# Ensure soil properties only has one value
-
+checkmate::assert_names(colnames(amendment), must.include = "ID")
+checkmate::assert_set_equal(sort(unique(rotation$ID)), sort(unique(soil_properties$ID)))
+checkmate::assert_set_equal(sort(unique(amendment$ID)), sort(unique(amendment$ID)))
+checkmate::assert_data_table(weather)
   
   # Set RothC run parameters
   simulation_time <- 50L
