@@ -2,7 +2,7 @@
 # Testing framework: testthat
 
 test_that("rc_sim correctly checks input validity", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
