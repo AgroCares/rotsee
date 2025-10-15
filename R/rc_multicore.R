@@ -46,7 +46,7 @@ checkmate::assert_names(colnames(rotation), must.include = "ID")
 checkmate::assert_data_table(amendment)
 checkmate::assert_names(colnames(amendment), must.include = "ID")
 checkmate::assert_set_equal(sort(unique(rotation$ID)), sort(unique(soil_properties$ID)))
-checkmate::assert_set_equal(sort(unique(amendment$ID)), sort(unique(amendment$ID)))
+checkmate::assert_set_equal(sort(unique(amendment$ID)), sort(unique(soil_properties$ID)))
 checkmate::assert_data_table(weather)
 
 

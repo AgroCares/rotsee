@@ -1,10 +1,11 @@
-# rotsee v0.0.6 2025-09-17
+# rotsee v0.1.3 2025-10-15
+
 ## added
 * unit tests for `rc_multicore` and `rc_parallel`
 
 ## changed
-* `rc_multicore` and `rc_parallel` for clearer workflow of multicore parallel calculations
-* Required inputs for `rc_multicore` to align with `rc_sim`
+* Reworked `rc_multicore` and `rc_parallel` for a clearer workflow for multicore calculations
+* Align required inputs for `rc_multicore` with `rc_sim`
 * Tightened outputs to only time, OM content, and C content of different pools
 
 ## removed
@@ -18,6 +19,7 @@
 * Loosened checks for `rc_calculate_B_C_OF` and `rc_update_weather` to allow additional input columns
 
 # rotsee v0.1.0 2025-09-24
+
 ## added
 * B_LU_START and B_LU_END as input parameters in rothc_rotation
 * start_date and end_date to replace simyears
@@ -30,12 +32,14 @@
 * Corrected accumulated soil moisture deficit calculation
 
 # rotsee v0.0.4 2025-09-24
+
 ## Changed
 * Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
 * Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
 * Expand README with some introductory text about the package
   
 # rotsee v0.0.3 2025-09-01
+
 ## Added
 * function rc_check_inputs to check input data
 * Helper function rc_calculate_bd to estimate dry soil bulk density based on soil properties
