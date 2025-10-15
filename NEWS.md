@@ -5,6 +5,7 @@
 ## changed
 * `rc_multicore` and `rc_parallel` for clearer workflow of multicore parallel calculations
 * Required inputs for `rc_multicore` to align with `rc_sim`
+* Tightened outputs to only time, OM content, and C content of different pools
 
 ## removed
 * `rc_shi_field`, with core functions incorporated into `rc_parallel`
