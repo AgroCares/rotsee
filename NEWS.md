@@ -2,7 +2,6 @@
 
 ## added
 * data file `pandex.rda`, with information on accepted minima and maxima of used parameters
-* functions `rc_minval` and `rc_maxval`, to derive minima and maxima of parameters from `pandex.rda`
 
 ## changed
 * linked assertions of parameters to `pandex.rda` data table
