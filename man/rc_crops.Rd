@@ -3,7 +3,7 @@
 \docType{data}
 \name{rc_crops}
 \alias{rc_crops}
-\title{Crop proporties table}
+\title{Crop properties table}
 \format{
 A data.frame with 521 rows and 8 columns:
 \describe{

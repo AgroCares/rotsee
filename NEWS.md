@@ -1,3 +1,8 @@
+# rotsee v0.1.6 2025-10-16
+
+## changed
+* updated internal validation of data
+
 # rotsee v0.1.2 2025-10-13
 ## added
 * unit tests for `rc_calculate_B_C_OF` and `rc_time_period`
