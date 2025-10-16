@@ -1,3 +1,12 @@
+# rotsee v0.1.6 2025-10-16
+
+## added
+* data file `pandex.rda`, with information on accepted minima and maxima of used parameters
+* functions `rc_minval` and `rc_maxval`, to derive minima and maxima of parameters from `pandex.rda`
+
+## changed
+* linked assertions of parameters to `pandex.rda` data table
+
 # rotsee v0.1.2 2025-10-13
 ## added
 * unit tests for `rc_calculate_B_C_OF` and `rc_time_period`
