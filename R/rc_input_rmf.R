@@ -55,7 +55,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   dt.crop_cover <- unique(dt.crop_cover[,list(year,month, time, crop_cover)])
 
   # Merge time and weather table
-  weather <- merge(dt.time, dt.weather, by = 'month', all.x=TRUE)
+  weather <- merge(dt.time, dt.weather, by = c('month', 'year'), all.x=TRUE)
 
   # combine weather and crop cover data
   dt <- merge(weather, dt.crop_cover, by = c('time', 'year', 'month'))
