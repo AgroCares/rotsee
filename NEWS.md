@@ -1,10 +1,7 @@
 # rotsee v0.1.6 2025-10-16
 
-## added
-* data file `pandex.rda`, with information on accepted minima and maxima of used parameters
-
 ## changed
-* linked assertions of parameters to `pandex.rda` data table
+* updated internal validation of data
 
 # rotsee v0.1.2 2025-10-13
 ## added
