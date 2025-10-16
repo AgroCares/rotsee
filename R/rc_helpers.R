@@ -634,17 +634,22 @@ rc_time_period <- function(start_date, end_date){
 #'
 #' @returns
 #' minimum allowed value of the supplied parameter
-
-
+#' 
 rc_minval <- function(this.parameter) {
   # add visual binding
   data_type = code = value_min = NULL
+  
+  # validate input
+  checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
   
   # load pandex data
   pandex <- rotsee::pandex
   
   # get minimum value of parameter
   out <- pandex[code %in% this.parameter, value_min]
+  if (length(out) != 1L || is.na(out)) {
+    stop(sprintf("No unique minimum bound found in pandex for code '%s'", this.parameter))
+    }
   
   return(out)
 }
@@ -662,11 +667,17 @@ rc_maxval <- function(this.parameter){
   # add visual binding
   data_type = code = value_max = NULL
   
+  # validate input
+  checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
+  
   # load pandex data
   pandex <- rotsee::pandex
   
-  # get minimum value of parameter
+  # get maximum value of parameter
   out <- pandex[code %in% this.parameter, value_max]
+  if (length(out) != 1L || is.na(out)) {
+    stop(sprintf("No unique maximum bound found in pandex for code '%s'", this.parameter))
+  }
   
   return(out)
 }
