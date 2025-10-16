@@ -36,8 +36,13 @@ cf_ind_importance <- function(x) {
 #' @export
 #'
 rc_update_weather <- function(dt = NULL, start_date, end_date){
+  # Add visible bindings
+  W_ET_POT_MONTH = W_ET_ACT_MONTH = NULL
+  
+  
   if(!is.null(dt)){
-    # Create weather data table
+    
+    # Copy weather data table if supplied
     dt <- copy(dt)
     
     # Check inputs
@@ -71,14 +76,31 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
     
     # check if year is supplied
     if("year" %in% colnames(dt)){
-      checkmate::assert_numeric(dt$year)
+      checkmate::assert_numeric(dt$year, any.missing = FALSE)
       checkmate::assert_true(min(dt$year) <= year(start_date) && max(dt$year) >= year(end_date))
-    }
+    }else{
+      # Require full monthly coverage when no 'year' is present
+      checkmate::assert(setequal(unique(dt$month), 1:12),
+                                    msg = "When 'year' is absent, 'month' must contain all 1:12")
+      # Expand monthly rows across simulation years
+        yrs <- year(start_date):year(end_date)
+        
+        # Ensure missing ET column exists (as NA) to keep schema stable
+          if (!"W_ET_POT_MONTH" %in% names(dt)) dt[, W_ET_POT_MONTH := NA_real_]
+          if (!"W_ET_ACT_MONTH" %in% names(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
+        setkey(dt, month)
+        dt <- CJ(year = yrs, month = 1:12)[dt, on = "month"]
+        
+        # Reorder columns
+          setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
+         }
+    
     
 }else{
-  #Set default weather for Dutch conditions
+  # If no weather data has been supplied, set to standard Dutch conditions
+  yrs <- year(start_date):year(end_date)
   dt <- data.table(
-    year = rep(year(start_date):year(end_date), each = 12),
+    year = rep(yrs, each = 12),
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
