@@ -625,3 +625,48 @@ rc_time_period <- function(start_date, end_date){
   #return output
   return(dt.time)
 }
+
+
+
+#' Get minimum value of provided parameter from the pandex data table
+#'
+#' @param this.parameter (character) parameter name for which a minimum value is needed
+#'
+#' @returns
+#' minimum allowed value of the supplied parameter
+
+
+rc_minval <- function(this.parameter) {
+  # add visual binding
+  data_type = code = value_min = NULL
+  
+  # load pandex data
+  pandex <- rotsee::pandex
+  
+  # get minimum value of parameter
+  out <- pandex[code %in% this.parameter, value_min]
+  
+  return(out)
+}
+
+
+
+#' Get maximum value of provided parameter from the pandex data table
+#'
+#' @param this.parameter (character) parameter name for which a maximum value is needed
+#'
+#' @returns
+#' maximum allowed value of the supplied parameter
+
+rc_maxval <- function(this.parameter){
+  # add visual binding
+  data_type = code = value_max = NULL
+  
+  # load pandex data
+  pandex <- rotsee::pandex
+  
+  # get minimum value of parameter
+  out <- pandex[code %in% this.parameter, value_max]
+  
+  return(out)
+}
