@@ -1,11 +1,13 @@
 library(data.table)
 
 test_that("rc_update_weather returns default weather data when input is NULL", {
-  default_weather <- rc_update_weather(NULL)
+  default_weather <- rc_update_weather(NULL,
+                                       start_date = "2022-01-01",
+                                       end_date = end_date <- "2024-01-01")
   expect_s3_class(default_weather, "data.table")
-  expect_equal(nrow(default_weather), 12)
-  expect_equal(ncol(default_weather), 5)
-  expect_equal(names(default_weather), c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH"))
+  expect_equal(nrow(default_weather), 36)
+  expect_equal(ncol(default_weather), 6)
+  expect_equal(names(default_weather), c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH"))
 })
 
 test_that("rc_update_weather validates input data table", {
@@ -18,33 +20,35 @@ test_that("rc_update_weather validates input data table", {
     W_ET_ACT_MONTH = rep(47, 12)
   )
   
+  start_date <- "2022-01-01"
+  end_date <- "2024-01-01"
   # Test with valid data table
-  expect_no_error(rc_update_weather(valid_dt))
+  expect_no_error(rc_update_weather(valid_dt, start_date, end_date))
   
   # Test missing columns
   invalid_dt <- valid_dt[, W_ET_POT_MONTH := NULL]
   expect_no_error(rc_update_weather(invalid_dt)) # only one of W_ET_POT_MONTH or W_ET_ACT_MONTH must be provided
   
   invalid_dt <- valid_dt[, month := NULL]
-  expect_error(rc_update_weather(invalid_dt), "missing elements") # month must be provided
+  expect_error(rc_update_weather(invalid_dt, start_date, end_date), "missing elements") # month must be provided
   
   invalid_dt <- valid_dt[, `:=`(W_TEMP_MEAN_MONTH = NULL, W_PREC_SUM_MONTH = NULL)]
-  expect_error(rc_update_weather(invalid_dt), "missing elements") # W_TEMP_MEAN_MONTH and W_PREC_SUM_MONTH must be provided
+  expect_error(rc_update_weather(invalid_dt, start_date, end_date), "missing elements") # W_TEMP_MEAN_MONTH and W_PREC_SUM_MONTH must be provided
   
   # Test invalid month values
   invalid_dt <- copy(valid_dt)
   invalid_dt[, month := 0]
-  expect_error(rc_update_weather(invalid_dt), "month", fixed = FALSE)
+  expect_error(rc_update_weather(invalid_dt, start_date, end_date), "month", fixed = FALSE)
   
   # Test invalid temperature values
   invalid_dt <- copy(valid_dt)
   invalid_dt[, W_TEMP_MEAN_MONTH := -50]
-  expect_error(rc_update_weather(invalid_dt), "W_TEMP_MEAN_MONTH")
+  expect_error(rc_update_weather(invalid_dt, start_date, end_date), "W_TEMP_MEAN_MONTH")
   
   # Test invalid precipitation values
   invalid_dt <- copy(valid_dt)
   invalid_dt[, W_PREC_SUM_MONTH := -10]
-  expect_error(rc_update_weather(invalid_dt), "W_PREC_SUM_MONTH")
+  expect_error(rc_update_weather(invalid_dt, start_date, end_date), "W_PREC_SUM_MONTH")
   
 })
 
