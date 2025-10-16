@@ -77,6 +77,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   dt[, tsmdmax_cor := fifelse(crop_cover==1,tsmdmax,tsmdmax/1.8)]
 
   # Calculate actual evapotranspiration for months where only potential is provided (general rothc calculation)
+  if(!"W_ET_ACT_MONTH" %in% colnames(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
   dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_POT_MONTH * 0.75]
 
   # Calculate the monthly soil moisture deficit
