@@ -9,7 +9,7 @@
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
-#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.
+#' @param weather (data.table) Table with following column names: year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.
 #'
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
@@ -53,6 +53,7 @@
 #' 
 #' weather: Weather table. If no table is given, average Dutch conditions are used
 #' Includes the columns:
+#' * year, should cover simulation period
 #' * month
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
 #' * W_PREC_SUM_MONTH (precipitation in mm)
@@ -84,10 +85,7 @@ rc_sim <- function(soil_properties,
                   rothc_rotation = rothc_rotation,
                   rothc_amendment = rothc_amendment)
 
-  # Check and update weather data(see rc_helpers)
-  dt.weather <- rc_update_weather(dt = weather)
-  
-  # Check and update parameter tabel rothc_parms
+   # Check and update parameter tabel rothc_parms
   rothc_parms <- rc_update_parms(parms = rothc_parms, crops = rothc_rotation, amendments = rothc_amendment)
  
   # Define decomposition rates
@@ -116,6 +114,9 @@ rc_sim <- function(soil_properties,
   
   # Define initialize
   initialize <- rothc_parms$initialize
+  
+  # Check and update weather data(see rc_helpers)
+  dt.weather <- rc_update_weather(dt = weather, start_date = start_date, end_date = end_date)
   
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = 0, upper = 0.6, any.missing = FALSE, len = 1)

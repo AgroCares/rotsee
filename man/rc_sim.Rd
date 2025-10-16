@@ -30,7 +30,7 @@ rc_sim(
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
-\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
+\item{weather}{(data.table) Table with following column names: year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
 }
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
@@ -77,6 +77,7 @@ May include the following columns:
 
 weather: Weather table. If no table is given, average Dutch conditions are used
 Includes the columns:
+* year, should cover simulation period
 * month
 * W_TEMP_MEAN_MONTH (temperature in °C)
 * W_PREC_SUM_MONTH (precipitation in mm)

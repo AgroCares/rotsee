@@ -1,3 +1,12 @@
+#rotsee UNRELEASED
+
+## added
+* unit tests of `rc_update_weather` and `rc_sim` to evaluate different weather inputs
+
+## changed
+* weather input now optionally takes year as input. If supplied it should cover the entire simulation period
+* soil moisture deficit calculations in `rc_input_rmf` are now based on monthly weather and changes per year
+
 # rotsee v0.1.2 2025-10-13
 ## added
 * unit tests for `rc_calculate_B_C_OF` and `rc_time_period`

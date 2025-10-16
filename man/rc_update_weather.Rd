@@ -4,19 +4,24 @@
 \alias{rc_update_weather}
 \title{Function to check user weather table and, if not supplied, insert default weather}
 \usage{
-rc_update_weather(dt = NULL)
+rc_update_weather(dt = NULL, start_date, end_date)
 }
 \arguments{
 \item{dt}{(data.table) Monthly weather table with the following columns:
-*month (1 - 12)
-*W_TEMP_MEAN_MONTH (°C)
-*W_PREC_SUM_MONTH (mm)
-*W_ET_POT_MONTH (mm)
-*W_ET_ACT_MONTH (mm; optional, can be NA)
+* year
+* month (1 - 12)
+* W_TEMP_MEAN_MONTH (°C)
+* W_PREC_SUM_MONTH (mm)
+* W_ET_POT_MONTH (mm)
+* W_ET_ACT_MONTH (mm; optional, can be NA)
 If not supplied, default monthly weather based on the Netherlands is added}
+
+\item{start_date}{(date) start date of rothc simulation}
+
+\item{end_date}{(date) end date of rothc simulation}
 }
 \value{
-A data table containing monthly data of temperature, precipitation, and evapotranspiration.
+A data table containing monthly data of temperature, precipitation, and evapotranspiration across the simulation period.
 }
 \description{
 Function to check user weather table and, if not supplied, insert default weather
