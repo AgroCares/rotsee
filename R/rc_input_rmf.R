@@ -37,7 +37,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = F)
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
-  checkmate::assert_subset(c("month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH"), colnames(dt.weather))
+  checkmate::assert_subset(c("year", "month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH"), colnames(dt.weather))
   checkmate::assert(any(c("W_ET_POT_MONTH","W_ET_ACT_MONTH") %in% colnames(dt.weather)),
                          msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided.")
   # Establish months of crop cover based on start and end of crop rotation
@@ -107,6 +107,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
 
   # Replace deficit of starting months with next year if there is already soil moisture deficit
   # Check if year starts with a soil moisture deficit
+  setorder(dt,time)
   if(nrow(dt) >= 13 && dt[13, acc_smd] < 0){
    
   dt[1:12, acc_smd :={
@@ -129,15 +130,12 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   # add rate modifying factor for moisture
   dt[,cf_moist := fifelse(acc_smd > 0.444 * tsmdmax_cor,1, pmax(0.2, 0.2 + (1 - 0.2) * (tsmdmax_cor - acc_smd)/ (tsmdmax_cor - 0.444*tsmdmax_cor)))]
  
-  
   # add rate modifying factor for soil cover
   dt[,cf_soilcover := fifelse(crop_cover==1,0.6,1)]
  
   # add combined rate modifying factor
   dt[,cf_combi := cf_temp * cf_moist * cf_soilcover]
-  
-  # order the output on time
-  setorder(dt,time)
+ 
   
   # select only relevant variables for rate modifying factors
   rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, abc = cf_combi)]

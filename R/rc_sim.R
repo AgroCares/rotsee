@@ -85,7 +85,7 @@ rc_sim <- function(soil_properties,
                   rothc_rotation = rothc_rotation,
                   rothc_amendment = rothc_amendment)
 
-   # Check and update parameter tabel rothc_parms
+   # Check and update parameter table rothc_parms
   rothc_parms <- rc_update_parms(parms = rothc_parms, crops = rothc_rotation, amendments = rothc_amendment)
  
   # Define decomposition rates

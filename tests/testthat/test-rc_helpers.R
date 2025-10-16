@@ -27,7 +27,7 @@ test_that("rc_update_weather validates input data table", {
   
   # Test missing columns
   invalid_dt <- valid_dt[, W_ET_POT_MONTH := NULL]
-  expect_no_error(rc_update_weather(invalid_dt)) # only one of W_ET_POT_MONTH or W_ET_ACT_MONTH must be provided
+  expect_no_error(rc_update_weather(invalid_dt, start_date, end_date)) # only one of W_ET_POT_MONTH or W_ET_ACT_MONTH must be provided
   
   invalid_dt <- valid_dt[, month := NULL]
   expect_error(rc_update_weather(invalid_dt, start_date, end_date), "missing elements") # month must be provided

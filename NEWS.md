@@ -1,4 +1,4 @@
-#rotsee UNRELEASED
+# rotsee v0.1.4 16/10/2025
 
 ## added
 * unit tests of `rc_update_weather` and `rc_sim` to evaluate different weather inputs

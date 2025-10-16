@@ -16,11 +16,11 @@ test_that("rc_input_rmf runs correctly", {
   A_CLAY_MI <- 18
   
   # Set weather table
-  weather <- data.table(year = rep(2022:2023, each = 12),
-    month = rep(1:12, 2),
-    W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 2),
-    W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8), 2),
-    W_ET_POT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),2),
+  weather <- data.table(year = rep(2022:2030, each = 12),
+    month = rep(1:12, 9),
+    W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 9),
+    W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8), 9),
+    W_ET_POT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),9),
     W_ET_ACT_MONTH = NA_real_)
   
   # Set time table 
