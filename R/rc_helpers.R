@@ -48,14 +48,18 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
     
     
     # Check inputs
+    checkmate::assert_date(as.Date(start_date))
+    checkmate::assert_date(as.Date(end_date))
+    checkmate::assert_true(as.Date(start_date) <= as.Date(end_date),
+                              .var.name = "start_date must be on or before end_date")
     checkmate::assert_data_table(dt)
     
     # Change month/year column names if capitalized
-    if(!is.null("MONTH") %in% colnames(dt) && is.null("month") %in% colnames(dt)){
+    if("MONTH" %in% colnames(dt) && !"month" %in% colnames(dt)){
       colnames(dt)[colnames(dt) == "MONTH"] <- "month"
     }
     
-    if(!is.null("YEAR") %in% colnames(dt) && is.null("year") %in% colnames(dt)){
+    if("YEAR" %in% colnames(dt) && !"year" %in% colnames(dt)){
       colnames(dt)[colnames(dt) == "YEAR"] <- "year"
     }
     
