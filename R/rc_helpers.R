@@ -37,18 +37,20 @@ cf_ind_importance <- function(x) {
 #'
 rc_update_weather <- function(dt = NULL, start_date, end_date){
   # Add visible bindings
-  W_ET_POT_MONTH = W_ET_ACT_MONTH = NULL
+  W_ET_POT_MONTH = W_ET_ACT_MONTH = time = . = NULL
   
+  # Check inputs start_date end_date
+  checkmate::assert_date(as.Date(start_date))
+  checkmate::assert_date(as.Date(end_date))
+  checkmate::assert_true(as.Date(start_date) <= as.Date(end_date),
+                         .var.name = "start_date must be on or before end_date")
   
   if(!is.null(dt)){
 
-    # Check inputs
-    checkmate::assert_date(as.Date(start_date))
-    checkmate::assert_date(as.Date(end_date))
-    checkmate::assert_true(as.Date(start_date) <= as.Date(end_date),
-                              .var.name = "start_date must be on or before end_date")
     
+    # check weather inputs
     checkmate::assert_data_table(dt)
+    
     # Copy weather data table
     dt <- copy(dt)
     
@@ -90,13 +92,34 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
     
     # check if year is supplied
     if("year" %in% colnames(dt)){
-      checkmate::assert_numeric(dt$year, lower = 0, any.missing = FALSE)
-      checkmate::assert_true(min(dt$year) <= year(start_date) && max(dt$year) >= year(end_date))
-      setorder(dt, year, month)
+      checkmate::assert_integerish(dt$year, lower = 1, any.missing = FALSE)
+      
+      yrs <- year(start_date):year(end_date)
+      checkmate::assert_true(min(dt$year) <= min(yrs) && max(dt$year) >= max(yrs))
+      
+      # Ensure missing ET column exists (as NA) to keep schema stable
+      if (!"W_ET_POT_MONTH" %in% names(dt)) dt[, W_ET_POT_MONTH := NA_real_]
+      if (!"W_ET_ACT_MONTH" %in% names(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
+      
+      # Enforce complete coverage of simulation window
+      dt.time <- rc_time_period(start_date, end_date)
+      off_time <- dt.time[!dt, on = .(year, month)]
+      checkmate::assert_true(nrow(off_time) == 0,
+                             .var.name = "weather must contain all months in the simulation window")
+      
+      # set weather table to cover simulation period and order
+      dt <- dt[dt.time, on = .(year, month)]
+      
+      setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
+      
+      # remove time column
+      dt[, time := NULL]
     }else{
       # Require full monthly coverage when no 'year' is present
-      checkmate::assert(setequal(unique(dt$month), 1:12),
-                                    msg = "When 'year' is absent, 'month' must contain all 1:12")
+      checkmate::assert(setequal(unique(dt$month), 1:12) && nrow(dt) == 12,
+                                    msg = "When 'year' is absent, provide exactly one row per month (12 rows)")
+      
+      
       # Expand monthly rows across simulation years
         yrs <- year(start_date):year(end_date)
         
@@ -109,6 +132,7 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
         # Reorder columns
           setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
          }
+    
     
     
 }else{
