@@ -45,8 +45,20 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
     # Copy weather data table if supplied
     dt <- copy(dt)
     
+    
+    
     # Check inputs
     checkmate::assert_data_table(dt)
+    
+    # Change month/year column names if capitalized
+    if(!is.null("MONTH") %in% colnames(dt) && is.null("month") %in% colnames(dt)){
+      colnames(dt)[colnames(dt) == "MONTH"] <- "month"
+    }
+    
+    if(!is.null("YEAR") %in% colnames(dt) && is.null("year") %in% colnames(dt)){
+      colnames(dt)[colnames(dt) == "YEAR"] <- "year"
+    }
+    
     req <- c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH")
     checkmate::assert_names(colnames(dt), must.include = req)
     checkmate::assert(
