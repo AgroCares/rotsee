@@ -20,19 +20,19 @@ cf_ind_importance <- function(x) {
 #' Function to check user weather table and, if not supplied, insert default weather
 #'
 #' @param dt (data.table) Monthly weather table with the following columns:
-#' * year
+#' * year (optional; if absent, rows are replicated across all simulation years)
 #' * month (1 - 12)
 #' * W_TEMP_MEAN_MONTH (°C)
 #' * W_PREC_SUM_MONTH (mm)
 #' * W_ET_POT_MONTH (mm)
 #' * W_ET_ACT_MONTH (mm; optional, can be NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
-#' @param start_date (date) start date of rothc simulation
-#' @param end_date (date) end date of rothc simulation
+#' @param start_date (Date or character "YYYY-MM-DD") start date of rothc simulation
+#' @param end_date (Date or character "YYYY-MM-DD") end date of rothc simulation
 #' 
 #' @returns
-#' A data table containing monthly data of temperature, precipitation, and evapotranspiration across the simulation period.
-#' 
+#' A data table with columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
+#' covering the simulation period. When year is not supplied in dt, rows are expanded for all years.
 #' @export
 #'
 rc_update_weather <- function(dt = NULL, start_date, end_date){
@@ -41,25 +41,23 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
   
   
   if(!is.null(dt)){
-    
-    # Copy weather data table if supplied
-    dt <- copy(dt)
-    
-    
-    
+
     # Check inputs
     checkmate::assert_date(as.Date(start_date))
     checkmate::assert_date(as.Date(end_date))
     checkmate::assert_true(as.Date(start_date) <= as.Date(end_date),
                               .var.name = "start_date must be on or before end_date")
+    
     checkmate::assert_data_table(dt)
+    # Copy weather data table
+    dt <- copy(dt)
     
     # Change month/year column names if capitalized
-    if("MONTH" %in% colnames(dt) && !"month" %in% colnames(dt)){
+    if("MONTH" %in% colnames(dt) && !("month" %in% colnames(dt))){
       colnames(dt)[colnames(dt) == "MONTH"] <- "month"
     }
     
-    if("YEAR" %in% colnames(dt) && !"year" %in% colnames(dt)){
+    if("YEAR" %in% colnames(dt) && !("year" %in% colnames(dt))){
       colnames(dt)[colnames(dt) == "YEAR"] <- "year"
     }
     
@@ -92,8 +90,9 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
     
     # check if year is supplied
     if("year" %in% colnames(dt)){
-      checkmate::assert_numeric(dt$year, any.missing = FALSE)
+      checkmate::assert_numeric(dt$year, lower = 0, any.missing = FALSE)
       checkmate::assert_true(min(dt$year) <= year(start_date) && max(dt$year) >= year(end_date))
+      setorder(dt, year, month)
     }else{
       # Require full monthly coverage when no 'year' is present
       checkmate::assert(setequal(unique(dt$month), 1:12),
@@ -117,7 +116,7 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
   yrs <- year(start_date):year(end_date)
   dt <- data.table(
     year = rep(yrs, each = 12),
-    month = 1:12,
+    month = rep(1:12, times =length(yrs)),
     W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
     W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),

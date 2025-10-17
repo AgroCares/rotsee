@@ -8,7 +8,7 @@ rc_update_weather(dt = NULL, start_date, end_date)
 }
 \arguments{
 \item{dt}{(data.table) Monthly weather table with the following columns:
-* year
+* year (optional; if absent, rows are replicated across all simulation years)
 * month (1 - 12)
 * W_TEMP_MEAN_MONTH (°C)
 * W_PREC_SUM_MONTH (mm)
@@ -16,12 +16,13 @@ rc_update_weather(dt = NULL, start_date, end_date)
 * W_ET_ACT_MONTH (mm; optional, can be NA)
 If not supplied, default monthly weather based on the Netherlands is added}
 
-\item{start_date}{(date) start date of rothc simulation}
+\item{start_date}{(Date or character "YYYY-MM-DD") start date of rothc simulation}
 
-\item{end_date}{(date) end date of rothc simulation}
+\item{end_date}{(Date or character "YYYY-MM-DD") end date of rothc simulation}
 }
 \value{
-A data table containing monthly data of temperature, precipitation, and evapotranspiration across the simulation period.
+A data table with columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
+covering the simulation period. When year is not supplied in dt, rows are expanded for all years.
 }
 \description{
 Function to check user weather table and, if not supplied, insert default weather
