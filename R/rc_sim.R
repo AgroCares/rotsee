@@ -97,10 +97,7 @@ rc_sim <- function(soil_properties,
   k4 <- rothc_parms$dec_rates[["k4"]]
   
   # Define C fractions  
-  fr_IOM <- rothc_parms$c_fractions[["fr_IOM"]]
-  fr_DPM <- rothc_parms$c_fractions[["fr_DPM"]]
-  fr_RPM <- rothc_parms$c_fractions[["fr_RPM"]]
-  fr_BIO <- rothc_parms$c_fractions[["fr_BIO"]]
+  c_fractions <- as.list(rothc_parms$c_fractions)
   
   # Define unit of output
   unit <- rothc_parms$unit
@@ -179,7 +176,7 @@ rc_sim <- function(soil_properties,
   }else{
     dt.soc[,toc := A_C_OF / 1000 * A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100]
   }
-
+ 
   # set the default initialisation to the one used in BodemCoolstof
   if(initialize == TRUE){
     
@@ -226,12 +223,11 @@ rc_sim <- function(soil_properties,
     dt.soc[,CBIO0 := cbio.ini * 1000]
     dt.soc[,CHUM0 := chum.ini * 1000]
   } else {
-    
     # Calculate carbon pools based on provided or default distribution (kg C / ha)
-    dt.soc[,CIOM0 := fr_IOM * ((toc*0.001)^1.139) * 1000]
-    dt.soc[,CDPM0 := fr_DPM * (toc-CIOM0)]
-    dt.soc[,CRPM0 := fr_RPM * (toc-CIOM0)]
-    dt.soc[,CBIO0 := fr_BIO * (toc-CIOM0)]
+    dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
+    dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
+    dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
+    dt.soc[,CBIO0 := c_fractions$fr_BIO * (toc-CIOM0)]
     dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
     
   }
