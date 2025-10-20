@@ -553,3 +553,30 @@ test_that("rc_time_period handles edge cases", {
   expect_equal(end_of_month$time, (1:2 - 1) / 12, tolerance = 0.001)
 })
 
+
+test_that("debug_plot runs without error", {
+  # Use a small subset of your debug output
+  dt <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20),
+    CBIO = rnorm(10, 300, 30),
+    CHUM = rnorm(10, 400, 40),
+    soc = rnorm(10, 1000, 100)
+  )
+  
+  expect_no_error(debug_plot(dt))
+  
+  # Check that all three plot files were created
+  expect_true(file.exists(file.path(getwd(), "carbon_pools_log.png")))
+  expect_true(file.exists(file.path(getwd(), "carbon_pools_linear.png")))
+  expect_true(file.exists(file.path(getwd(), "carbon_pools_change.png")))
+  
+  # Check that the files are not empty
+  expect_true(file.info(file.path(getwd(), "carbon_pools_log.png"))$size > 0)
+  expect_true(file.info(file.path(getwd(), "carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path(getwd(), "carbon_pools_change.png"))$size > 0)
+  
+ 
+
+})
