@@ -137,8 +137,11 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
     checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = TRUE, null.ok = FALSE)
     checkmate::assert_subset(names(parms$c_fractions),choices = c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"),empty.ok = TRUE)
     
+    # remove NA c_fractions
+    parms$c_fractions <- parms$c_fractions[!is.na(parms$c_fractions)]
+    
     # Use supplied distribution
-    rcp <-  c(names(parms$c_fractions),colnames(parms$c_fractions))
+    rcp <-  c(names(parms$c_fractions))
     if('fr_IOM' %in% rcp){fr_IOM <- parms$c_fractions[['fr_IOM']]}
     if('fr_DPM' %in% rcp){fr_DPM <- parms$c_fractions[['fr_DPM']]}
     if('fr_RPM' %in% rcp){fr_RPM <- parms$c_fractions[['fr_RPM']]}

@@ -108,6 +108,11 @@ test_that("rc_update_parms accepts and validates c_fractions", {
   result <- rc_update_parms(parms, crops = crops)
   expect_equal(result$c_fractions, c(fr_IOM = 0.05, fr_DPM = 0.02, fr_RPM = 0.125, fr_BIO = 0.015))
   
+  # Test NA values are ignored (defaults kept)
+  parms <- list(c_fractions = c(fr_IOM = NA_real_, fr_RPM = 0.2))
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$c_fractions, c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.2, fr_BIO = 0.015))
+  
   # Test invalid c_fractions
   expect_error(rc_update_parms(list(c_fractions = c(fr_IOM = -0.1)), crops = crops), "not >= 0")
   expect_error(rc_update_parms(list(c_fractions = c(fr_IOM = 1.1)), crops = crops), "not <= 1")
