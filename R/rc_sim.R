@@ -10,6 +10,7 @@
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
 #' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.
+#' @param debug (boolean) If TRUE, run rc_sim in debug mode. Results are provided in c pools per month, to better understand results.
 #'
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
@@ -69,7 +70,8 @@ rc_sim <- function(soil_properties,
                    rothc_rotation = NULL,
                    rothc_amendment = NULL,
                    rothc_parms = NULL,
-                   weather = NULL){
+                   weather = NULL,
+                   debug = FALSE){
   
   # add visual bindings
   a_depth = toc = A_CLAY_MI = A_C_OF = B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
@@ -255,6 +257,7 @@ rc_sim <- function(soil_properties,
   set.seed(123)
   
   # run the model
+  if(debug == FALSE){
   out <- deSolve::ode(y = y,
                       times = rothc.times,
                       rc_ode,
@@ -269,7 +272,28 @@ rc_sim <- function(soil_properties,
   
   # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
-  
+  }else{
+    out <- deSolve::ode(y = y,
+                        times = rothc.times,
+                        rc_ode,
+                        parms = rothc.parms,
+                        events=list(data=rothc.event),
+                        method = method,
+                        rtol = 0.1,
+                        atol = 1)
+    # set to data.table
+    out <- as.data.table(out)
+    
+    # estimate total SOC (kg C/ha)
+    out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
+    
+    # save debug output
+    out_debug <- copy(out)
+    out_debug[, date := as.Date(time, origin = "1970-01-01")]
+    write.csv(out_debug, "rothc_flows_debug.csv", row.names = FALSE)
+    message("Debug mode: C flows saved to rothc_c_flows_debug.csv")
+    
+  }
  
  
   # select type output
