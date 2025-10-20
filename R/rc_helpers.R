@@ -83,11 +83,11 @@ rc_update_weather <- function(dt = NULL){
 #' Function to check user given RothC simulation parameters, or provide defaults if none are given
 #'
 #' @param parms (list) List containing the columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
-#' @param crops (data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD). Required if start_date and end_date are not supplied in parms
-#' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD). Required if start_date and end_date are not supplied in parms.
+#' @param crops (data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD). If start_date and end_date are not supplied in parms, at least one of crops and amendments required. 
+#' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD). If start_date and end_date are not supplied in parms, at least one of crops and amendments required. 
 #' 
 #' @returns
-#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
+#' A list with elements dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
 #' 
 #' 
 #' @export

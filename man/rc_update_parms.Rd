@@ -9,12 +9,12 @@ rc_update_parms(parms = NULL, crops = NULL, amendments = NULL)
 \arguments{
 \item{parms}{(list) List containing the columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date}
 
-\item{crops}{(data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD). Required if start_date and end_date are not supplied in parms}
+\item{crops}{(data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD). If start_date and end_date are not supplied in parms, at least one of crops and amendments required.}
 
-\item{amendments}{(data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD). Required if start_date and end_date are not supplied in parms.}
+\item{amendments}{(data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD). If start_date and end_date are not supplied in parms, at least one of crops and amendments required.}
 }
 \value{
-A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
+A list with elements dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
 }
 \description{
 Function to check user given RothC simulation parameters, or provide defaults if none are given
