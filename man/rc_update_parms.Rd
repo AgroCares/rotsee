@@ -2,20 +2,20 @@
 % Please edit documentation in R/rc_helpers.R
 \name{rc_update_parms}
 \alias{rc_update_parms}
-\title{Function to check user given RothC simulation parameters, or provide default if none are given}
+\title{Function to check user given RothC simulation parameters, or provide defaults if none are given}
 \usage{
 rc_update_parms(parms = NULL, crops = NULL, amendments = NULL)
 }
 \arguments{
 \item{parms}{(list) List containing the columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date}
 
-\item{crops}{(data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD)}
+\item{crops}{(data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD). Required if start_date and end_date are not supplied in parms}
 
-\item{amendments}{(data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD)}
+\item{amendments}{(data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD). Required if start_date and end_date are not supplied in parms.}
 }
 \value{
 A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
 }
 \description{
-Function to check user given RothC simulation parameters, or provide default if none are given
+Function to check user given RothC simulation parameters, or provide defaults if none are given
 }
