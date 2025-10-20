@@ -1,3 +1,9 @@
+# rotsee v0.1.7 2025-10-20
+
+## added
+* option to run `rc_sim` in debug mode (give input debug = TRUE), to receive output table and visualization of C flows
+* added function `debug_plot` to visualize C flows
+
 # rotsee v0.1.2 2025-10-13
 ## added
 * unit tests for `rc_calculate_B_C_OF` and `rc_time_period`

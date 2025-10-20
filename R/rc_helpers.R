@@ -676,9 +676,11 @@ debug_plot <- function(dt){
   print(out_cont)
   print(out_change_cont)
   
-  ggsave(file.path(getwd(), "carbon_pools_log.png"), plot = out_log, width = 10, height = 6)
-  ggsave(file.path(getwd(), "carbon_pools_linear.png"), plot = out_cont, width = 10, height = 6)
-  ggsave(file.path(getwd(), "carbon_pools_change.png"), plot = out_change_cont, width = 10, height = 6)
+  # Save plots to files
+  if (!dir.exists(save_dir)) dir.create(save_dir)
+  ggsave(file.path(save_dir, "carbon_pools_log.png"), plot = out_log, width = 10, height = 6)
+  ggsave(file.path(save_dir, "carbon_pools_linear.png"), plot = out_cont, width = 10, height = 6)
+  ggsave(file.path(save_dir, "carbon_pools_change.png"), plot = out_change_cont, width = 10, height = 6)
   
 }
 

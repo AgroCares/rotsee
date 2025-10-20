@@ -294,7 +294,7 @@ rc_sim <- function(soil_properties,
     message("Debug mode: C flows saved to rothc_c_flows_debug.csv")
     
     # create visualization of C flows
-    debug_plot(out_debug)
+    debug_plot(out_debug, save_dir = getwd())
   }
  
  
