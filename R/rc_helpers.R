@@ -222,7 +222,6 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
       'omb'
       ))
     
-    
     unit <- parms$unit
     
   }
@@ -285,10 +284,7 @@ rc_check_inputs <- function(soil_properties,
       !checkmate::test_number(soil_properties$B_C_ST03, lower = 0.1, upper = 3000)) {
     stop('Both A_C_OF and B_C_ST03 are missing or invalid in soil_properties')
     }
-  
-  if((is.null(soil_properties$A_C_OF) || is.na(soil_properties$A_C_OF)) &&
-     (is.null(soil_properties$B_C_ST03) || is.na(soil_properties$B_C_ST03))){
-       stop('Both A_C_OF and B_C_ST03 are missing in soil_properties')}
+
   checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = 0.1, upper = 75, len = 1)
   checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = 0.5, upper = 3, len = 1)
   
