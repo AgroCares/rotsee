@@ -134,7 +134,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   # if c_fractions supplied, check input and overwrite defaults
   if(!is.null(parms$c_fractions)){
     # check inputs: initial C distribution over pools
-    checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = FALSE, len = 4,null.ok = FALSE)
+    checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = TRUE, null.ok = FALSE)
     checkmate::assert_subset(names(parms$c_fractions),choices = c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"),empty.ok = TRUE)
     
     # Use supplied distribution
