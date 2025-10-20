@@ -144,6 +144,11 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
     if('fr_DPM' %in% rcp){fr_DPM <- parms$c_fractions[['fr_DPM']]}
     if('fr_RPM' %in% rcp){fr_RPM <- parms$c_fractions[['fr_RPM']]}
     if('fr_BIO' %in% rcp){fr_BIO <- parms$c_fractions[['fr_BIO']]}
+    
+    # check supplied fractions do not exceed 1
+    if ((fr_IOM + fr_DPM + fr_RPM + fr_BIO) > 1L) {
+      stop("Sum of c_fractions (fr_IOM + fr_DPM + fr_RPM + fr_BIO) exceeds 1; please reduce one or more fractions.")
+      }
   }
   
  
@@ -192,11 +197,15 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if(!is.null(parms$type)){
     # check type
     checkmate::assert_character(parms$type,any.missing = FALSE, len = 1)
-    checkmate::assert_subset(parms$type, choices = c('spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none'))
+    checkmate::assert_choice(parms$type, choices = c(
+      'spinup_analytical_bodemcoolstof',
+      'spinup_analytical_heuvelink',
+      'spinup_simulation',
+      'none'))
    
     # define type
     type <- parms$type
-   
+
   }
   
   # Add checks on unit
@@ -204,8 +213,15 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   
   if(!is.null(parms$unit)){
       # check output format
-    checkmate::assert_subset(parms$unit,c('A_SOM_LOI','psoc','cstock','psomperfraction','omb'),empty.ok = FALSE)
     checkmate::assert_character(parms$unit,len=1)
+    checkmate::assert_choice(parms$unit, choices = c(
+      'A_SOM_LOI',
+      'psoc',
+      'cstock',
+      'psomperfraction',
+      'omb'
+      ))
+    
     
     unit <- parms$unit
     
@@ -265,6 +281,11 @@ rc_check_inputs <- function(soil_properties,
   checkmate::assert_list(soil_properties, min.len = 3)
   if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = 0.1, upper = 600, any.missing = FALSE, len = 1)
   if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = 0.1, upper = 3000, any.missing = FALSE, len = 1)
+  if (!checkmate::test_number(soil_properties$A_C_OF, lower = 0.1, upper = 600) &&
+      !checkmate::test_number(soil_properties$B_C_ST03, lower = 0.1, upper = 3000)) {
+    stop('Both A_C_OF and B_C_ST03 are missing or invalid in soil_properties')
+    }
+  
   if((is.null(soil_properties$A_C_OF) || is.na(soil_properties$A_C_OF)) &&
      (is.null(soil_properties$B_C_ST03) || is.na(soil_properties$B_C_ST03))){
        stop('Both A_C_OF and B_C_ST03 are missing in soil_properties')}
