@@ -625,3 +625,60 @@ rc_time_period <- function(start_date, end_date){
   #return output
   return(dt.time)
 }
+
+
+#' Function to plot information on C pools when rc_sim is run in debug mode
+#'
+#' @param dt (data.table) data table with monthyl information on the state of the pools CDPM, CRPM, CBIO, and CHUM
+#'
+#' @returns
+#' data table with monthly totals and changes in different C pools, plots of their trends
+#' @export
+#'
+debug_plot <- function(dt){
+  
+  # copy data table
+  dt <- copy(dt)
+  
+  # set data table to long format
+  dt_long <- melt(dt, id.vars = "time", variable.name = "pool")
+  
+  # plot variables on log scale
+  out_log <- ggplot(data = dt_long)+ 
+    geom_line(aes(x = time, y = value, colour = pool))+
+    scale_y_log10() +
+    labs(title = "Carbon Pools (log scale)", y = "Value (log)", x = "Time [yr]")
+  
+  # plot variables on a continuous scale
+  out_cont <- ggplot(data = dt_long)+ 
+    geom_line(aes(x = time, y = value, colour = pool))+
+    scale_y_continuous()+
+    labs(title = "Carbon Pools (linear scale)", y = "Value [kg C/ha]", x = "Time [yr]")
+  
+  ## calculate fraction change
+
+  dt_change <- copy(dt)
+  dt_change[,CDPM := CDPM - shift(CDPM, type = "lag") ]
+  dt_change[, CRPM := CRPM - shift(CRPM, type = "lag")]
+  dt_change[, CBIO := CBIO - shift(CBIO, type = "lag")]
+  dt_change[, CHUM := CHUM - shift(CHUM, type = "lag")]
+  dt_change[, soc := soc - shift(soc, type = "lag")]
+  dt_change_long <- melt(dt_change, id.vars = "time", variable.name = "pool", na.rm = TRUE)
+  
+  # plot variables on a continuous scale
+  out_change_cont <- ggplot(data = dt_change_long)+ 
+    geom_line(aes(x = time, y = value, colour = pool))+
+    scale_y_continuous()+
+    labs(title = "Change in Carbon Pools", y = "Delta C [kg C/ha]", x = "Time [yr]")
+  
+  # Display plots in RStudio/device
+  print(out_log)
+  print(out_cont)
+  print(out_change_cont)
+  
+  ggsave(file.path(getwd(), "carbon_pools_log.png"), plot = out_log, width = 10, height = 6)
+  ggsave(file.path(getwd(), "carbon_pools_linear.png"), plot = out_cont, width = 10, height = 6)
+  ggsave(file.path(getwd(), "carbon_pools_change.png"), plot = out_change_cont, width = 10, height = 6)
+  
+}
+

@@ -289,10 +289,12 @@ rc_sim <- function(soil_properties,
     
     # save debug output
     out_debug <- copy(out)
-    out_debug[, date := as.Date(time, origin = "1970-01-01")]
+    
     write.csv(out_debug, "rothc_flows_debug.csv", row.names = FALSE)
     message("Debug mode: C flows saved to rothc_c_flows_debug.csv")
     
+    # create visualization of C flows
+    debug_plot(out_debug)
   }
  
  
@@ -363,7 +365,7 @@ rc_sim <- function(soil_properties,
     # select output variables
     out <- rothc.soc[,.(time = time, A_SOM_LOI = soc,CDPM,CRPM,CBIO,CHUM,CIOM)]
     
-  } else if (unit=='Cstock'){
+  } else if (unit=='cstock'){
     # Output in kg C/ha
     out <- out[,list(time = time, soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
       }
