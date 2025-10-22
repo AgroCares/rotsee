@@ -80,14 +80,14 @@ rc_update_weather <- function(dt = NULL){
 
 
 
-#' Function to check user given RothC simulation parameters, or provide default if none are given
+#' Function to check user given RothC simulation parameters, or provide defaults if none are given
 #'
 #' @param parms (list) List containing the columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
-#' @param crops (data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD)
-#' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD)
+#' @param crops (data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD). If start_date and end_date are not supplied in parms, at least one of crops and amendments required. 
+#' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD). If start_date and end_date are not supplied in parms, at least one of crops and amendments required. 
 #' 
 #' @returns
-#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
+#' A list with elements dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
 #' 
 #' 
 #' @export
@@ -134,11 +134,14 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   # if c_fractions supplied, check input and overwrite defaults
   if(!is.null(parms$c_fractions)){
     # check inputs: initial C distribution over pools
-    checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = FALSE, len = 4,null.ok = FALSE)
+    checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = TRUE, null.ok = FALSE)
     checkmate::assert_subset(names(parms$c_fractions),choices = c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"),empty.ok = TRUE)
     
+    # remove NA c_fractions
+    parms$c_fractions <- parms$c_fractions[!is.na(parms$c_fractions)]
+    
     # Use supplied distribution
-    rcp <-  c(names(parms$c_fractions),colnames(parms$c_fractions))
+    rcp <-  c(names(parms$c_fractions))
     if('fr_IOM' %in% rcp){fr_IOM <- parms$c_fractions[['fr_IOM']]}
     if('fr_DPM' %in% rcp){fr_DPM <- parms$c_fractions[['fr_DPM']]}
     if('fr_RPM' %in% rcp){fr_RPM <- parms$c_fractions[['fr_RPM']]}

@@ -1,3 +1,13 @@
+# rotsee v0.1.6  2025-10-20
+
+## added
+* unit tests for `rc_update_parms`
+
+## changed
+* Description correctly reflects used roxygen version
+* allow input of partial c_fractions distribution in rothc_parms
+
+
 # rotsee v0.1.3 2025-10-15
 
 ## added
