@@ -2,7 +2,7 @@
 #'
 #' This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
 #'
-#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
+#' @param soil_properties (data.table) Data table with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param A_DEPTH (numeric) Depth for which soil sample is taken (m). Default set to 0.3.
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till).
@@ -17,7 +17,7 @@
 #' The soil_properties table is required. 
 #' When no weather inputs are given, these are estimated from long-term average weather conditions in the Netherlands.
 #'
-#' soil_properties: soil properties table
+#' soil_properties: soil properties table.
 #' Includes the columns:
 #' * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
 #' * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
@@ -194,7 +194,7 @@ rc_sim <- function(soil_properties,
   }else{
     dt.soc[,toc := A_C_OF / 1000 * A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100]
   }
-  
+ 
   # set the default initialisation to the one used in BodemCoolstof
   if(initialize == TRUE){
     
@@ -308,9 +308,9 @@ rc_sim <- function(soil_properties,
     # Correct A_SOM_LOI for sampling depth
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI <= 10, A_SOM_LOI := A_SOM_LOI / (1 - 0.19 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, A_SOM_LOI := A_SOM_LOI / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
-    
+   
     # select output variables
-    out <- rothc.soc[,]
+    out <- rothc.soc[,.(time, A_SOM_LOI, soc)]
   } else if (unit == 'psoc') {
     # Output in organic carbon content [g C/kg]
     
@@ -331,7 +331,7 @@ rc_sim <- function(soil_properties,
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, psoc := psoc / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     
     # select output variables
-    out <- rothc.soc[,]
+    out <- rothc.soc[,.(time, A_SOM_LOI, soc)]
     
   } else if (unit == 'psomperfraction'){
     # Output in %SOM per rothc pool
@@ -372,7 +372,7 @@ rc_sim <- function(soil_properties,
 
   # update year
   # out[,year := year + rotation[1,year] - 1]
-  
+
   # return output
   return(out)
 }

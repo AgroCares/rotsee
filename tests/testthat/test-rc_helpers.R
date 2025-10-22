@@ -50,6 +50,169 @@ test_that("rc_update_weather validates input data table", {
 })
 
 
+test_that("rc_update_parms correctly runs when no parms supplied", {
+
+  
+  # Set default crop table
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  result_crop <- rc_update_parms(crops = crops)
+  
+  expect_type(result_crop, "list")
+  expect_equal(result_crop$dec_rates, c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02))
+  expect_equal(result_crop$c_fractions, c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015))
+  expect_true(result_crop$initialize)
+  expect_equal(result_crop$unit, "A_SOM_LOI")
+  expect_equal(result_crop$method, "adams")
+  expect_equal(result_crop$poutput, "year")
+  expect_equal(result_crop$start_date, min(as.Date(crops$B_LU_START)))
+  expect_equal(result_crop$end_date, max(as.Date(crops$B_LU_END)))
+})
+  
+
+
+test_that("rc_update_parms accepts and validates dec_rates", {
+  # Set default crop table
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  parms <- list(dec_rates = c(k1 = 5, k2 = 0.2, k3 = 0.5, k4 = 0.01))
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$dec_rates, c(k1 = 5, k2 = 0.2, k3 = 0.5, k4 = 0.01))
+  
+  # Test partial dec_rates
+  parms <- list(dec_rates = c(k1 = 5, k2 = 0.2))
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$dec_rates, c(k1 = 5, k2 = 0.2, k3 = 0.66, k4 = 0.02))
+  
+  # Test invalid dec_rates
+  expect_error(rc_update_parms(list(dec_rates = c(k1 = -1)), crops = crops), "not >= 0")
+  expect_error(rc_update_parms(list(dec_rates = c(k1 = 31)), crops = crops), "not <= 30")
+  expect_error(rc_update_parms(list(dec_rates = c(k5 = 1)), crops = crops), "has additional elements")
+})
+
+test_that("rc_update_parms accepts and validates c_fractions", {
+  # Set default crop table
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  parms <- list(c_fractions = c(fr_IOM = 0.05, fr_DPM = 0.02, fr_RPM = 0.1, fr_BIO = 0.02))
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$c_fractions, c(fr_IOM = 0.05, fr_DPM = 0.02, fr_RPM = 0.1, fr_BIO = 0.02))
+  
+  # Test partial c_fractions
+  parms <- list(c_fractions = c(fr_IOM = 0.05, fr_DPM = 0.02))
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$c_fractions, c(fr_IOM = 0.05, fr_DPM = 0.02, fr_RPM = 0.125, fr_BIO = 0.015))
+  
+  # Test NA values are ignored (defaults kept)
+  parms <- list(c_fractions = c(fr_IOM = NA_real_, fr_RPM = 0.2))
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$c_fractions, c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.2, fr_BIO = 0.015))
+  
+  # Test invalid c_fractions
+  expect_error(rc_update_parms(list(c_fractions = c(fr_IOM = -0.1)), crops = crops), "not >= 0")
+  expect_error(rc_update_parms(list(c_fractions = c(fr_IOM = 1.1)), crops = crops), "not <= 1")
+  expect_error(rc_update_parms(list(c_fractions = c(fr_X = 0.1)), crops = crops), "has additional elements")
+})
+
+test_that("rc_update_parms accepts and validates initialize", {
+  # Set default crop table
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  parms <- list(initialize = FALSE)
+  result <- rc_update_parms(parms, crops = crops)
+  expect_false(result$initialize)
+  
+  # Test invalid initialize
+  expect_error(rc_update_parms(list(initialize = "TRUE")), "logical")
+})
+
+test_that("rc_update_parms accepts and validates start_date and end_date", {
+  parms <- list(start_date = "2020-01-01", end_date = "2020-12-31")
+  result <- rc_update_parms(parms)
+  expect_equal(result$start_date, "2020-01-01")
+  expect_equal(result$end_date, "2020-12-31")
+  
+  # Test invalid dates
+  expect_error(rc_update_parms(list(start_date = "not-a-date")))
+  expect_error(rc_update_parms(list(end_date = "not-a-date")))
+  expect_error(rc_update_parms(list(start_date = "2020-12-31", end_date = "2020-01-01")), "Start_date is not before end_date")
+})
+
+test_that("rc_update_parms derives start_date and end_date from crops/amendments", {
+  crops <- data.table(B_LU_START = c("2020-01-01", "2021-01-01"), B_LU_END = c("2020-12-31", "2021-12-31"))
+  amendments <- data.table(P_DATE_FERTILIZATION = c("2020-06-01", "2021-06-01"))
+  
+  # Test with only crops
+  result <- rc_update_parms(crops = crops)
+  expect_equal(result$start_date, as.Date("2020-01-01"))
+  expect_equal(result$end_date, as.Date("2021-12-31"))
+  
+  # Test with only amendments
+  result <- rc_update_parms(amendments = amendments)
+  expect_equal(result$start_date, as.Date("2020-06-01"))
+  expect_equal(result$end_date, as.Date("2021-06-01"))
+  
+  # Test with both
+  result <- rc_update_parms(crops = crops, amendments = amendments)
+  expect_equal(result$start_date, as.Date("2020-01-01"))
+  expect_equal(result$end_date, as.Date("2021-12-31"))
+  
+  # Test error if no dates found
+  expect_error(rc_update_parms(), "No dates found in crops/amendments")
+})
+
+test_that("rc_update_parms accepts and validates unit", {
+  # Set default crop table
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  parms <- list(unit = "psoc")
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$unit, "psoc")
+  
+  # Test invalid unit
+  expect_error(rc_update_parms(list(unit = "invalid"), crops = crops), "additional elements")
+})
+
+test_that("rc_update_parms accepts and validates method", {
+  # Set default crop table
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  parms <- list(method = "adams")
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$method, "adams")
+  
+  # Test invalid method
+  expect_error(rc_update_parms(list(method = "invalid"), crops = crops), "element of set")
+})
+
+test_that("rc_update_parms accepts and validates poutput", {
+  # Set default crop table
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  parms <- list(poutput = "year")
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$poutput, "year")
+  
+  # Test invalid poutput
+  expect_error(rc_update_parms(list(poutput = "invalid"), crops = crops), "additional elements")
+})
+
+
+
 test_that("rc_calculate_bd correctly calculates bulk density",{
   dt <- data.table(A_CLAY_MI = 12,
                                 A_SOM_LOI = 3)
