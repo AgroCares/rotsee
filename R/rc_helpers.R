@@ -242,7 +242,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   poutput <- 'year'
   if(!is.null(parms$poutput)){
     # check supplied poutput
-    checkmate::assert_character(parms$poutput, len=1, any.missing = FALSE)
+    checkmate::assert_character(parms$poutput, len=1)
     checkmate::assert_choice(parms$poutput, choices = c('year', 'month'))
     
     poutput <- parms$poutput
