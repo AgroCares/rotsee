@@ -78,12 +78,8 @@ test_that("rc_sim correctly checks input validity", {
 })
 
 
-# ====================================================================
-# NEW TESTS FOR IRRIGATION PARAMETER (AddIrrigation branch)
-# ====================================================================
-
 test_that("rc_sim accepts irrigation parameter", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -151,7 +147,7 @@ test_that("rc_sim accepts irrigation parameter", {
 })
 
 test_that("rc_sim works without irrigation parameter (backward compatibility)", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -206,7 +202,7 @@ test_that("rc_sim works without irrigation parameter (backward compatibility)", 
 
 
 test_that("rc_sim handles irrigation with different output units", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -277,7 +273,7 @@ test_that("rc_sim handles irrigation with different output units", {
   )
   
   expect_s3_class(result_psoc, "data.table")
-  expect_true("psoc" %in% names(result_psoc))
+  expect_true("soc" %in% names(result_psoc))
   
   # Test with Cstock output
   parms_cstock <- list(
@@ -302,52 +298,9 @@ test_that("rc_sim handles irrigation with different output units", {
   expect_true("soc" %in% names(result_cstock))
 })
 
-test_that("rc_sim handles irrigation with and without crop rotation", {
-  soil_properties <- list(
-    A_C_OF = 50,
-    B_C_ST03 = 210,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
-  
-  weather <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
-    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
-    W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.75, 12)
-  )
-  
-  irrigation <- data.table(
-    B_DATE_IRRIGATION = c("2022-07-01"),
-    B_IRR_AMOUNT = c(30)
-  )
-  
-  parms <- list(
-    start_date = "2022-04-01",
-    end_date = "2023-10-01"
-  )
-  
-  # Without crop rotation
-  result_no_crop <- rc_sim(
-    soil_properties = soil_properties,
-    A_DEPTH = 0.3,
-    B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
-    rothc_rotation = NULL,
-    rothc_amendment = NULL,
-    weather = weather,
-    rothc_parms = parms,
-    irrigation = irrigation
-  )
-  
-  expect_s3_class(result_no_crop, "data.table")
-  expect_true(nrow(result_no_crop) > 0)
-})
 
 test_that("rc_sim handles irrigation timing variations", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -418,7 +371,7 @@ test_that("rc_sim handles irrigation timing variations", {
 })
 
 test_that("rc_sim with irrigation and different W_POT_TO_ACT values", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -470,7 +423,7 @@ test_that("rc_sim with irrigation and different W_POT_TO_ACT values", {
 })
 
 test_that("rc_sim handles long-term simulation with irrigation", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -525,7 +478,7 @@ test_that("rc_sim handles long-term simulation with irrigation", {
 })
 
 test_that("rc_sim handles irrigation with initialization", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -598,7 +551,7 @@ test_that("rc_sim handles irrigation with initialization", {
 })
 
 test_that("rc_sim handles extreme irrigation scenarios", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,

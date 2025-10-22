@@ -164,7 +164,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   }
   
   # add checks on initialise
-  initialize <- FALSE
+  initialize <- TRUE
   
   if(!is.null(parms$initialize)){
     # check initialize
