@@ -145,7 +145,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   # calculate interpolation for correction factors
   abc <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$abc, method = "linear",rule=2)
   
-  # calculate correction factor for soil structure
+  # calculate correction factor for soil structure (CO2/(BIO + HUM) ratio)
   R1 <- 1/((1.67*(1.85+1.6*exp(-0.0786*A_CLAY_MI)))+1)
  
   # combine RothC input parameters

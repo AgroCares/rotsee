@@ -42,7 +42,7 @@ rc_initialise(
 Function for initializing the RothC model
 }
 \details{
-#' soil_properties: soil properties table
+soil_properties: soil properties table
 Includes the columns:
 * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
 * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
@@ -77,7 +77,7 @@ Contains the following columns:
 * R1 (numeric) Correction factor for soil structure
 * time (list) list of the entire simulation period
 
-rothc.events: data table with C input events
+rothc.event: data table with C input events
 Contains the following columns:
 * time (numeric) time within the simulation run, where 1 equals the first year
 * var (character) C pool under consideration, options being 'CDPM', 'CRPM', and 'CHUM'.
@@ -99,6 +99,6 @@ Includes the columns:
 
 Choice of initialisation method depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
 
-spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
+spinup_analytical_heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 Otherwise one of the other two is fine.
 }

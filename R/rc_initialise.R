@@ -17,7 +17,7 @@
 #' @importFrom stats weighted.mean
 #' 
 #' @details
-#' #' soil_properties: soil properties table
+#' soil_properties: soil properties table
 #' Includes the columns:
 #' * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
 #' * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
@@ -52,7 +52,7 @@
 #' * R1 (numeric) Correction factor for soil structure
 #' * time (list) list of the entire simulation period
 #' 
-#' rothc.events: data table with C input events
+#' rothc.event: data table with C input events
 #' Contains the following columns:
 #' * time (numeric) time within the simulation run, where 1 equals the first year
 #' * var (character) C pool under consideration, options being 'CDPM', 'CRPM', and 'CHUM'.
@@ -74,7 +74,7 @@
 #' 
 #' Choice of initialisation method depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
 #' 
-#' spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
+#' spinup_analytical_heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 #' Otherwise one of the other two is fine.
 #'
 #' @export
@@ -226,7 +226,7 @@ rc_initialise <- function(crops = NULL,
     # Define ratio CO2 / (BIO+HUM)
     x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * dt.soc$A_CLAY_MI))
     
-    # transfer coefficients (B is BIO, H = HUM)
+    # transfer coefficients upon C degradation (B is BIO, H = HUM)
     B = 0.46/(x + 1)
     H = 0.54/(x + 1)
     
@@ -237,7 +237,7 @@ rc_initialise <- function(crops = NULL,
     A = diag(-ks)
     A[3, ] = A[3, ] + B * ks
     A[4, ] = A[4, ] + H * ks
- 
+
     # Define average rate modifying factor over the crop rotation 
     xi <- mean(abc(1:(12*isimyears)/12))
     
@@ -257,41 +257,41 @@ rc_initialise <- function(crops = NULL,
     # Calculate active SOC pool (ton C / ha)
     CTOT4 <- CTOT - FallIOM
     
-    # vector where crop inputs ends up: rho % DPM, (1-rho) % RPM, 0% BIO, 0% HUM
+    # vector where crop inputs ends up: rho fraction DPM, (1-rho) fraction RPM, 0% BIO, 0% HUM
     rho_vector <- matrix(c(rho, 1 - rho, 0, 0), nrow = 4, ncol = 1)
     
-    # vector where amendment ends up: tau % DPM, nu % RPM, 0% BIO, 2% HUM
+    # vector where amendment ends up: tau fraction DPM, nu fraction RPM, 0% BIO, 2% HUM
     tau_nu_vector <- matrix(c(tau, nu, 0, 1 - tau - nu), nrow = 4, ncol = 1)
     
-    # Combined input vector to know fraction of total C inputs ending up in pools
+    # Combined input vector to know fraction of total C inputs ending up in different pools
     input_vector <- CR_proportion * rho_vector + M_proportion * tau_nu_vector
     
     ## calculate carbon inputs
-    I4 <- matrix(c(1, 1, 1, 1), nrow = 1, ncol = 4) 
-    A4 <- A[1:4, 1:4] # Input matrix without IOM flow
+    I4 <- matrix(c(1, 1, 1, 1), nrow = 1, ncol = 4) # row vector to sum across pools
+    A4 <- A[1:4, 1:4] # C flow matrix without IOM flow
 
-    # Check if input matrix is invertible
-    if (det(A4) == 0) {
+    # Check if C flow matrix is invertible
+    if (abs(det(A4)) < 1e-10) {
       stop("Matrix A4 is singular - check decomposition rates in rothc.parms")
     }
     
-    # Invert A4
+    # Invert C flow matrix to calculate pool sizes at equilibrium
     A4inv <- tryCatch(
       solve(A4),
       error = function(e)stop("Failed to invert matrix A4: ", e$message)
     )
     
-    # Calculate carbon inputs from amendments/crops
+    # Calculate annual carbon input from amendments/crops assuming steady state (total C/residence time)
     I <- as.numeric(CTOT4 / (-(1 / xi) * I4 %*% A4inv %*% input_vector))
-    
+   
     # Check if I is finite and positive
     if (!is.finite(I) || I <= 0) {
       stop("spinup_Heuvelink initialisation produced invalid results. Check input data and parameters.")
       }
     
     # carbon pool calculation
-    Q <- input_vector * I 
-    C <- -(1 / xi) * A4inv %*% Q
+    Q <- input_vector * I # Determine C input for each pool
+    C <- -(1 / xi) * A4inv %*% Q # Establish C content for each pool at equilibrium
   
     # calculate carbon pool at equilibrium state
     Cpools <- c(C, FallIOM)

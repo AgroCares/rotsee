@@ -68,7 +68,7 @@ May include the following columns:
 * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
 * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
-* poutput (character) Resolution of data ouptut. Options: 'year', 'month'
+* poutput (character) Resolution of data output. Options: 'year', 'month'
 * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
 * end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
 
