@@ -716,3 +716,119 @@ test_that("rc_time_period handles edge cases", {
   expect_equal(end_of_month$time, (1:2 - 1) / 12, tolerance = 0.001)
 })
 
+
+
+test_that("rc_update_parms validates c_fractions sum does not exceed 1", {
+  # Set default crop table
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  # Test fractions that sum to exactly 1
+  parms <- list(c_fractions = c(fr_IOM = 0.25, fr_DPM = 0.25, fr_RPM = 0.25, fr_BIO = 0.25))
+  expect_no_error(rc_update_parms(parms, crops = crops))
+  
+  # Test fractions that sum to less than 1
+  parms <- list(c_fractions = c(fr_IOM = 0.2, fr_DPM = 0.2, fr_RPM = 0.2, fr_BIO = 0.2))
+  expect_no_error(rc_update_parms(parms, crops = crops))
+  
+  # Test fractions that sum to more than 1 (should fail)
+  parms <- list(c_fractions = c(fr_IOM = 0.3, fr_DPM = 0.3, fr_RPM = 0.3, fr_BIO = 0.3))
+  expect_error(rc_update_parms(parms, crops = crops), "Sum of c_fractions.*exceeds 1")
+  
+  # Test fractions that barely exceed 1 (should fail)
+  parms <- list(c_fractions = c(fr_IOM = 0.26, fr_DPM = 0.25, fr_RPM = 0.25, fr_BIO = 0.25))
+  expect_error(rc_update_parms(parms, crops = crops), "Sum of c_fractions.*exceeds 1")
+  
+  # Test partial fractions where sum exceeds 1
+  parms <- list(c_fractions = c(fr_IOM = 0.6, fr_DPM = 0.5))
+  expect_error(rc_update_parms(parms, crops = crops), "Sum of c_fractions.*exceeds 1")
+})
+
+test_that("rc_update_parms validates c_fractions length", {
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  # Test with 1 fraction (min allowed)
+  parms <- list(c_fractions = c(fr_IOM = 0.05))
+  expect_no_error(rc_update_parms(parms, crops = crops))
+  
+  # Test with 4 fractions (max allowed)
+  parms <- list(c_fractions = c(fr_IOM = 0.05, fr_DPM = 0.02, fr_RPM = 0.1, fr_BIO = 0.02))
+  expect_no_error(rc_update_parms(parms, crops = crops))
+  
+  # Test with empty vector (should fail)
+  parms <- list(c_fractions = numeric(0))
+  expect_error(rc_update_parms(parms, crops = crops), "Must have length >= 1")
+})
+
+test_that("rc_update_parms validates initialization_method choices", {
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  # Test valid choices
+  valid_methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink', 
+                     'spinup_simulation', 'none')
+  
+  for (method in valid_methods) {
+    parms <- list(initialization_method = method)
+    result <- rc_update_parms(parms, crops = crops)
+    expect_equal(result$initialization_method, method)
+  }
+  
+  # Test invalid choice
+  parms <- list(initialization_method = 'invalid_method')
+  expect_error(rc_update_parms(parms, crops = crops), "element of set")
+  
+  # Test non-character type
+  parms <- list(initialization_method = TRUE)
+  expect_error(rc_update_parms(parms, crops = crops), "Must be of type 'character'")
+  
+  # Test multiple values
+  parms <- list(initialization_method = c('none', 'spinup_simulation'))
+  expect_error(rc_update_parms(parms, crops = crops), "Must have length 1")
+})
+
+test_that("rc_update_parms validates unit parameter choices", {
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  # Test valid unit choices
+  valid_units <- c('A_SOM_LOI', 'psoc', 'cstock', 'psomperfraction')
+  
+  for (unit_val in valid_units) {
+    parms <- list(unit = unit_val)
+    result <- rc_update_parms(parms, crops = crops)
+    expect_equal(result$unit, unit_val)
+  }
+  
+  # Test invalid unit (omb was removed)
+  parms <- list(unit = 'omb')
+  expect_error(rc_update_parms(parms, crops = crops), "element of set")
+  
+  # Test case sensitivity - uppercase Cstock should fail
+  parms <- list(unit = 'Cstock')
+  expect_error(rc_update_parms(parms, crops = crops), "element of set")
+  
+  # Test multiple values
+  parms <- list(unit = c('A_SOM_LOI', 'psoc'))
+  expect_error(rc_update_parms(parms, crops = crops), "Must have length 1")
+})
+
+test_that("rc_update_parms returns default initialization_method", {
+  crops <- data.table(crop = c(1, 2),
+                      B_LU_START = c("2022-01-01", "2023-01-01"),
+                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  
+  # Test default when no parms supplied
+  result <- rc_update_parms(crops = crops)
+  expect_equal(result$initialization_method, 'spinup_analytical_bodemcoolstof')
+  
+  # Test default when parms supplied but no initialization_method
+  parms <- list(unit = 'psoc')
+  result <- rc_update_parms(parms, crops = crops)
+  expect_equal(result$initialization_method, 'spinup_analytical_bodemcoolstof')
+})
