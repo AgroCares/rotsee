@@ -149,7 +149,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
     if('fr_BIO' %in% rcp){fr_BIO <- parms$c_fractions[['fr_BIO']]}
     
     # check supplied fractions do not exceed 1
-    if ((fr_IOM + fr_DPM + fr_RPM + fr_BIO) > 1L) {
+    if ((fr_IOM + fr_DPM + fr_RPM + fr_BIO) > 1 + 1e-10) {
       stop("Sum of c_fractions (fr_IOM + fr_DPM + fr_RPM + fr_BIO) exceeds 1; please reduce one or more fractions.")
       }
   }
