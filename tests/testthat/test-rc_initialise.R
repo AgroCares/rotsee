@@ -36,7 +36,7 @@ amendment <- data.table(
   P_C_OF = c(35, 35),
   P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
 
-soil_properties <- list(
+soil_properties <- data.table(
   A_C_OF = 50,
   B_C_ST03 = 210,
   A_CLAY_MI = 18,

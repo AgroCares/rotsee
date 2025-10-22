@@ -87,8 +87,7 @@ rc_update_weather <- function(dt = NULL){
 #' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD). If start_date and end_date are not supplied in parms, at least one of crops and amendments required. 
 #' 
 #' @returns
-#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialization_method, unit, method, poutput, start_date, end_date
-#' A list with elements dec_rates, c_fractions, initialize, unit, method, poutput, start_date, end_date
+#' A list containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialization_method, unit, method, poutput, start_date, end_date
 #' 
 #' 
 #' @export
@@ -135,7 +134,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   # if c_fractions supplied, check input and overwrite defaults
   if(!is.null(parms$c_fractions)){
     # check inputs: initial C distribution over pools
-    checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = FALSE, 
+    checkmate::assert_numeric(parms$c_fractions, lower = 0, upper = 1, any.missing = TRUE, 
                               min.len = 1, max.len = 4, null.ok = FALSE)
     checkmate::assert_subset(names(parms$c_fractions),choices = c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"),empty.ok = TRUE)
     
