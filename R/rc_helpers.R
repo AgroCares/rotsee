@@ -25,6 +25,7 @@ cf_ind_importance <- function(x) {
 #' *W_PREC_SUM_MONTH (mm)
 #' *W_ET_POT_MONTH (mm)
 #' *W_ET_ACT_MONTH (mm; optional, can be NA)
+#' *W_POT_TO_ACT (fraction; optional, defaults to 0.75 if missing or NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' 
 #' @returns
@@ -73,7 +74,7 @@ rc_update_weather <- function(dt = NULL){
     
     # Define values of ET correction factor
     if("W_POT_TO_ACT" %in% colnames(dt)){
-      dt[, W_POT_TO_ACT := ifelse(is.na(W_POT_TO_ACT), 0.75, W_POT_TO_ACT)]
+      dt[, W_POT_TO_ACT := fifelse(is.na(W_POT_TO_ACT), 0.75, W_POT_TO_ACT)]
       checkmate::assert_numeric(dt$W_POT_TO_ACT, lower = 0, upper = 1)
     }else{
         dt[, W_POT_TO_ACT := 0.75]
@@ -239,7 +240,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   poutput <- 'year'
   if(!is.null(parms$poutput)){
     # check supplied poutput
-    checkmate::assert_subset(parms$poutput, c('year'), empty.ok = FALSE)
+    checkmate::assert_subset(parms$poutput, c('year', 'month'), empty.ok = FALSE)
     checkmate::assert_character(parms$poutput, len=1)
     
     poutput <- parms$poutput

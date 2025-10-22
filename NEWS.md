@@ -7,11 +7,11 @@
 * Description correctly reflects used roxygen version
 * allow input of partial c_fractions distribution in rothc_parms
 
-rotsee v0.1.4 2025-10-15
+# rotsee v0.1.4 2025-10-15
 
 ## added
-* function to input irrigation rates for soil moisture deficit calculations
-* Option to input own recalculation factors for potential to actual evapotranspiration
+* rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
+* Weather input supports `W_POT_TO_ACT` (factor to convert potential to actual ET; defaults to 0.75 when missing).
 
 # rotsee v0.1.3 2025-10-15
 

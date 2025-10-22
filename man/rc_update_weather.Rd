@@ -13,6 +13,7 @@ rc_update_weather(dt = NULL)
 *W_PREC_SUM_MONTH (mm)
 *W_ET_POT_MONTH (mm)
 *W_ET_ACT_MONTH (mm; optional, can be NA)
+*W_POT_TO_ACT (fraction; optional, defaults to 0.75 if missing or NA)
 If not supplied, default monthly weather based on the Netherlands is added}
 }
 \value{
