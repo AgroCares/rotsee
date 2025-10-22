@@ -164,19 +164,22 @@ rc_initialise <- function(crops = NULL,
   ## calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
   if(initialization_method == 'spinup_analytical_heuvelink'){
 
+    # establish simyear based on time data table
+    isimyears <- max(dt.time$year) - min(dt.time$year) + 1
+    
     # averaged total C input (kg C/ha/year) from crops and amendments
     if (is.null(crops) || nrow(crops) == 0) {
       c_input_crop <- 0
     }else{
-    c_input_crop <- crops[,sum(B_C_OF_INPUT)/max(dt.time$time)]
+    c_input_crop <- crops[,sum(B_C_OF_INPUT)/isimyears]
     }
     
     if (is.null(amendment) || nrow(amendment) == 0) {
        c_input_man <- 0
     } else if (!is.null(amendment$B_C_OF_INPUT) && any(!is.na(amendment$B_C_OF_INPUT))) {
-        c_input_man <- amendment[, sum(B_C_OF_INPUT)/max(dt.time$time)]
+        c_input_man <- amendment[, sum(B_C_OF_INPUT)/isimyears]
     } else {
-          c_input_man <- amendment[, sum(P_DOSE * P_C_OF, na.rm = TRUE)/max(dt.time$time)]
+          c_input_man <- amendment[, sum(P_DOSE * P_C_OF, na.rm = TRUE)/isimyears]
     }
   
 
@@ -218,9 +221,8 @@ rc_initialise <- function(crops = NULL,
       DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = (P_DOSE * P_C_OF), na.rm = TRUE)]
     }
     if (!is.finite(DR_amendment) || length(DR_amendment) == 0) DR_amendment <- 0
+
     
-     # establish simyear based on time data table
-    isimyears <- max(dt.time$year) - min(dt.time$year) + 1
     # Define ratio CO2 / (BIO+HUM)
     x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * dt.soc$A_CLAY_MI))
     
