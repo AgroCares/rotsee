@@ -14,7 +14,7 @@ rc_initialise(
   start_date = NULL,
   soil_properties = NULL,
   dt.weather = NULL,
-  type = "spinup_analytical_bodemcoolstof"
+  initialization_method = "spinup_analytical_bodemcoolstof"
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ rc_initialise(
 
 \item{dt.weather}{(data.table) average weather conditions for the location of interested, recommended if type is set to spinup_simulation}
 
-\item{type}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
+\item{initialization_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
 }
 \description{
 Function for initializing the RothC model
@@ -97,7 +97,7 @@ Includes the columns:
 * W_ET_POT_MONTH (potential evapotranspiration in mm)
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 
-Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
+Choice of initialisation method depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
 
 spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 Otherwise one of the other two is fine.

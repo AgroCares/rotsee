@@ -63,10 +63,10 @@ Includes the columns:
 
 rothc_parms: parameters to adapt calculations (optional)
 May include the following columns:
-* type (character) scenario to initialize the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'spinup_analytical_bodemcoolstof'
+* initialization_method (character) scenario to initialize the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'spinup_analytical_bodemcoolstof'
 * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
-* unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
+* unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
 * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
 * poutput (character) Resolution of data ouptut. Options: 'year', 'month'
 * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
