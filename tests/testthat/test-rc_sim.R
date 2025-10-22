@@ -273,7 +273,7 @@ test_that("rc_sim handles irrigation with different output units", {
   )
   
   expect_s3_class(result_psoc, "data.table")
-  expect_true("soc" %in% names(result_psoc))
+  expect_true(all(c("soc", "psoc") %in% names(result_psoc)))
   
   # Test with Cstock output
   parms_cstock <- list(

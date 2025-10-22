@@ -331,7 +331,7 @@ rc_sim <- function(soil_properties,
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, psoc := psoc / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     
     # select output variables
-    out <- rothc.soc[,.(time, A_SOM_LOI, soc)]
+    out <- rothc.soc[,.(time, soc, psoc)]
     
   } else if (unit == 'psomperfraction'){
     # Output in %SOM per rothc pool
@@ -356,7 +356,7 @@ rc_sim <- function(soil_properties,
     # select output variables
     out <- rothc.soc[,.(time = time, A_SOM_LOI = soc,CDPM,CRPM,CBIO,CHUM,CIOM)]
     
-  } else if (unit=='Cstock'){
+  } else if (unit=='cstock'){
     # Output in kg C/ha
     out <- out[,list(time = time, soc,CDPM,CRPM,CBIO,CHUM,CIOM = dt.soc$CIOM0)]
       }
