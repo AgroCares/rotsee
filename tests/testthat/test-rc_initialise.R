@@ -80,7 +80,7 @@ expect_no_error(rc_initialise(crops = crops,
                               dt.time = dt.time,
                               soil_properties = soil_properties,
                               dt.weather = dt.weather,
-                              type = 'spinup_analytical_bodemcoolstof'))
+                              initialization_method = 'spinup_analytical_bodemcoolstof'))
 
 # spinup_analytical_heuvelink
 expect_no_error(rc_initialise(crops = crops,
@@ -92,7 +92,7 @@ expect_no_error(rc_initialise(crops = crops,
                               dt.time = dt.time,
                               soil_properties = soil_properties,
                               dt.weather = dt.weather,
-                              type = 'spinup_analytical_heuvelink'))
+                              initialization_method = 'spinup_analytical_heuvelink'))
 
 # spinup_simulation
 expect_no_error(rc_initialise(crops = crops,
@@ -104,5 +104,5 @@ expect_no_error(rc_initialise(crops = crops,
                               dt.time = dt.time,
                               soil_properties = soil_properties,
                               dt.weather = dt.weather,
-                              type = 'spinup_simulation'))
+                              initialization_method = 'spinup_simulation'))
 })

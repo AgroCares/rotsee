@@ -9,7 +9,7 @@
 #' @param start_date (character, formatted YYYY-MM-DD) start date of the simulation, required if type is set to spinup_simulation
 #' @param soil_properties (list) list of relevant soil properties, required if type is set to spinup_simulation
 #' @param dt.weather (data.table) average weather conditions for the location of interested, recommended if type is set to spinup_simulation
-#' @param type (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
+#' @param initialization_method (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #'
 #'
@@ -72,7 +72,7 @@
 #' * W_ET_POT_MONTH (potential evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 #' 
-#' Choice of initialisation type depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
+#' Choice of initialisation method depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
 #' 
 #' spinup_analytical_Heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 #' Otherwise one of the other two is fine.
@@ -87,7 +87,7 @@ rc_initialise <- function(crops = NULL,
                           start_date = NULL,
                           soil_properties = NULL,
                           dt.weather = NULL,
-                          type ='spinup_analytical_bodemcoolstof'){
+                          initialization_method ='spinup_analytical_bodemcoolstof'){
   
   # add visual bindings
   . = CIOM = CDPM = CRPM = CBIO = B_LU_EOM = M_CROPRESIDUE = B_LU_HC = chum.ini = NULL
@@ -96,13 +96,13 @@ rc_initialise <- function(crops = NULL,
   A_SOM_LOI = B_C_OF_INPUT = P_C_OF = NULL
 
   # Input validation by type
-  if (type == 'spinup_simulation') {
+  if (initialization_method == 'spinup_simulation') {
     if (is.null(start_date)) stop("start_date is required for spinup_simulation")
     if (is.null(crops)) stop("crops is required for spinup_simulation")
     if (is.null(soil_properties)) stop("soil_properties is required for spinup_simulation")
   }
   
-  if (type %in% c('spinup_analytical_heuvelink','spinup_analytical_bodemcoolstof')) {
+  if (initialization_method %in% c('spinup_analytical_heuvelink','spinup_analytical_bodemcoolstof')) {
     if (missing(dt.time) || is.null(dt.time)) stop("dt.time is required for analytical spin-up types")
     if (missing(dt.soc) || is.null(dt.soc)) stop("dt.soc is required for analytical spin-up types")
     if (is.null(dt.soc$A_CLAY_MI)) stop("dt.soc must contain A_CLAY_MI column")
@@ -121,7 +121,7 @@ rc_initialise <- function(crops = NULL,
   # initialise options
   
   ## do a simulation for 150 years to estimate the C fractions assuming system is in equilibrium
-  if(type =='spinup_simulation'){
+  if(initialization_method =='spinup_simulation'){
    
    # Extend crop and amendment files to include entire 150 year simulation
     crop_extend <- if(!is.null(crops)){
@@ -139,7 +139,7 @@ rc_initialise <- function(crops = NULL,
     
     # Set model parameters
     parms <- list(unit = 'psomperfraction',
-                  type = 'none')
+                  initialization_method = 'none')
     
     # Set newly required inputs
   
@@ -162,7 +162,7 @@ rc_initialise <- function(crops = NULL,
   }
   
   ## calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
-  if(type=='spinup_analytical_heuvelink'){
+  if(initialization_method == 'spinup_analytical_heuvelink'){
 
     # averaged total C input (kg C/ha/year) from crops and amendments
     if (is.null(crops) || nrow(crops) == 0) {
@@ -302,7 +302,7 @@ rc_initialise <- function(crops = NULL,
   }
   
   ## calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
-  if(type=='spinup_analytical_bodemcoolstof'){
+  if(initialization_method == 'spinup_analytical_bodemcoolstof'){
 
     # create local copy
     dt.soc <- copy(dt.soc)

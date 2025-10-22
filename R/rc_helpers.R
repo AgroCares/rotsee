@@ -82,12 +82,12 @@ rc_update_weather <- function(dt = NULL){
 
 #' Function to check user given RothC simulation parameters, or provide default if none are given
 #'
-#' @param parms (list) List containing the columns dec_rates, c_fractions, type, unit, method, poutput, start_date, end_date
+#' @param parms (list) List containing the columns dec_rates, c_fractions, initialization_method, unit, method, poutput, start_date, end_date
 #' @param crops (data.table) Data table with crop rotation information. Should at least contain the columns B_LU_START (YYYY-MM-DD) and B_LU_END (YYYY-MM-DD)
 #' @param amendments (data.table) Data table with amendment input information. Should at least contain the column P_DATE_FERTILIZATION (YYYY-MM-DD)
 #' 
 #' @returns
-#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, type, unit, method, poutput, start_date, end_date
+#' A data table containing parameters to run the RothC simulation, with columns dec_rates, c_fractions, initialization_method, unit, method, poutput, start_date, end_date
 #' 
 #' 
 #' @export
@@ -102,7 +102,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   # Checks names parms
   if(!is.null(parms)){
     checkmate::assert_list(parms)
-    checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "type", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
+    checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "initialization_method", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
   }else{
     parms <- list()
   }
@@ -191,20 +191,20 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if(as.Date(start_date) > as.Date(end_date)) stop('Start_date is not before end_date')
   
   
-  # add checks on type
-  type <- 'spinup_analytical_bodemcoolstof'
+  # add checks on initialization_method
+  initialization_method <- 'spinup_analytical_bodemcoolstof'
   
-  if(!is.null(parms$type)){
+  if(!is.null(parms$initialization_method)){
     # check type
-    checkmate::assert_character(parms$type,any.missing = FALSE, len = 1)
-    checkmate::assert_choice(parms$type, choices = c(
+    checkmate::assert_character(parms$initialization_method,any.missing = FALSE, len = 1)
+    checkmate::assert_choice(parms$initialization_method, choices = c(
       'spinup_analytical_bodemcoolstof',
       'spinup_analytical_heuvelink',
       'spinup_simulation',
       'none'))
    
     # define type
-    type <- parms$type
+    initialization_method <- parms$initialization_method
 
   }
   
@@ -246,7 +246,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
     poutput <- parms$poutput
   }
   
-  out = list(type = type,
+  out = list(initialization_method = initialization_method,
              dec_rates = c(k1 = k1, k2 = k2, k3 = k3, k4 = k4),
              c_fractions = c(fr_IOM = fr_IOM, fr_DPM = fr_DPM, fr_RPM = fr_RPM, fr_BIO = fr_BIO),
              unit = unit,
