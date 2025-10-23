@@ -195,8 +195,16 @@ test_that("rc_initialise validates required inputs for analytical methods", {
     B_C_OF_INPUT = c(1500, 1500)
   )
   
+  dt.weather <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_ACT_MONTH = NA_real_
+  )
+  
   dt.rmf <- rc_input_rmf(dt = crops, B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
-                         dt.time = dt.time)
+                         dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
                       R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
@@ -214,7 +222,7 @@ test_that("rc_initialise validates required inputs for analytical methods", {
     rc_initialise(crops = crops, rothc.parms = rothc.parms,
                   rothc.event = rothc.event, dt.time = dt.time,
                   initialization_method = 'spinup_analytical_bodemcoolstof'),
-    "argument \"dt.soc\" is missing"
+    "dt.soc is required for analytical spin-up types"
   )
   
   # Missing A_CLAY_MI column
@@ -246,11 +254,19 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
     value = sample(500:2000, size = 9, replace = TRUE)
   )
   
+  dt.weather <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_ACT_MONTH = NA_real_
+  )
+  
   dt.soc <- data.table(A_CLAY_MI = 18, toc = 210000)
   dt.time <- rc_time_period(start_date = "2022-04-01", end_date = "2024-10-01")
   
   dt.rmf <- rc_input_rmf(B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
-                         dt.time = dt.time)
+                         dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
                       R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
@@ -295,8 +311,16 @@ test_that("rc_initialise returns valid fraction structure", {
     P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01")
   )
   
+  dt.weather <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_ACT_MONTH = NA_real_
+  )
+  
   dt.rmf <- rc_input_rmf(dt = crops, B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
-                         dt.time = dt.time)
+                         dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
                       R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
@@ -314,12 +338,12 @@ test_that("rc_initialise returns valid fraction structure", {
     expect_named(result, c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"))
     
     # Check values are valid fractions
-    expect_true(all(result >= 0), info = paste("Method:", method))
-    expect_true(all(result <= 1), info = paste("Method:", method))
-    expect_true(all(is.finite(result)), info = paste("Method:", method))
+    expect_true(all(result >= 0))
+    expect_true(all(result <= 1))
+    expect_true(all(is.finite(result)))
     
     # Check sum is less than or equal to 1
-    expect_lte(sum(result), 1, info = paste("Method:", method))
+    expect_lte(sum(result), 1)
   }
 })
 
@@ -342,8 +366,16 @@ test_that("rc_initialise handles edge case with zero C inputs", {
     B_C_OF_INPUT = c(0)
   )
   
+  dt.weather <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_ACT_MONTH = NA_real_
+  )
+  
   dt.rmf <- rc_input_rmf(dt = crops, B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
-                         dt.time = dt.time)
+                         dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
                       R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
@@ -379,8 +411,16 @@ test_that("rc_initialise spinup_analytical_heuvelink handles singular matrix", {
     B_C_OF_INPUT = c(1500)
   )
   
+  dt.weather <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_ACT_MONTH = NA_real_
+  )
+  
   dt.rmf <- rc_input_rmf(dt = crops, B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
-                         dt.time = dt.time)
+                         dt.time = dt.time, dt.weather = dt.weather)
   
   # Create rothc.parms with all decomposition rates set to 0 (singular matrix)
   rothc.parms <- list(k1 = 0, k2 = 0, k3 = 0, k4 = 0,
@@ -417,8 +457,16 @@ test_that("rc_initialise bodemcoolstof handles negative biohum", {
     B_C_OF_INPUT = c(1500)
   )
   
+  dt.weather <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_ACT_MONTH = NA_real_
+  )
+  
   dt.rmf <- rc_input_rmf(dt = crops, B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
-                         dt.time = dt.time)
+                         dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
                       R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
@@ -454,8 +502,16 @@ test_that("rc_initialise handles amendments with B_C_OF_INPUT vs P_DOSE*P_C_OF",
     B_C_OF_INPUT = c(1500)
   )
   
+  dt.weather <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_ACT_MONTH = NA_real_
+  )
+  
   dt.rmf <- rc_input_rmf(dt = crops, B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
-                         dt.time = dt.time)
+                         dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
                       R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)

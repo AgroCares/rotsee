@@ -127,8 +127,8 @@ test_that("rc_sim works with different initialization methods", {
                      weather = weather,
                      rothc_parms = parms)
     
-    expect_s3_class(result, "data.table", info = paste("Method:", method))
-    expect_true(nrow(result) > 0, info = paste("Method:", method))
+    expect_s3_class(result, "data.table")
+    expect_true(nrow(result) > 0)
   }
 })
 
@@ -230,7 +230,7 @@ test_that("rc_sim validates unit parameter correctly", {
                      rothc_rotation = rothc_rotation,
                      rothc_parms = parms)
     
-    expect_s3_class(result, "data.table", info = paste("Unit:", unit_val))
+    expect_s3_class(result, "data.table")
   }
   
   # Invalid unit should error
