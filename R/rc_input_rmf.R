@@ -32,7 +32,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
   
   # Input tables
-  checkmate::assert_data_table(dt,null.ok = TRUE)
+  checkmate::assert_data_table(dt,null.ok = FALSE)
   checkmate::assert_true(all(c('B_LU_START', 'B_LU_END') %in% colnames(dt)))
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = F)
