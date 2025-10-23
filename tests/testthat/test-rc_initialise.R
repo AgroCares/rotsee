@@ -254,6 +254,14 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
     value = sample(500:2000, size = 9, replace = TRUE)
   )
   
+  crops <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
   dt.weather <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
@@ -265,7 +273,7 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
   dt.soc <- data.table(A_CLAY_MI = 18, toc = 210000)
   dt.time <- rc_time_period(start_date = "2022-04-01", end_date = "2024-10-01")
   
-  dt.rmf <- rc_input_rmf(B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
+  dt.rmf <- rc_input_rmf(dt = crops, B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
                          dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
