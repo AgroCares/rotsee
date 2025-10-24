@@ -27,20 +27,25 @@ cf_ind_importance <- function(x) {
 #' * W_ET_POT_MONTH (mm)
 #' * W_ET_ACT_MONTH (mm; optional, can be NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
-#' @param dt.time Table with all year and month combinations of the simulation period. Created using \link{rc_time_period}
+#' @param dt.time Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}
 #' 
 #' @returns
-#' A data table with columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
+#' A data table returning in order the columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
 #' covering the simulation period. When year is not supplied in dt, rows are expanded for all years.
 #' @export
 #'
 rc_update_weather <- function(dt = NULL, dt.time){
   # Add visible bindings
   W_ET_POT_MONTH = W_ET_ACT_MONTH = time = . = NULL
- 
+  
+  # Validate dt.time 
+  checkmate::assert_data_table(dt.time, min.rows = 1)
+  checkmate::assert_names(names(dt.time), must.include = c("year", "month"))
+  checkmate::assert_integerish(dt.time$year, lower = 1, any.missing = FALSE)
+  checkmate::assert_integerish(dt.time$month, lower = 1, upper = 12, any.missing = FALSE)
+  
   if(!is.null(dt)){
 
-    
     # check weather inputs
     checkmate::assert_data_table(dt)
     
