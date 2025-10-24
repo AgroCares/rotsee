@@ -58,7 +58,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
       any(c("W_ET_POT_MONTH", "W_ET_ACT_MONTH") %in% names(dt)),
       msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided."
     )
-    checkmate::assert_subset(dt$month, 1:12)
+    checkmate::assert_integerish(dt$month, lower = 1, upper = 12, any.missing = FALSE)
     checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = -30, upper = 50, any.missing = FALSE)
     checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
     
@@ -92,11 +92,15 @@ rc_update_weather <- function(dt = NULL, dt.time){
       checkmate::assert_true(nrow(off_time) == 0,
                              .var.name = "weather must contain all months in the simulation window")
       
+     
+      # check that there are no duplicate year/month combinations
+      checkmate::assert_true(!any(duplicated(dt, by = c("year", "month"))))
+     
       # set weather table to cover simulation period and order
       dt <- dt[dt.time, on = .(year, month)]
       
       # remove time column
-      dt[, time := NULL]
+      if("time" %in% names(dt)) dt[, time := NULL]
       
       setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
       
@@ -113,7 +117,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
         dt <- dt[dt.time, on = .(month)]
         
         # remove time column
-        dt[, time := NULL]
+        if("time" %in% names(dt)) dt[, time := NULL]
         
         # Reorder columns
           setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
@@ -136,7 +140,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
   dt <- dt[dt.time, on = .(month)]
   
   # remove time column
-  dt[, time := NULL]
+  if("time" %in% names(dt)) dt[, time := NULL]
   
   # Reorder columns
   setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
