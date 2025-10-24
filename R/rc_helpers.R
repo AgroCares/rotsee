@@ -59,8 +59,8 @@ rc_update_weather <- function(dt = NULL, dt.time){
       msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided."
     )
     checkmate::assert_integerish(dt$month, lower = 1, upper = 12, any.missing = FALSE)
-    checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = rc_minval('W_TEMP_MEAN_MONTH'), upper = rc_maxval('W_TEMP_MEAN_MONTH'), any.missing = FALSE, len = 12)
-    checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = rc_minval('W_PREC_SUM_MONTH'), upper = rc_maxval('W_PREC_SUM_MONTH'), any.missing = FALSE, len = 12)
+    checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = rc_minval('W_TEMP_MEAN_MONTH'), upper = rc_maxval('W_TEMP_MEAN_MONTH'), any.missing = FALSE)
+    checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = rc_minval('W_PREC_SUM_MONTH'), upper = rc_maxval('W_PREC_SUM_MONTH'), any.missing = FALSE)
     
     # Check if both potential and actual ET are provided
     if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
