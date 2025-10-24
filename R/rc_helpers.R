@@ -645,7 +645,7 @@ rc_gen_parmtable <- function(){
             "W_ET_POT_MONTH",
             "W_ET_ACT_MONTH",
             "A_CLAY_MI",
-            "A_DENSITY_S",
+            "A_DENSITY_SA",
             "B_LU_HC",
             "B_C_OF_INPUT",
             "P_HC",
@@ -656,13 +656,14 @@ rc_gen_parmtable <- function(){
             "A_SOM_LOI",
             "B_LU_YIELD",
             "B_LU_HI",
-            "B_LU_HI_RES")
+            "B_LU_HI_RES",
+            "B_C_ST03")
   
   # call parameter table from pandex
   parameters <- pandex::nmi_parameters[code %in% pars,]
   
   # save as package table
-  usethis::use_data(parameters)
+  usethis::use_data(parameters, overwrite = TRUE)
 }
 
 
@@ -685,7 +686,7 @@ rc_minval <- function(this.parameter) {
   parameters <- rotsee::parameters
   
   # get minimum value of parameter
-  out <- parameters[code %in% this.parameter, value_min]
+  out <- parameters[code == this.parameter, value_min]
   if (length(out) != 1L || is.na(out)) {
     stop(sprintf("No unique minimum bound found in parameters for code '%s'", this.parameter))
     }
@@ -713,7 +714,7 @@ rc_maxval <- function(this.parameter){
   parameters <- rotsee::parameters
   
   # get maximum value of parameter
-  out <- parameters[code %in% this.parameter, value_max]
+  out <- parameters[code == this.parameter, value_max]
   if (length(out) != 1L || is.na(out)) {
     stop(sprintf("No unique maximum bound found in parameters for code '%s'", this.parameter))
   }
