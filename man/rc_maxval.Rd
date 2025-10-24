@@ -2,7 +2,7 @@
 % Please edit documentation in R/rc_helpers.R
 \name{rc_maxval}
 \alias{rc_maxval}
-\title{Get maximum value of provided parameter from the pandex data table}
+\title{Get maximum value of provided parameter from the parameter data table}
 \usage{
 rc_maxval(this.parameter)
 }
@@ -13,5 +13,5 @@ rc_maxval(this.parameter)
 maximum allowed value of the supplied parameter
 }
 \description{
-Get maximum value of provided parameter from the pandex data table
+Get maximum value of provided parameter from the parameter data table
 }

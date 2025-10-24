@@ -2,7 +2,7 @@
 % Please edit documentation in R/rc_helpers.R
 \name{rc_minval}
 \alias{rc_minval}
-\title{Get minimum value of provided parameter from the pandex data table}
+\title{Get minimum value of provided parameter from the parameter data table}
 \usage{
 rc_minval(this.parameter)
 }
@@ -13,5 +13,5 @@ rc_minval(this.parameter)
 minimum allowed value of the supplied parameter
 }
 \description{
-Get minimum value of provided parameter from the pandex data table
+Get minimum value of provided parameter from the parameter data table
 }

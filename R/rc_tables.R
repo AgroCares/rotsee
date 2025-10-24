@@ -59,9 +59,9 @@
 "rc_makkink"
 
 
-#' Pandex parameter table
+#' Parameter table
 #'
-#' This table contains information on attributes of used parameters as listed in the pandex package
+#' This table contains information on attributes of parameters used in rotsee
 #'
 #' @format A data.table with 1077 rows and 13 columns:
 #' \describe{
@@ -82,4 +82,4 @@
 #'  \item{enum}{boolean whether parameter values are drawn from a limited set}
 #'  \item{options}{Allowed values for a parameter of type enum seperated by "||"}
 #' }
-"pandex"
+"parameters"

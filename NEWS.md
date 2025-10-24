@@ -11,6 +11,8 @@
 
 ## added
 * package table `parameters.rda`, with information on all used parameters in the rotsee package
+* file `rothc_params.csv`, which developers can edit to add additional parameters
+* function `rc_update_parmtable`, which developers can use to update `parameters.rda` with updated rothc_params.csv
 
 ## changed
 * Validation of input data based on information in `parameters.rda`
