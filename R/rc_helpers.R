@@ -628,6 +628,24 @@ rc_time_period <- function(start_date, end_date){
 
 
 
+#' function to read in and save table with relevant data on used parameters in the rotsee package
+#'
+#' @returns
+#' package table with relevant information of parameters used in rotsee 
+rc_parstable <- function(){
+  
+  # create table of relevant RothC parameters
+  pars <- c()
+  
+  # call parameter table from pandex
+  parameters <- pandex::nmi_parameters[, names = pars]
+  
+  # save as package table
+  use_data(parameters)
+}
+
+
+
 #' Get minimum value of provided parameter from the pandex data table
 #'
 #' @param this.parameter (character) parameter name for which a minimum value is needed
