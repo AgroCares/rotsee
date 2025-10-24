@@ -316,10 +316,12 @@ test_that("rc_sim runs in debug mode and produces debug output", {
   )
   
   # Remove debug files if they exist
-  if (file.exists("rothc_c_flows_debug.csv")) file.remove("rothc_flows_debug.csv")
-  if (file.exists("carbon_pools_log.png")) file.remove("carbon_pools_log.png")
-  if (file.exists("carbon_pools_linear.png")) file.remove("carbon_pools_linear.png")
-  if (file.exists("carbon_pools_change.png")) file.remove("carbon_pools_change.png")
+  withr::defer({
+    if (file.exists("rothc_flows_debug.csv")) file.remove("rothc_flows_debug.csv")
+    if (file.exists("carbon_pools_log.png")) file.remove("carbon_pools_log.png")
+    if (file.exists("carbon_pools_linear.png")) file.remove("carbon_pools_linear.png")
+    if (file.exists("carbon_pools_change.png")) file.remove("carbon_pools_change.png")
+    })
   
   # Run in debug mode
   expect_no_error(

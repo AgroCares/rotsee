@@ -4,10 +4,12 @@
 \alias{debug_plot}
 \title{Function to plot information on C pools when rc_sim is run in debug mode}
 \usage{
-debug_plot(dt)
+debug_plot(dt, save_dir = getwd())
 }
 \arguments{
 \item{dt}{(data.table) data table with monthyl information on the state of the pools CDPM, CRPM, CBIO, and CHUM}
+
+\item{save_dir}{(character) directory to save PNGs; defaults to current working directory}
 }
 \value{
 data table with monthly totals and changes in different C pools, plots of their trends
