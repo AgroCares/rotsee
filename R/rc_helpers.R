@@ -20,14 +20,14 @@ cf_ind_importance <- function(x) {
 #' Function to check user weather table and, if not supplied, insert default weather
 #'
 #' @param dt (data.table) Monthly weather table with the following columns:
-#' * year (optional; if absent, rows are replicated across all simulation years)
+#' * year (optional; if absent, weather is replicated across the simulation period)
 #' * month (1 - 12)
 #' * W_TEMP_MEAN_MONTH (°C)
 #' * W_PREC_SUM_MONTH (mm)
 #' * W_ET_POT_MONTH (mm)
 #' * W_ET_ACT_MONTH (mm; optional, can be NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
-#' @param dt.time Table with all year and month combinations of the simulation period, create using \link{rc_time_period}
+#' @param dt.time Table with all year and month combinations of the simulation period, required if year is not supplied. create using \link{rc_time_period}
 #' 
 #' @returns
 #' A data table with columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
