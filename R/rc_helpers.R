@@ -646,7 +646,7 @@ rc_minval <- function(this.parameter) {
   # validate input
   checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
   
-  # load parameter data
+  # access parameter data
   parameters <- rotsee::parameters
   
   # get minimum value of parameter
@@ -674,7 +674,7 @@ rc_maxval <- function(this.parameter){
   # validate input
   checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
   
-  # load parameter data
+  # access parameter data
   parameters <- rotsee::parameters
   
   # get maximum value of parameter
