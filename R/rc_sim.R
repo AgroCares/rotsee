@@ -53,7 +53,7 @@
 #' 
 #' weather: Weather table. If no table is given, average Dutch conditions are used
 #' Includes the columns:
-#' * year (numeric) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
+#' * year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
 #' * month
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
 #' * W_PREC_SUM_MONTH (precipitation in mm)
@@ -115,8 +115,11 @@ rc_sim <- function(soil_properties,
   # Define initialize
   initialize <- rothc_parms$initialize
   
+  # Define dates of complete simulation period
+  dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
+  
   # Check and update weather data(see rc_helpers)
-  dt.weather <- rc_update_weather(dt = weather, start_date = start_date, end_date = end_date)
+  dt.weather <- rc_update_weather(dt = weather, dt.time = dt.time)
   
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = 0, upper = 0.6, any.missing = FALSE, len = 1)
@@ -125,9 +128,6 @@ rc_sim <- function(soil_properties,
   # rothC model parameters
 
   # prepare the RothC model inputs
-  # Define dates of complete simulation period
-  dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
-
   # create an internal crop rotation file
   if(!is.null(rothc_rotation)){
     dt.crop <- rc_input_crop(dt = rothc_rotation)

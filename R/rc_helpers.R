@@ -27,24 +27,17 @@ cf_ind_importance <- function(x) {
 #' * W_ET_POT_MONTH (mm)
 #' * W_ET_ACT_MONTH (mm; optional, can be NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
-#' @param start_date (Date or character "YYYY-MM-DD") start date of rothc simulation
-#' @param end_date (Date or character "YYYY-MM-DD") end date of rothc simulation
+#' @param dt.time Table with all year and month combinations of the simulation period, create using \link{rc_time_period}
 #' 
 #' @returns
 #' A data table with columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
 #' covering the simulation period. When year is not supplied in dt, rows are expanded for all years.
 #' @export
 #'
-rc_update_weather <- function(dt = NULL, start_date, end_date){
+rc_update_weather <- function(dt = NULL, dt.time){
   # Add visible bindings
   W_ET_POT_MONTH = W_ET_ACT_MONTH = time = . = NULL
-  
-  # Check inputs start_date end_date
-  checkmate::assert_date(as.Date(start_date))
-  checkmate::assert_date(as.Date(end_date))
-  checkmate::assert_true(as.Date(start_date) <= as.Date(end_date),
-                         .var.name = "start_date must be on or before end_date")
-  
+ 
   if(!is.null(dt)){
 
     
@@ -85,15 +78,13 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
     if("year" %in% colnames(dt)){
       checkmate::assert_integerish(dt$year, lower = 1, any.missing = FALSE)
       
-      yrs <- year(start_date):year(end_date)
-      checkmate::assert_true(min(dt$year) <= min(yrs) && max(dt$year) >= max(yrs))
+      checkmate::assert_true(min(dt$year) <= min(dt.time$year) && max(dt$year) >= max(dt.time$year))
       
       # Ensure missing ET column exists (as NA) to keep schema stable
       if (!"W_ET_POT_MONTH" %in% names(dt)) dt[, W_ET_POT_MONTH := NA_real_]
       if (!"W_ET_ACT_MONTH" %in% names(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
       
       # Enforce complete coverage of simulation window
-      dt.time <- rc_time_period(start_date, end_date)
       off_time <- dt.time[!dt, on = .(year, month)]
       checkmate::assert_true(nrow(off_time) == 0,
                              .var.name = "weather must contain all months in the simulation window")
@@ -101,41 +92,51 @@ rc_update_weather <- function(dt = NULL, start_date, end_date){
       # set weather table to cover simulation period and order
       dt <- dt[dt.time, on = .(year, month)]
       
-      setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
-      
       # remove time column
       dt[, time := NULL]
+      
+      setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
+      
     }else{
       # Require full monthly coverage when no 'year' is present
       checkmate::assert(setequal(unique(dt$month), 1:12) && nrow(dt) == 12,
                                     msg = "When 'year' is absent, provide exactly one row per month (12 rows)")
-      
-      
-      # Expand monthly rows across simulation years
-        yrs <- year(start_date):year(end_date)
-        
+  
+    
         # Ensure missing ET column exists (as NA) to keep schema stable
           if (!"W_ET_POT_MONTH" %in% names(dt)) dt[, W_ET_POT_MONTH := NA_real_]
           if (!"W_ET_ACT_MONTH" %in% names(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
         setkey(dt, month)
-        dt <- CJ(year = yrs, month = 1:12)[dt, on = "month"]
+        dt <- merge(dt, dt.time, by = "month", all.x = TRUE)
+        
+        # remove time column
+        dt[, time := NULL]
         
         # Reorder columns
           setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
+          
          }
     
     
     
 }else{
   # If no weather data has been supplied, set to standard Dutch conditions
-  yrs <- year(start_date):year(end_date)
+  # Set default weather
   dt <- data.table(
-    year = rep(yrs, each = 12),
-    month = rep(1:12, times =length(yrs)),
+    month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
     W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
     W_ET_ACT_MONTH = NA_real_)
+ 
+  # Join to time table
+  dt <- merge(dt, dt.time, by = 'month', all.x = TRUE)
+  
+  # remove time column
+  dt[, time := NULL]
+  
+  # Reorder columns
+  setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
 }
 
   return(dt)
