@@ -631,44 +631,8 @@ rc_time_period <- function(start_date, end_date){
 
 
 
-#' function to read in and save table with relevant data on used parameters in the rotsee package
-#'
-#' @returns
-#' package table with relevant information of parameters used in rotsee 
-rc_gen_parmtable <- function(){
-  
-  # create table of relevant RothC parameters
-  pars <- c("A_DEPTH",
-            "B_DEPTH",
-            "W_TEMP_MEAN_MONTH",
-            "W_PREC_SUM_MONTH",
-            "W_ET_POT_MONTH",
-            "W_ET_ACT_MONTH",
-            "A_CLAY_MI",
-            "A_DENSITY_SA",
-            "B_LU_HC",
-            "B_C_OF_INPUT",
-            "P_HC",
-            "P_DOSE",
-            "P_C_OF",
-            "B_C_OF_INPUT",
-            "A_C_OF",
-            "A_SOM_LOI",
-            "B_LU_YIELD",
-            "B_LU_HI",
-            "B_LU_HI_RES",
-            "B_C_ST03")
-  
-  # call parameter table from pandex
-  parameters <- pandex::nmi_parameters[code %in% pars,]
-  
-  # save as package table
-  usethis::use_data(parameters, overwrite = TRUE)
-}
 
-
-
-#' Get minimum value of provided parameter from the pandex data table
+#' Get minimum value of provided parameter from the parameter data table
 #'
 #' @param this.parameter (character) parameter name for which a minimum value is needed
 #'
@@ -682,7 +646,7 @@ rc_minval <- function(this.parameter) {
   # validate input
   checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
   
-  # load pandex data
+  # load parameter data
   parameters <- rotsee::parameters
   
   # get minimum value of parameter
@@ -696,7 +660,7 @@ rc_minval <- function(this.parameter) {
 
 
 
-#' Get maximum value of provided parameter from the pandex data table
+#' Get maximum value of provided parameter from the parameter data table
 #'
 #' @param this.parameter (character) parameter name for which a maximum value is needed
 #'
@@ -710,7 +674,7 @@ rc_maxval <- function(this.parameter){
   # validate input
   checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
   
-  # load pandex data
+  # load parameter data
   parameters <- rotsee::parameters
   
   # get maximum value of parameter
@@ -720,4 +684,35 @@ rc_maxval <- function(this.parameter){
   }
   
   return(out)
+}
+
+
+
+#' function to update the internal parameter table from the CSV file
+#' 
+#' @noRd
+#'  
+#' @returns
+#' Updated package table with relevant information of parameters used in rotsee 
+#' 
+#' @note 
+#' This function is for package development only.
+#' 
+rc_update_parmtable <- function(){
+  
+  csv_path <- "data-raw/rothc_params.csv"
+  
+  # check if CSV file exists
+  if(!file.exists(csv_path)){
+    stop("CSV file not found at: ", csv_path, call. = FALSE)
+  }
+  
+  # read in table with relevant parameters
+  parameters <- data.table::fread(csv_path)
+  
+  # save parameter table as rda file
+  usethis::use_data(parameters, overwrite = TRUE, compress = "xz")
+  
+  message("Parameter table updated in data/. Rebuild the package for changes to take effect.")
+  
 }
