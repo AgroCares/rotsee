@@ -118,7 +118,7 @@ rc_sim <- function(soil_properties,
   # Define dates of complete simulation period
   dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
   
-  # Check and update weather data(see rc_helpers)
+  # Check and update weather data (see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather, dt.time = dt.time)
   
   # add checks

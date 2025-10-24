@@ -27,7 +27,7 @@ cf_ind_importance <- function(x) {
 #' * W_ET_POT_MONTH (mm)
 #' * W_ET_ACT_MONTH (mm; optional, can be NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
-#' @param dt.time Table with all year and month combinations of the simulation period, required if year is not supplied. create using \link{rc_time_period}
+#' @param dt.time Table with all year and month combinations of the simulation period. Created using \link{rc_time_period}
 #' 
 #' @returns
 #' A data table with columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
@@ -105,7 +105,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
           if (!"W_ET_POT_MONTH" %in% names(dt)) dt[, W_ET_POT_MONTH := NA_real_]
           if (!"W_ET_ACT_MONTH" %in% names(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
         setkey(dt, month)
-        dt <- merge(dt, dt.time, by = "month", all.x = TRUE)
+        dt <- dt[dt.time, on = .(month)]
         
         # remove time column
         dt[, time := NULL]
@@ -128,7 +128,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
     W_ET_ACT_MONTH = NA_real_)
  
   # Join to time table
-  dt <- merge(dt, dt.time, by = 'month', all.x = TRUE)
+  dt <- dt[dt.time, on = .(month)]
   
   # remove time column
   dt[, time := NULL]
