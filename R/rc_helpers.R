@@ -261,7 +261,7 @@ rc_check_inputs <- function(soil_properties,
   # Add visual bindings
   
   # Check soil properties
-  checkmate::assert_list(soil_properties, min.len = 3)
+  checkmate::assert_data_table(soil_properties)
   if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = rc_minval('A_C_OF'), upper = rc_maxval('A_C_OF'), any.missing = FALSE, len = 1)
   if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = rc_minval('B_C_ST03'), upper = rc_maxval('B_C_ST03'), any.missing = FALSE, len = 1)
   if((length(soil_properties$A_C_OF) == 0 || is.na(soil_properties$A_C_OF)) &&
@@ -682,12 +682,12 @@ rc_minval <- function(this.parameter) {
   checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
   
   # load pandex data
-  pandex <- rotsee::pandex
+  parameters <- rotsee::parameters
   
   # get minimum value of parameter
-  out <- pandex[code %in% this.parameter, value_min]
+  out <- parameters[code %in% this.parameter, value_min]
   if (length(out) != 1L || is.na(out)) {
-    stop(sprintf("No unique minimum bound found in pandex for code '%s'", this.parameter))
+    stop(sprintf("No unique minimum bound found in parameters for code '%s'", this.parameter))
     }
   
   return(out)
@@ -710,12 +710,12 @@ rc_maxval <- function(this.parameter){
   checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
   
   # load pandex data
-  pandex <- rotsee::pandex
+  parameters <- rotsee::parameters
   
   # get maximum value of parameter
-  out <- pandex[code %in% this.parameter, value_max]
+  out <- parameters[code %in% this.parameter, value_max]
   if (length(out) != 1L || is.na(out)) {
-    stop(sprintf("No unique maximum bound found in pandex for code '%s'", this.parameter))
+    stop(sprintf("No unique maximum bound found in parameters for code '%s'", this.parameter))
   }
   
   return(out)
