@@ -688,31 +688,3 @@ rc_maxval <- function(this.parameter){
 
 
 
-#' function to update the internal parameter table from the CSV file
-#' 
-#' @noRd
-#'  
-#' @returns
-#' Updated package table with relevant information of parameters used in rotsee 
-#' 
-#' @note 
-#' This function is for package development only.
-#' 
-rc_update_parmtable <- function(){
-  
-  csv_path <- "data-raw/rothc_params.csv"
-  
-  # check if CSV file exists
-  if(!file.exists(csv_path)){
-    stop("CSV file not found at: ", csv_path, call. = FALSE)
-  }
-  
-  # read in table with relevant parameters
-  parameters <- data.table::fread(csv_path)
-  
-  # save parameter table as rda file
-  usethis::use_data(parameters, overwrite = TRUE, compress = "xz")
-  
-  message("Parameter table updated in data/. Rebuild the package for changes to take effect.")
-  
-}
