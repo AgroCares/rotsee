@@ -1,4 +1,4 @@
-#' Crop proporties table
+#' Crop properties table
 #'
 #' This table has carbon related input parameters for crops
 #'
@@ -57,3 +57,29 @@
 #'   \item{12}{Evapotranspiration correction factors for December}
 #' }
 "rc_makkink"
+
+
+#' Parameter table
+#'
+#' This table contains information on attributes of parameters used in rotsee
+#'
+#' @format A data.table with 19 rows and 13 columns:
+#' \describe{
+#'  \item{code}{The parameter code}
+#'  \item{parameter}{Brief description of the parameter}
+#'  \item{unit}{The unit of the parameter if applicable}
+#'  \item{product}{Data classifier, A = Soil measurements, B = Environmental characteristics,
+#'   D = Soil or feed characteristics derived from soil/feed measurements,
+#'   M = Soil management measures, S = Scores, RM = Recommendations (measures/gifts),
+#'   I = Indicators, F = Feed measurements, P = soil amendment product}
+#'  \item{element}{Indicates the chemical element or parameter name}
+#'  \item{method1}{Method used to determine value}
+#'  \item{method2}{Additional details on method}
+#'  \item{data_type}{Type of data the parameter pertains to: numeric, integer, char, bool, geom, enum}
+#'  \item{value_min}{Lowest possible value the parameter may have if numeric or integer}
+#'  \item{value_max}{Highest possible value the parameter may have if numeric or integer}
+#'  \item{explanation}{Some additional explanation}
+#'  \item{enum}{boolean whether parameter values are drawn from a limited set}
+#'  \item{options}{Allowed values for a parameter of type enum separated by "||"}
+#' }
+"parameters"

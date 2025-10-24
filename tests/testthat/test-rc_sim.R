@@ -1,8 +1,8 @@
 # Test file for rc_sim 
 # Testing framework: testthat
 
-test_that("rc_sim correctly runs with valid input", {
-  soil_properties <- list(
+test_that("rc_sim correctly checks input validity", {
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
