@@ -292,10 +292,11 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   }
   
   # add checks on poutput
-  poutput <- 'year'
+  # set pouput to 'month'
+  poutput <- 'month'
   if(!is.null(parms$poutput)){
     # check supplied poutput
-    checkmate::assert_subset(parms$poutput, c('year'), empty.ok = FALSE)
+    checkmate::assert_subset(parms$poutput, c('year', 'month'), empty.ok = FALSE)
     checkmate::assert_character(parms$poutput, len=1)
     
     poutput <- parms$poutput

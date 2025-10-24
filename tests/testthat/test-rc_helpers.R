@@ -144,7 +144,7 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
   expect_true(result_crop$initialize)
   expect_equal(result_crop$unit, "A_SOM_LOI")
   expect_equal(result_crop$method, "adams")
-  expect_equal(result_crop$poutput, "year")
+  expect_equal(result_crop$poutput, "month")
   expect_equal(result_crop$start_date, min(as.Date(crops$B_LU_START)))
   expect_equal(result_crop$end_date, max(as.Date(crops$B_LU_END)))
 })

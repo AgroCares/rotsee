@@ -351,6 +351,7 @@ rc_sim <- function(soil_properties,
   if(poutput=='year'){
     out <- out[abs(time - round(time)) < 1e-5]
   }
+ 
   out <- out[,.SD, .SDcols = !names(out) %in% "time"]
 
   # update year
