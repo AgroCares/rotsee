@@ -635,16 +635,34 @@ rc_time_period <- function(start_date, end_date){
 #'
 #' @returns
 #' package table with relevant information of parameters used in rotsee 
-rc_parstable <- function(){
+rc_gen_parmtable <- function(){
   
   # create table of relevant RothC parameters
-  pars <- c()
+  pars <- c("A_DEPTH",
+            "B_DEPTH",
+            "W_TEMP_MEAN_MONTH",
+            "W_PREC_SUM_MONTH",
+            "W_ET_POT_MONTH",
+            "W_ET_ACT_MONTH",
+            "A_CLAY_MI",
+            "A_DENSITY_S",
+            "B_LU_HC",
+            "B_C_OF_INPUT",
+            "P_HC",
+            "P_DOSE",
+            "P_C_OF",
+            "B_C_OF_INPUT",
+            "A_C_OF",
+            "A_SOM_LOI",
+            "B_LU_YIELD",
+            "B_LU_HI",
+            "B_LU_HI_RES")
   
   # call parameter table from pandex
-  parameters <- pandex::nmi_parameters[, names = pars]
+  parameters <- pandex::nmi_parameters[code %in% pars,]
   
   # save as package table
-  use_data(parameters)
+  usethis::use_data(parameters)
 }
 
 
