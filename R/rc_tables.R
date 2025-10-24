@@ -80,6 +80,6 @@
 #'  \item{value_max}{Highest possible value the parameter may have if numeric or integer}
 #'  \item{explanation}{Some additional explanation}
 #'  \item{enum}{boolean whether parameter values are drawn from a limited set}
-#'  \item{options}{Allowed values for a parameter of type enum seperated by "||"}
+#'  \item{options}{Allowed values for a parameter of type enum separated by "||"}
 #' }
 "parameters"
