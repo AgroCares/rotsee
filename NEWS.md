@@ -8,7 +8,7 @@
 * allow input of partial c_fractions distribution in rothc_parms
 
 # rotsee v0.1.5 2025-10-16
-# rotsee v0.1.4 16/10/2025
+
 
 ## added
 * package table `parameters.rda`, with information on all used parameters in the rotsee package
@@ -18,6 +18,7 @@
 ## changed
 * Validation of input data based on information in `parameters.rda`
 
+# rotsee v0.1.4 2025-10-16
 
 ## added
 * unit tests of `rc_update_weather` and `rc_sim` to evaluate different weather inputs
