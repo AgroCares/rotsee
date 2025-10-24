@@ -711,16 +711,16 @@ debug_plot <- function(dt, save_dir = getwd()){
   dt_long <- melt(dt, id.vars = "time", variable.name = "pool")
   
   # plot variables on log scale
-  out_log <- ggplot(data = dt_long)+ 
-    geom_line(aes(x = time, y = value, colour = pool))+
-    scale_y_log10() +
-    labs(title = "Carbon Pools (log scale)", y = "Value (log)", x = "Time [yr]")
+  out_log <- ggplot2::ggplot(data = dt_long)+ 
+    ggplot2::geom_line(aes(x = time, y = value, colour = pool))+
+    ggplot2::scale_y_log10() +
+    ggplot2::labs(title = "Carbon Pools (log scale)", y = "Value (log)", x = "Time [yr]")
   
   # plot variables on a continuous scale
-  out_cont <- ggplot(data = dt_long)+ 
-    geom_line(aes(x = time, y = value, colour = pool))+
-    scale_y_continuous()+
-    labs(title = "Carbon Pools (linear scale)", y = "Value [kg C/ha]", x = "Time [yr]")
+  out_cont <- ggplot2::ggplot(data = dt_long)+ 
+    ggplot2::geom_line(aes(x = time, y = value, colour = pool))+
+    ggplot2::scale_y_continuous()+
+    ggplot2::labs(title = "Carbon Pools (linear scale)", y = "Value [kg C/ha]", x = "Time [yr]")
   
   ## calculate fraction change
 
@@ -733,10 +733,10 @@ debug_plot <- function(dt, save_dir = getwd()){
   dt_change_long <- melt(dt_change, id.vars = "time", variable.name = "pool", na.rm = TRUE)
   
   # plot variables on a continuous scale
-  out_change_cont <- ggplot(data = dt_change_long)+ 
-    geom_line(aes(x = time, y = value, colour = pool))+
-    scale_y_continuous()+
-    labs(title = "Change in Carbon Pools", y = "Delta C [kg C/ha]", x = "Time [yr]")
+  out_change_cont <- ggplot2::ggplot(data = dt_change_long)+ 
+    ggplot2::geom_line(aes(x = time, y = value, colour = pool))+
+    ggplot2::scale_y_continuous()+
+    ggplot2::labs(title = "Change in Carbon Pools", y = "Delta C [kg C/ha]", x = "Time [yr]")
   
   # Display plots in RStudio/device
   print(out_log)
@@ -744,10 +744,15 @@ debug_plot <- function(dt, save_dir = getwd()){
   print(out_change_cont)
   
   # Save plots to files
-  if (!dir.exists(save_dir)) dir.create(save_dir)
-  ggsave(file.path(save_dir, "carbon_pools_log.png"), plot = out_log, width = 10, height = 6)
-  ggsave(file.path(save_dir, "carbon_pools_linear.png"), plot = out_cont, width = 10, height = 6)
-  ggsave(file.path(save_dir, "carbon_pools_change.png"), plot = out_change_cont, width = 10, height = 6)
+  if (!dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
+  ggplot2::ggsave(file.path(save_dir, "carbon_pools_log.png"), plot = out_log, width = 10, height = 6)
+  ggplot2::ggsave(file.path(save_dir, "carbon_pools_linear.png"), plot = out_cont, width = 10, height = 6)
+  ggplot2::ggsave(file.path(save_dir, "carbon_pools_change.png"), plot = out_change_cont, width = 10, height = 6)
+  
+  invisible(list(
+    data  = list(total = dt, delta = dt_change),
+    plots = list(log = out_log, linear = out_cont, change = out_change_cont)
+    ))
   
 }
 
