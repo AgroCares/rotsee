@@ -7,10 +7,13 @@
 * Description correctly reflects used roxygen version
 * allow input of partial c_fractions distribution in rothc_parms
 
-# rotsee v0.1.6 2025-10-16
+# rotsee v0.1.5 2025-10-16
+
+## added
+* package table `parameters.rda`, with information on all used parameters in the rotsee package
 
 ## changed
-* updated internal validation of data
+* Validation of input data based on information in `parameters.rda`
 
 
 # rotsee v0.1.3 2025-10-15
