@@ -46,8 +46,8 @@ rc_update_weather <- function(dt = NULL){
       msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided."
     )
     checkmate::assert_subset(dt$month, 1:12, add = FALSE)
-    checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = -30, upper = 50, any.missing = FALSE, len = 12)
-    checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = 0, upper = 10000, any.missing = FALSE, len = 12)
+    checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = rc_minval('W_TEMP_MEAN_MONTH'), upper = rc_maxval('W_TEMP_MEAN_MONTH'), any.missing = FALSE, len = 12)
+    checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = rc_minval('W_PREC_SUM_MONTH'), upper = rc_maxval('W_PREC_SUM_MONTH'), any.missing = FALSE, len = 12)
     
     # Check if both potential and actual ET are provided
     if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
@@ -56,14 +56,14 @@ rc_update_weather <- function(dt = NULL){
         msg = "At least one of W_ET_POT_MONTH and W_ET_ACT_MONTH should not contain NA values."
       )
       # Check ranges, allow NAs
-      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = TRUE)
-      checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = TRUE)
+      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = rc_minval('W_ET_POT_MONTH'), upper = rc_maxval('W_ET_POT_MONTH'), any.missing = TRUE)
+      checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = rc_minval('W_ET_ACT_MONTH'), upper = rc_maxval('W_ET_ACT_MONTH'), any.missing = TRUE)
     } else if ("W_ET_POT_MONTH" %in% colnames(dt)) {
       # Only potential ET provided: no NA allowed
-      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = 0, upper = 1000, any.missing = FALSE)
+      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = rc_minval('W_ET_POT_MONTH'), upper = rc_maxval('W_ET_POT_MONTH'), any.missing = FALSE)
     } else if ("W_ET_ACT_MONTH" %in% colnames(dt)) {
       # Only actual ET provided: no NA allowed
-      checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
+      checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = rc_minval('W_ET_ACT_MONTH'), upper = rc_maxval('W_ET_ACT_MONTH'), any.missing = FALSE)
     }
     
 }else{
@@ -262,13 +262,13 @@ rc_check_inputs <- function(soil_properties,
   
   # Check soil properties
   checkmate::assert_data_table(soil_properties)
-  if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = 0.1, upper = 600, any.missing = FALSE, len = 1)
-  if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = 0.1, upper = 3000, any.missing = FALSE, len = 1)
+  if(length(soil_properties$A_C_OF) != 0)  checkmate::assert_numeric(soil_properties$A_C_OF, lower = rc_minval('A_C_OF'), upper = rc_maxval('A_C_OF'), any.missing = FALSE, len = 1)
+  if(length(soil_properties$B_C_ST03) != 0)  checkmate::assert_numeric(soil_properties$B_C_ST03, lower = rc_minval('B_C_ST03'), upper = rc_maxval('B_C_ST03'), any.missing = FALSE, len = 1)
   if((length(soil_properties$A_C_OF) == 0 || is.na(soil_properties$A_C_OF)) &&
      (length(soil_properties$B_C_ST03) == 0 || is.na(soil_properties$B_C_ST03))){
        stop('Both A_C_OF and B_C_ST03 are missing in soil_properties')}
-  checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = 0.1, upper = 75, len = 1)
-  checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = 0.5, upper = 3, len = 1)
+  checkmate::assert_numeric(soil_properties$A_CLAY_MI, lower = rc_minval('A_CLAY_MI'), upper = rc_maxval('A_CLAY_MI'), len = 1)
+  checkmate::assert_numeric(soil_properties$A_DENSITY_SA, lower = rc_minval('A_DENSITY_SA'), upper = rc_maxval('A_DENSITY_SA'), len = 1)
   
   # Check crop properties if supplied
   if(!is.null(rothc_rotation)){
@@ -277,8 +277,8 @@ rc_check_inputs <- function(soil_properties,
     req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
     checkmate::assert_names(colnames(rothc_rotation), must.include = req)
     
-    checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = 0, upper = 1, any.missing = FALSE)
-    checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = FALSE)
+    checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = FALSE)
+    checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = FALSE)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
     }
@@ -291,15 +291,15 @@ rc_check_inputs <- function(soil_properties,
     checkmate::assert_names(colnames(rothc_amendment), must.include = req)
     
     checkmate::assert_date(as.Date(rothc_amendment$P_DATE_FERTILIZATION), any.missing = FALSE)
-    checkmate::assert_numeric(rothc_amendment$P_HC, lower = 0, upper = 1, any.missing = FALSE)
+    checkmate::assert_numeric(rothc_amendment$P_HC, lower = rc_minval('P_HC'), upper = rc_maxval('P_HC'), any.missing = FALSE)
     if ("P_NAME" %in% names(rothc_amendment))
       checkmate::assert_character(rothc_amendment$P_NAME, any.missing = TRUE)
     if ("P_DOSE" %in% names(rothc_amendment))
-       checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = 0, upper = 250000, any.missing = TRUE)
+       checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = rc_minval('P_DOSE'), upper = rc_maxval('P_DOSE'), any.missing = TRUE)
     if ("P_C_OF" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = 0, upper = 1000, any.missing = TRUE)
+      checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = rc_minval('P_C_OF'), upper = rc_maxval('P_C_OF'), any.missing = TRUE)
     if ("B_C_OF_INPUT" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = TRUE)
+      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = TRUE)
   }
 }
 
@@ -319,11 +319,11 @@ rc_calculate_bd <- function(dt){
   # Check input data
   checkmate::assert_subset(colnames(dt), choices = c("A_SOM_LOI", "A_CLAY_MI", "A_C_OF"))
   if(is.null(dt$A_SOM_LOI)){
-    checkmate::assert_numeric(dt$A_C_OF, lower = 0.1, upper = 600, any.missing = F)
+    checkmate::assert_numeric(dt$A_C_OF, lower = rc_minval('A_C_OF'), upper = rc_maxval('A_C_OF'), any.missing = F)
   }else{
-  checkmate::assert_numeric(dt$A_SOM_LOI, lower = 0.5, upper = 75, any.missing = F)
+  checkmate::assert_numeric(dt$A_SOM_LOI, lower = rc_minval('A_SOM_LOI'), upper = rc_maxval('A_SOM_LOI'), any.missing = F)
   }
-  checkmate::assert_numeric(dt$A_CLAY_MI, lower = 0.1, upper = 75, any.missing = F)
+  checkmate::assert_numeric(dt$A_CLAY_MI, lower = rc_minval('A_CLAY_MI'), upper = rc_maxval('A_CLAY_MI'), any.missing = F)
   
   # Add copy of data table
   dt <- copy(dt)
@@ -371,9 +371,9 @@ rc_calculate_B_C_OF <- function(dt){
   # Check input data
   req <- c("B_LU_YIELD", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE")
   checkmate::assert_names(colnames(dt), must.include = req)
-  checkmate::assert_numeric(dt$B_LU_YIELD, lower = 0, upper = 150000, any.missing = F)
-  checkmate::assert_numeric(dt$B_LU_HI, lower = 0.01, upper = 1, any.missing = F)
-  checkmate::assert_numeric(dt$B_LU_HI_RES, lower = 0, upper = 1, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_YIELD, lower = rc_minval('B_LU_YIELD'), upper = rc_maxval('B_LU_YIELD'), any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_HI, lower = rc_minval('B_LU_HI'), upper = rc_maxval('B_LU_HI'), any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_HI_RES, lower = rc_minval('B_LU_HI_RES'), upper = rc_maxval('B_LU_HI_RES'), any.missing = F)
   checkmate::assert_numeric(dt$B_LU_RS_FR, lower = 0.01, upper = 5, any.missing = F)
   checkmate::assert_logical(dt$M_CROPRESIDUE)
   
@@ -428,8 +428,8 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT")
   checkmate::assert_names(colnames(crops), must.include = req)
   if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
-  checkmate::assert_numeric(crops$B_LU_HC, lower = 0, upper = 1, any.missing = F)
-  checkmate::assert_numeric(crops$B_C_OF_INPUT, lower = 0, upper = 15000, any.missing = F)
+  checkmate::assert_numeric(crops$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = F)
+  checkmate::assert_numeric(crops$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
   checkmate::assert_date(as.Date(start_date))
@@ -531,9 +531,9 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   req <- c("P_HC","P_DATE_FERTILIZATION")
   checkmate::assert_names(colnames(amendments), must.include = req)
   if ("P_NAME" %in% names(amendments)) checkmate::assert_character(amendments$P_NAME, any.missing = TRUE)
-  if ("P_DOSE" %in% names(amendments)) checkmate::assert_numeric(amendments$P_DOSE, lower = 0, upper = 250000, any.missing = TRUE)
-  if ("P_C_OF" %in% names(amendments)) checkmate::assert_numeric(amendments$P_C_OF, lower = 0, upper = 1000, any.missing = TRUE)
-  checkmate::assert_numeric(amendments$P_HC, lower = 0, upper = 1, any.missing = F)
+  if ("P_DOSE" %in% names(amendments)) checkmate::assert_numeric(amendments$P_DOSE, lower = rc_minval('P_DOSE'), upper = rc_maxval('P_DOSE'), any.missing = TRUE)
+  if ("P_C_OF" %in% names(amendments)) checkmate::assert_numeric(amendments$P_C_OF, lower = rc_minval('P_C_OF'), upper = rc_maxval('P_C_OF'), any.missing = TRUE)
+  checkmate::assert_numeric(amendments$P_HC, lower = rc_minval('P_HC'), upper = rc_maxval('P_HC'), any.missing = F)
   checkmate::assert_date(as.Date(amendments$P_DATE_FERTILIZATION))
   if(!is.null(end_date)){checkmate::assert_date(as.Date(end_date))}
   if(!is.null(simyears)){checkmate::assert_numeric(simyears, lower = 1)}
@@ -628,3 +628,63 @@ rc_time_period <- function(start_date, end_date){
   #return output
   return(dt.time)
 }
+
+
+
+
+#' Get minimum value of provided parameter from the parameter data table
+#'
+#' @param this.parameter (character) parameter name for which a minimum value is needed
+#'
+#' @returns
+#' minimum allowed value of the supplied parameter
+#' 
+rc_minval <- function(this.parameter) {
+  # add visual binding
+  data_type = code = value_min = NULL
+  
+  # validate input
+  checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
+  
+  # access parameter data
+  parameters <- rotsee::parameters
+  
+  # get minimum value of parameter
+  out <- parameters[code == this.parameter, value_min]
+  if (length(out) != 1L || is.na(out)) {
+    stop(sprintf("No unique minimum bound found in parameters for code '%s'", this.parameter))
+    }
+  
+  return(out)
+}
+
+
+
+#' Get maximum value of provided parameter from the parameter data table
+#'
+#' @param this.parameter (character) parameter name for which a maximum value is needed
+#'
+#' @returns
+#' maximum allowed value of the supplied parameter
+
+rc_maxval <- function(this.parameter){
+  # add visual binding
+  data_type = code = value_max = NULL
+  
+  # validate input
+  checkmate::assert_character(this.parameter, any.missing = FALSE, len = 1)
+  
+  # access parameter data
+  parameters <- rotsee::parameters
+  
+  # get maximum value of parameter
+  out <- parameters[code == this.parameter, value_max]
+  if (length(out) != 1L || is.na(out)) {
+    stop(sprintf("No unique maximum bound found in parameters for code '%s'", this.parameter))
+  }
+  
+  return(out)
+}
+
+
+
