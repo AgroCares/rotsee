@@ -30,10 +30,10 @@ rc_input_amendment <- function(dt = NULL){
   req <- c("P_HC","P_DATE_FERTILIZATION")
   checkmate::assert_names(names(dt), must.include = req)
   checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
-  checkmate::assert_numeric(dt$P_HC, lower = 0, upper = 1, any.missing = FALSE)
+  checkmate::assert_numeric(dt$P_HC, lower = rc_minval("P_HC"), upper = rc_maxval("P_HC"), any.missing = FALSE)
   if ("B_C_OF_INPUT" %in% names(dt)) { 
     # Validate B_C_OF_INPUT
-    checkmate::assert_numeric(dt$B_C_OF_INPUT, lower = 0, upper = 250000, any.missing = TRUE)
+    checkmate::assert_numeric(dt$B_C_OF_INPUT, lower = rc_minval("B_C_OF_INPUT"), upper = rc_maxval("B_C_OF_INPUT"), any.missing = TRUE)
     # Check P_DOSE and P_C_OF when B_C_OF_INPUT is missing
       if (anyNA(dt$B_C_OF_INPUT)) {
          checkmate::assert(
@@ -47,8 +47,8 @@ rc_input_amendment <- function(dt = NULL){
           )
       }
     # Check P_DOSE and P_C_OF
-    if ("P_DOSE" %in% names(dt)) checkmate::assert_numeric(dt$P_DOSE, lower = 0, upper = 250000, any.missing = TRUE)
-    if ("P_C_OF" %in% names(dt)) checkmate::assert_numeric(dt$P_C_OF, lower = 0, upper = 1000, any.missing = TRUE)
+    if ("P_DOSE" %in% names(dt)) checkmate::assert_numeric(dt$P_DOSE, lower = rc_minval("P_DOSE"), upper = rc_maxval("P_DOSE"), any.missing = TRUE)
+    if ("P_C_OF" %in% names(dt)) checkmate::assert_numeric(dt$P_C_OF, lower = rc_minval("P_C_OF"), upper = rc_maxval("P_C_OF"), any.missing = TRUE)
   }else{
     checkmate::assert(all(c("P_DOSE","P_C_OF") %in% names(dt)),
                       msg = "Provide both P_DOSE and P_C_OF when B_C_OF_INPUT is absent")
