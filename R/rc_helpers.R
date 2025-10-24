@@ -53,7 +53,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
       any(c("W_ET_POT_MONTH", "W_ET_ACT_MONTH") %in% names(dt)),
       msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided."
     )
-    checkmate::assert_subset(dt$month, 1:12, add = FALSE)
+    checkmate::assert_subset(dt$month, 1:12)
     checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = -30, upper = 50, any.missing = FALSE)
     checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = 0, upper = 10000, any.missing = FALSE)
     
@@ -77,8 +77,6 @@ rc_update_weather <- function(dt = NULL, dt.time){
     # check if year is supplied
     if("year" %in% colnames(dt)){
       checkmate::assert_integerish(dt$year, lower = 1, any.missing = FALSE)
-      
-      checkmate::assert_true(min(dt$year) <= min(dt.time$year) && max(dt$year) >= max(dt.time$year))
       
       # Ensure missing ET column exists (as NA) to keep schema stable
       if (!"W_ET_POT_MONTH" %in% names(dt)) dt[, W_ET_POT_MONTH := NA_real_]
