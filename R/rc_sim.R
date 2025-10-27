@@ -92,7 +92,6 @@ rc_sim <- function(soil_properties,
                   rothc_rotation = rothc_rotation,
                   rothc_amendment = rothc_amendment)
 
-  
   # Check and update weather data(see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather)
   

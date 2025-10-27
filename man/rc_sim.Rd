@@ -31,7 +31,7 @@ rc_sim(
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
-\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH, W_POT_TO_ACT. For more information, see details.}
+\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.}
 
 \item{irrigation}{(data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.}
 }
@@ -83,9 +83,9 @@ Includes the columns:
 * month
 * W_TEMP_MEAN_MONTH (temperature in °C)
 * W_PREC_SUM_MONTH (precipitation in mm)
-* W_ET_POT_MONTH (potential evapotranspiration in mm)
+* W_ET_REF_MONTH (reference evapotranspiration in mm)
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
-* W_POT_TO_ACT (factor to recalculate potential to actual evapotranspiration, default 0.75)
+* W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
 
 Irrigation: Irrigation table, optional.
 Includes the columns:

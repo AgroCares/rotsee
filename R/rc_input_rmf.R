@@ -35,9 +35,9 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   
   # add visual bindings
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
-  tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = acc_smd = NULL
+  tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_REF_MONTH = smd = acc_smd = NULL
   W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
-  B_DATE_IRRIGATION = B_IRR_AMOUNT = W_POT_TO_ACT = . = NULL
+  B_DATE_IRRIGATION = B_IRR_AMOUNT = W_ET_REFACT = . = NULL
  
   # Check input tables
   # crop table
