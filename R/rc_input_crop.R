@@ -27,7 +27,7 @@ rc_input_crop <- function(dt){
   checkmate::assert_names(colnames(dt), must.include = req)
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = FALSE)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = FALSE)
-  checkmate::assert_numeric(dt$B_C_OF_INPUT, any.missing = FALSE, lower = 0, upper = 15000)
+  checkmate::assert_numeric(dt$B_C_OF_INPUT, any.missing = FALSE, lower = rc_minval("B_C_OF_INPUT"), upper = rc_maxval("B_C_OF_INPUT"))
   
   # create a copy of the crop table
   dt.crop <- copy(dt)
