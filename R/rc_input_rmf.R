@@ -129,12 +129,18 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   # Calculate actual evapotranspiration for months where only potential is provided (general rothc calculation)
   if (!"W_ET_REFACT" %in% colnames(dt)) dt[, W_ET_REFACT := NA_real_]
   if(!"W_ET_ACT_MONTH" %in% colnames(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
+  if("W_ET_REF_MONTH" %in% colnames(dt)){
   dt[is.na(W_ET_ACT_MONTH) & is.na(W_ET_REFACT), W_ET_REFACT := 0.75]
   dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_REF_MONTH * W_ET_REFACT]
-
+  } else if (any(is.na(dt$W_ET_ACT_MONTH))){
+    stop("W_ET_ACT_MONTH contains NA but W_ET_REF_MONTH is not available for backfilling.")
+}
   # Calculate the monthly soil moisture deficit
   dt[,smd := W_PREC_SUM_MONTH + B_IRR_AMOUNT - W_ET_ACT_MONTH]
 
+  # Ensure chronological order for accumulation
+  setorder(dt,time)
+  
   # Calculate the accumulated soil moisture deficit
   dt[, acc_smd := {
     # Create filler column of the length of the data table
@@ -186,9 +192,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
  
   # add combined rate modifying factor
   dt[,cf_combi := cf_temp * cf_moist * cf_soilcover]
-  
-  # order the output on time
-  setorder(dt,time)
+ 
   
   # select only relevant variables for rate modifying factors
   rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, abc = cf_combi)]
