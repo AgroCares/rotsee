@@ -10,13 +10,7 @@ test_that("rc_update_weather returns default weather data when input is NULL", {
 
 test_that("rc_update_weather validates input data table", {
   # Create a valid data table
-  valid_dt <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = rep(47, 12)
-  )
+  valid_dt <- create_weather()
   
   # Test with valid data table
   expect_no_error(rc_update_weather(valid_dt))
@@ -53,9 +47,7 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
 
   
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   result_crop <- rc_update_parms(crops = crops)
   
@@ -74,9 +66,7 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
 
 test_that("rc_update_parms accepts and validates dec_rates", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(dec_rates = c(k1 = 5, k2 = 0.2, k3 = 0.5, k4 = 0.01))
   result <- rc_update_parms(parms, crops = crops)
@@ -95,9 +85,7 @@ test_that("rc_update_parms accepts and validates dec_rates", {
 
 test_that("rc_update_parms accepts and validates c_fractions", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(c_fractions = c(fr_IOM = 0.05, fr_DPM = 0.02, fr_RPM = 0.1, fr_BIO = 0.02))
   result <- rc_update_parms(parms, crops = crops)
@@ -121,9 +109,7 @@ test_that("rc_update_parms accepts and validates c_fractions", {
 
 test_that("rc_update_parms accepts and validates initialize", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(initialize = FALSE)
   result <- rc_update_parms(parms, crops = crops)
@@ -146,23 +132,23 @@ test_that("rc_update_parms accepts and validates start_date and end_date", {
 })
 
 test_that("rc_update_parms derives start_date and end_date from crops/amendments", {
-  crops <- data.table(B_LU_START = c("2020-01-01", "2021-01-01"), B_LU_END = c("2020-12-31", "2021-12-31"))
-  amendments <- data.table(P_DATE_FERTILIZATION = c("2020-06-01", "2021-06-01"))
+  crops <- create_rotation()
+  amendments <- create_amendment()
   
   # Test with only crops
   result <- rc_update_parms(crops = crops)
-  expect_equal(result$start_date, as.Date("2020-01-01"))
-  expect_equal(result$end_date, as.Date("2021-12-31"))
+  expect_equal(result$start_date, as.Date("2022-04-01"))
+  expect_equal(result$end_date, as.Date("2023-10-01"))
   
   # Test with only amendments
   result <- rc_update_parms(amendments = amendments)
-  expect_equal(result$start_date, as.Date("2020-06-01"))
-  expect_equal(result$end_date, as.Date("2021-06-01"))
+  expect_equal(result$start_date, as.Date("2022-05-01"))
+  expect_equal(result$end_date, as.Date("2023-05-01"))
   
   # Test with both
   result <- rc_update_parms(crops = crops, amendments = amendments)
-  expect_equal(result$start_date, as.Date("2020-01-01"))
-  expect_equal(result$end_date, as.Date("2021-12-31"))
+  expect_equal(result$start_date, as.Date("2022-04-01"))
+  expect_equal(result$end_date, as.Date("2023-10-01"))
   
   # Test error if no dates found
   expect_error(rc_update_parms(), "No dates found in crops/amendments")
@@ -170,9 +156,7 @@ test_that("rc_update_parms derives start_date and end_date from crops/amendments
 
 test_that("rc_update_parms accepts and validates unit", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(unit = "psoc")
   result <- rc_update_parms(parms, crops = crops)
@@ -184,9 +168,7 @@ test_that("rc_update_parms accepts and validates unit", {
 
 test_that("rc_update_parms accepts and validates method", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(method = "adams")
   result <- rc_update_parms(parms, crops = crops)
@@ -198,9 +180,7 @@ test_that("rc_update_parms accepts and validates method", {
 
 test_that("rc_update_parms accepts and validates poutput", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(poutput = "year")
   result <- rc_update_parms(parms, crops = crops)
