@@ -7,7 +7,7 @@
 debug_plot(dt, save_dir = getwd())
 }
 \arguments{
-\item{dt}{(data.table) data table with monthyl information on the state of the pools CDPM, CRPM, CBIO, and CHUM}
+\item{dt}{(data.table) data table with monthly information on the state of the pools CDPM, CRPM, CBIO, and CHUM}
 
 \item{save_dir}{(character) directory to save PNGs; defaults to current working directory}
 }

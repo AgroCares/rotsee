@@ -692,7 +692,7 @@ rc_maxval <- function(this.parameter){
 
 #' Function to plot information on C pools when rc_sim is run in debug mode
 #'
-#' @param dt (data.table) data table with monthyl information on the state of the pools CDPM, CRPM, CBIO, and CHUM
+#' @param dt (data.table) data table with monthly information on the state of the pools CDPM, CRPM, CBIO, and CHUM
 #' @param save_dir (character) directory to save PNGs; defaults to current working directory
 #'
 #' @returns

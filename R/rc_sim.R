@@ -76,7 +76,7 @@ rc_sim <- function(soil_properties,
   # add visual bindings
   a_depth = toc = A_CLAY_MI = A_C_OF = B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
   var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
-  soc = CDPM = CRPM = CBIO = CHUM = CIOM = write.csv = . = NULL
+  soc = CDPM = CRPM = CBIO = CHUM = CIOM = . = NULL
   
   
   # Check input data and create defaults when necessary
@@ -256,7 +256,7 @@ rc_sim <- function(soil_properties,
   set.seed(123)
   
   # run the model
-  if(debug == FALSE){
+
   out <- deSolve::ode(y = y,
                       times = rothc.times,
                       rc_ode,
@@ -271,26 +271,13 @@ rc_sim <- function(soil_properties,
   
   # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
-  }else{
-    out <- deSolve::ode(y = y,
-                        times = rothc.times,
-                        rc_ode,
-                        parms = rothc.parms,
-                        events=list(data=rothc.event),
-                        method = method,
-                        rtol = 0.1,
-                        atol = 1)
-    # set to data.table
-    out <- as.data.table(out)
-    
-    # estimate total SOC (kg C/ha)
-    out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
-    
-    # save debug output
+
+  # save debug output if requested
+  if(debug == TRUE){
     out_debug <- copy(out)
     
-    write.csv(out_debug, "rothc_flows_debug.csv", row.names = FALSE)
-    message("Debug mode: C flows saved to rothc_c_flows_debug.csv")
+    utils::write.csv(out_debug, "rothc_flows_debug.csv", row.names = FALSE)
+    message("Debug mode: C flows saved to rothc_flows_debug.csv")
     
     # create visualization of C flows
     debug_plot(out_debug, save_dir = getwd())
