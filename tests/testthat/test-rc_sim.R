@@ -315,14 +315,19 @@ test_that("rc_sim runs in debug mode and produces debug output", {
     end_date = "2023-10-01"
   )
   
-  # Remove debug files if they exist
-  withr::defer({
-    if (file.exists("rothc_flows_debug.csv")) file.remove("rothc_flows_debug.csv")
-    if (file.exists("carbon_pools_log.png")) file.remove("carbon_pools_log.png")
-    if (file.exists("carbon_pools_linear.png")) file.remove("carbon_pools_linear.png")
-    if (file.exists("carbon_pools_change.png")) file.remove("carbon_pools_change.png")
-    })
+  # Save current working directory and switch to temp directory
+  old_wd <- getwd()
+  temp_dir <- file.path(tempdir(), "rotsee_debug_test")
+  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
+  setwd(temp_dir)
   
+  # Restore working directory on exit and remove temporary directory(even if test fails)
+  on.exit({
+    setwd(old_wd)
+    unlink(temp_dir, recursive = TRUE)
+  }, add = TRUE)
+  
+
   # Run in debug mode
   expect_no_error(
     rc_sim(

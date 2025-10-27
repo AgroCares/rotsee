@@ -76,7 +76,7 @@ rc_sim <- function(soil_properties,
   # add visual bindings
   a_depth = toc = A_CLAY_MI = A_C_OF = B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
   var = time = cf_abc = ciom.ini = biohum.ini = cbio.ini = chum.ini = CIOM0 = CDPM0 = CRPM0 = CBIO0 = CHUM0 = NULL
-  soc = CDPM = CRPM = CBIO = CHUM = CIOM = . = NULL
+  soc = CDPM = CRPM = CBIO = CHUM = CIOM = write.csv = . = NULL
   
   
   # Check input data and create defaults when necessary
