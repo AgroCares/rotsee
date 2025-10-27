@@ -7,7 +7,17 @@
 * Description correctly reflects used roxygen version
 * allow input of partial c_fractions distribution in rothc_parms
 
+# rotsee v0.1.5 2025-10-16
 # rotsee v0.1.4 2025-10-15
+
+## added
+* package table `parameters.rda`, with information on all used parameters in the rotsee package
+* file `rothc_params.csv`, which developers can edit to add additional parameters
+* function `rc_update_parmtable`, which developers can use to update `parameters.rda` with updated `rothc_params.csv`
+
+## changed
+* Validation of input data based on information in `parameters.rda`
+
 
 ## added
 * rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
