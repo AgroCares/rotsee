@@ -54,8 +54,8 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   checkmate::assert_names(colnames(dt.weather), must.include = req)
   checkmate::assert(
     "W_ET_ACT_MONTH" %in% colnames(dt.weather) ||
-      all(c("W_ET_POT_MONTH","W_POT_TO_ACT") %in% colnames(dt.weather)),
-    msg = "Provide 'W_ET_ACT_MONTH' or both 'W_ET_POT_MONTH' and 'W_POT_TO_ACT' in dt.weather."
+      all(c("W_ET_REF_MONTH","W_ET_REFACT") %in% colnames(dt.weather)),
+    msg = "Provide 'W_ET_ACT_MONTH' or both 'W_ET_REF_MONTH' and 'W_ET_REFACT' in dt.weather."
     )
   
     # irrigation table
@@ -127,10 +127,10 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   dt[, tsmdmax_cor := fifelse(crop_cover==1,tsmdmax,tsmdmax/1.8)]
 
   # Calculate actual evapotranspiration for months where only potential is provided (general rothc calculation)
-  if (!"W_POT_TO_ACT" %in% colnames(dt)) dt[, W_POT_TO_ACT := NA_real_]
+  if (!"W_ET_REFACT" %in% colnames(dt)) dt[, W_ET_REFACT := NA_real_]
   if(!"W_ET_ACT_MONTH" %in% colnames(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
-  dt[is.na(W_ET_ACT_MONTH) & is.na(W_POT_TO_ACT), W_POT_TO_ACT := 0.75]
-  dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_POT_MONTH * W_POT_TO_ACT]
+  dt[is.na(W_ET_ACT_MONTH) & is.na(W_ET_REFACT), W_ET_REFACT := 0.75]
+  dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_REF_MONTH * W_ET_REFACT]
 
   # Calculate the monthly soil moisture deficit
   dt[,smd := W_PREC_SUM_MONTH + B_IRR_AMOUNT - W_ET_ACT_MONTH]

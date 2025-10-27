@@ -9,7 +9,7 @@
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
-#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH, W_POT_TO_ACT. For more information, see details.
+#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.
 #' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
 #'
 #' @details
@@ -57,9 +57,9 @@
 #' * month
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
 #' * W_PREC_SUM_MONTH (precipitation in mm)
-#' * W_ET_POT_MONTH (potential evapotranspiration in mm)
+#' * W_ET_REF_MONTH (reference evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
-#' * W_POT_TO_ACT (factor to recalculate potential to actual evapotranspiration, default 0.75)
+#' * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
 #' 
 #' Irrigation: Irrigation table, optional.
 #' Includes the columns:
@@ -92,6 +92,7 @@ rc_sim <- function(soil_properties,
                   rothc_rotation = rothc_rotation,
                   rothc_amendment = rothc_amendment)
 
+  
   # Check and update weather data(see rc_helpers)
   dt.weather <- rc_update_weather(dt = weather)
   

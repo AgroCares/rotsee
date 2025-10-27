@@ -23,9 +23,9 @@ cf_ind_importance <- function(x) {
 #' *month (1 - 12)
 #' *W_TEMP_MEAN_MONTH (°C)
 #' *W_PREC_SUM_MONTH (mm)
-#' *W_ET_POT_MONTH (mm)
+#' *W_ET_REF_MONTH (mm)
 #' *W_ET_ACT_MONTH (mm; optional, can be NA)
-#' *W_POT_TO_ACT (fraction; optional, defaults to 0.75 if missing or NA)
+#' *W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' 
 #' @returns
@@ -35,7 +35,7 @@ cf_ind_importance <- function(x) {
 #'
 rc_update_weather <- function(dt = NULL){
   # Add visible bindings
-  W_POT_TO_ACT = NULL
+  W_ET_REFACT = NULL
   
   # Check if there is a weather data table
   if(!is.null(dt)){
@@ -48,46 +48,50 @@ rc_update_weather <- function(dt = NULL){
     req <- c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH")
     checkmate::assert_names(colnames(dt), must.include = req)
     checkmate::assert(
-      any(c("W_ET_POT_MONTH", "W_ET_ACT_MONTH") %in% names(dt)),
-      msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided."
+      any(c("W_ET_REF_MONTH", "W_ET_ACT_MONTH") %in% names(dt)),
+      msg = "At least one of 'W_ET_REF_MONTH' or 'W_ET_ACT_MONTH' must be provided."
     )
     checkmate::assert_subset(dt$month, 1:12, add = FALSE)
     checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = rc_minval('W_TEMP_MEAN_MONTH'), upper = rc_maxval('W_TEMP_MEAN_MONTH'), any.missing = FALSE, len = 12)
     checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = rc_minval('W_PREC_SUM_MONTH'), upper = rc_maxval('W_PREC_SUM_MONTH'), any.missing = FALSE, len = 12)
     
-    # Check if both potential and actual ET are provided
-    if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
+    # Check if both reference and actual ET are provided
+    if ("W_ET_REF_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
       checkmate::assert(
-        !all(is.na(dt$W_ET_POT_MONTH)) || !all(is.na(dt$W_ET_ACT_MONTH)),
-        msg = "At least one of W_ET_POT_MONTH and W_ET_ACT_MONTH should not contain NA values."
+        !all(is.na(dt$W_ET_REF_MONTH)) || !all(is.na(dt$W_ET_ACT_MONTH)),
+        msg = "At least one of W_ET_REF_MONTH and W_ET_ACT_MONTH should not contain NA values."
       )
       # Check ranges, allow NAs
-      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = rc_minval('W_ET_POT_MONTH'), upper = rc_maxval('W_ET_POT_MONTH'), any.missing = TRUE)
+      checkmate::assertNumeric(dt$W_ET_REF_MONTH, lower = rc_minval('W_ET_REF_MONTH'), upper = rc_maxval('W_ET_REF_MONTH'), any.missing = TRUE)
       checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = rc_minval('W_ET_ACT_MONTH'), upper = rc_maxval('W_ET_ACT_MONTH'), any.missing = TRUE)
-    } else if ("W_ET_POT_MONTH" %in% colnames(dt)) {
-      # Only potential ET provided: no NA allowed
-      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = rc_minval('W_ET_POT_MONTH'), upper = rc_maxval('W_ET_POT_MONTH'), any.missing = FALSE)
+    } else if ("W_ET_REF_MONTH" %in% colnames(dt)) {
+      # Only reference ET provided: no NA allowed
+      checkmate::assertNumeric(dt$W_ET_REF_MONTH, lower = rc_minval('W_ET_REF_MONTH'), upper = rc_maxval('W_ET_REF_MONTH'), any.missing = FALSE)
     } else if ("W_ET_ACT_MONTH" %in% colnames(dt)) {
       # Only actual ET provided: no NA allowed
       checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = rc_minval('W_ET_ACT_MONTH'), upper = rc_maxval('W_ET_ACT_MONTH'), any.missing = FALSE)
     }
     
     # Define values of ET correction factor
-    if("W_POT_TO_ACT" %in% colnames(dt)){
-      dt[, W_POT_TO_ACT := fifelse(is.na(W_POT_TO_ACT), 0.75, W_POT_TO_ACT)]
-      checkmate::assert_numeric(dt$W_POT_TO_ACT, lower = 0, upper = 1)
-    }else{
-        dt[, W_POT_TO_ACT := 0.75]
+    if("W_ET_REF_MONTH" %in% colnames(dt)){
+      
+      # create W_ET_REFACT column if non-existent
+      if (!"W_ET_REFACT" %in% colnames(dt)) dt[, W_ET_REFACT := NA_real_]
+      
+      # set NA W_ET_REFACT values to 0.75
+      dt[, W_ET_REFACT := fifelse(is.na(W_ET_REFACT), 0.75, W_ET_REFACT)]
+      
+      # check supplied values
+      checkmate::assert_numeric(dt$W_ET_REFACT, lower = rc_minval('W_ET_REFACT'), upper = rc_maxval('W_ET_REFACT'))
     }
-    
 }else{
   #Set default weather for Dutch conditions if none has been supplied
   dt <- data.table(month = 1:12,
                    W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-                   W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                   W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                    W_ET_ACT_MONTH = NA_real_,
-                   W_POT_TO_ACT = rep(0.75, 12)
+                   W_ET_REFACT = rep(0.75, 12)
                    )
 }
   
