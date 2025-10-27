@@ -23,7 +23,7 @@ test_that("rc_update_weather validates input data table", {
   
   # Test missing columns
   invalid_dt <- valid_dt[, W_ET_REF_MONTH := NULL]
-  rc_update_weather(invalid_dt) # only one of W_ET_REF_MONTH or W_ET_ACT_MONTH must be provided
+  expect_no_error(rc_update_weather(invalid_dt)) # allowed if W_ET_ACT_MONTH is supplied
   
   invalid_dt <- valid_dt[, month := NULL]
   expect_error(rc_update_weather(invalid_dt), "missing elements") # month must be provided
@@ -717,12 +717,9 @@ test_that("rc_time_period handles edge cases", {
   expect_equal(end_of_month$time, (1:2 - 1) / 12, tolerance = 0.001)
 })
 
-# ====================================================================
-# NEW TESTS FOR W_POT_TO_ACT FUNCTIONALITY (AddIrrigation branch)
-# ====================================================================
 
 test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
-  # Test with W_POT_TO_ACT supplied
+  # Test with W_ET_REFACT supplied
   weather_with_correction <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
@@ -737,19 +734,23 @@ test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
   expect_s3_class(result, "data.table")
   expect_true("W_ET_REFACT" %in% names(result))
   expect_equal(result$W_ET_REFACT, rep(0.8, 12))
+})
+
+test_that("rc_update_weather handles partials NAs in W_ET_REFACT", {
+    # Test with partial NAs in W_ET_REFACT - should fill with 0.75
+    weather_partial_na <- data.table(
+      month = 1:12,
+      W_TEMP_MEAN_MONTH = rep(10, 12),
+      W_PREC_SUM_MONTH = rep(50, 12),
+      W_ET_REF_MONTH = rep(50, 12),
+      W_ET_REFACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
+    )
+    
+    result <- rc_update_weather(weather_partial_na)
+    expect_equal(result$W_ET_REFACT, c(0.8, 0.75, 0.7, 0.75, rep(0.75, 8)))
+})
   
-  # Test with partial NAs in W_POT_TO_ACT - should fill with 0.75
-  weather_partial_na <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
-  )
-  
-  result2 <- rc_update_weather(weather_partial_na)
-  expect_equal(result2$W_ET_REFACT, c(0.8, 0.75, 0.7, 0.75, rep(0.75, 8)))
-  
+test_that("rc_update_weather runs without W_ET_REFACT column", {
   # Test without W_ET_REFACT column - should add default 0.75
   weather_no_correction <- data.table(
     month = 1:12,
@@ -758,9 +759,9 @@ test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
     W_ET_REF_MONTH = rep(50, 12)
   )
   
-  result3 <- rc_update_weather(weather_no_correction)
-  expect_true("W_ET_REFACT" %in% names(result3))
-  expect_equal(result3$W_ET_REFACT, rep(0.75, 12))
+  result <- rc_update_weather(weather_no_correction)
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.75, 12))
 })
 
 test_that("rc_update_weather validates W_ET_REFACT ranges", {
@@ -775,7 +776,7 @@ test_that("rc_update_weather validates W_ET_REFACT ranges", {
   
   expect_error(rc_update_weather(invalid_high), "W_ET_REFACT")
   
-  # Test with negative W_POT_TO_ACT values
+  # Test with negative W_ET_REFACT values
   invalid_negative <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),

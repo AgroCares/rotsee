@@ -61,11 +61,6 @@ test_that("rc_input_rmf runs correctly", {
   
 })
 
-
-# ====================================================================
-# NEW TESTS FOR IRRIGATION FUNCTIONALITY (AddIrrigation branch)
-# ====================================================================
-
 test_that("rc_input_rmf handles irrigation data correctly", {
   # Setup test data
   rothc_rotation <- data.table(

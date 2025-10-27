@@ -24,7 +24,7 @@
 * Weather input supports `W_ET_REFACT` (factor to convert reference to actual ET; defaults to 0.75 when missing).
 
 ## changed
-* Parameter name `W_ET_POT_MONTH` to `W_ET_REF_MONTH` to avoid amiguous use of potential evapotranspiration
+* Parameter name `W_ET_POT_MONTH` to `W_ET_REF_MONTH` to avoid ambiguous use of potential evapotranspiration
 
 
 # rotsee v0.1.3 2025-10-15

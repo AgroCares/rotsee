@@ -21,9 +21,9 @@
 #' * month
 #' * W_TEMP_MEAN_MONTH
 #' * W_PREC_SUM_MONTH
-#' * W_ET_POT_MONTH
+#' * W_ET_REF_MONTH
 #' * W_ET_ACT_MONTH (optional), calculated from W_ET_POT_MONTH when not supplied
-#' * W_POT_TO_ACT
+#' * W_ET_REFACT
 #'
 #' dt.irrigation: irrigation table
 #' contains the following columns:
