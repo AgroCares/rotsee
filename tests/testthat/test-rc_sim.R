@@ -38,9 +38,9 @@ test_that("rc_sim correctly checks input validity", {
   weather <- data.table(month = 1:12,
                         W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                         W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                         W_ET_ACT_MONTH = NA_real_,
-                        W_POT_TO_ACT = rep(0.75, 12))
+                        W_ET_REFACT = rep(0.75, 12))
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                       c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
@@ -108,9 +108,9 @@ test_that("rc_sim accepts irrigation parameter", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.75, 12)
+    W_ET_REFACT = rep(0.75, 12)
   )
   
   parms <- list(
@@ -166,9 +166,9 @@ test_that("rc_sim works without irrigation parameter (backward compatibility)", 
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.75, 12)
+    W_ET_REFACT = rep(0.75, 12)
   )
   
   parms <- list(
@@ -221,9 +221,9 @@ test_that("rc_sim handles irrigation with different output units", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.75, 12)
+    W_ET_REFACT = rep(0.75, 12)
   )
   
   irrigation <- data.table(
@@ -319,9 +319,9 @@ test_that("rc_sim handles irrigation timing variations", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.75, 12)
+    W_ET_REFACT = rep(0.75, 12)
   )
   
   parms <- list(
@@ -386,14 +386,14 @@ test_that("rc_sim with irrigation and different W_POT_TO_ACT values", {
     B_C_OF_INPUT = c(1500)
   )
   
-  # Weather with custom W_POT_TO_ACT
+  # Weather with custom W_ET_REFACT
   weather_custom <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = seq(0.6, 0.9, length.out = 12)  # Variable factor
+    W_ET_REFACT = seq(0.6, 0.9, length.out = 12)  # Variable factor
   )
   
   irrigation <- data.table(
@@ -442,9 +442,9 @@ test_that("rc_sim handles long-term simulation with irrigation", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.75, 12)
+    W_ET_REFACT = rep(0.75, 12)
   )
   
   # Irrigation events spread over multiple years
@@ -497,9 +497,9 @@ test_that("rc_sim handles irrigation with initialization", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.75, 12)
+    W_ET_REFACT = rep(0.75, 12)
   )
   
   irrigation <- data.table(
@@ -570,9 +570,9 @@ test_that("rc_sim handles extreme irrigation scenarios", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_,
-    W_POT_TO_ACT = rep(0.75, 12)
+    W_ET_REFACT = rep(0.75, 12)
   )
   
   parms <- list(

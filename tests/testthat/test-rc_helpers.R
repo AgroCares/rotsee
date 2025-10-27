@@ -5,7 +5,7 @@ test_that("rc_update_weather returns default weather data when input is NULL", {
   expect_s3_class(default_weather, "data.table")
   expect_equal(nrow(default_weather), 12)
   expect_equal(ncol(default_weather), 6)
-  expect_equal(names(default_weather), c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_POT_MONTH", "W_ET_ACT_MONTH", "W_POT_TO_ACT"))
+  expect_equal(names(default_weather), c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_REF_MONTH", "W_ET_ACT_MONTH", "W_ET_REFACT"))
 })
 
 test_that("rc_update_weather validates input data table", {
@@ -14,7 +14,7 @@ test_that("rc_update_weather validates input data table", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
     W_ET_ACT_MONTH = rep(47, 12)
   )
   
@@ -22,8 +22,8 @@ test_that("rc_update_weather validates input data table", {
   expect_no_error(rc_update_weather(valid_dt))
   
   # Test missing columns
-  invalid_dt <- valid_dt[, W_ET_POT_MONTH := NULL]
-  expect_no_error(rc_update_weather(invalid_dt)) # only one of W_ET_POT_MONTH or W_ET_ACT_MONTH must be provided
+  invalid_dt <- valid_dt[, W_ET_REF_MONTH := NULL]
+  rc_update_weather(invalid_dt) # only one of W_ET_REF_MONTH or W_ET_ACT_MONTH must be provided
   
   invalid_dt <- valid_dt[, month := NULL]
   expect_error(rc_update_weather(invalid_dt), "missing elements") # month must be provided
@@ -721,157 +721,157 @@ test_that("rc_time_period handles edge cases", {
 # NEW TESTS FOR W_POT_TO_ACT FUNCTIONALITY (AddIrrigation branch)
 # ====================================================================
 
-test_that("rc_update_weather handles W_POT_TO_ACT parameter correctly", {
+test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
   # Test with W_POT_TO_ACT supplied
   weather_with_correction <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
     W_ET_ACT_MONTH = rep(NA_real_, 12),
-    W_POT_TO_ACT = rep(0.8, 12)
+    W_ET_REFACT = rep(0.8, 12)
   )
   
   result <- rc_update_weather(weather_with_correction)
   
   expect_s3_class(result, "data.table")
-  expect_true("W_POT_TO_ACT" %in% names(result))
-  expect_equal(result$W_POT_TO_ACT, rep(0.8, 12))
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.8, 12))
   
   # Test with partial NAs in W_POT_TO_ACT - should fill with 0.75
   weather_partial_na <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
   )
   
   result2 <- rc_update_weather(weather_partial_na)
-  expect_equal(result2$W_POT_TO_ACT, c(0.8, 0.75, 0.7, 0.75, rep(0.75, 8)))
+  expect_equal(result2$W_ET_REFACT, c(0.8, 0.75, 0.7, 0.75, rep(0.75, 8)))
   
-  # Test without W_POT_TO_ACT column - should add default 0.75
+  # Test without W_ET_REFACT column - should add default 0.75
   weather_no_correction <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12)
+    W_ET_REF_MONTH = rep(50, 12)
   )
   
   result3 <- rc_update_weather(weather_no_correction)
-  expect_true("W_POT_TO_ACT" %in% names(result3))
-  expect_equal(result3$W_POT_TO_ACT, rep(0.75, 12))
+  expect_true("W_ET_REFACT" %in% names(result3))
+  expect_equal(result3$W_ET_REFACT, rep(0.75, 12))
 })
 
-test_that("rc_update_weather validates W_POT_TO_ACT ranges", {
-  # Test with out of range W_POT_TO_ACT values (too high)
+test_that("rc_update_weather validates W_ET_REFACT ranges", {
+  # Test with out of range W_ET_REFACT values (too high)
   invalid_high <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(1.5, 12)
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(2.5, 12)
   )
   
-  expect_error(rc_update_weather(invalid_high), "W_POT_TO_ACT")
+  expect_error(rc_update_weather(invalid_high), "W_ET_REFACT")
   
   # Test with negative W_POT_TO_ACT values
   invalid_negative <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(-0.1, 12)
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(-0.1, 12)
   )
   
-  expect_error(rc_update_weather(invalid_negative), "W_POT_TO_ACT")
+  expect_error(rc_update_weather(invalid_negative), "W_ET_REFACT")
 })
 
-test_that("rc_update_weather boundary values for W_POT_TO_ACT", {
-  # Test with W_POT_TO_ACT at lower boundary (0)
+test_that("rc_update_weather boundary values for W_ET_REFACT", {
+  # Test with W_ET_REFACT at lower boundary (0.3)
   weather_lower <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(0, 12)
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(0.3, 12)
   )
   
   expect_no_error(rc_update_weather(weather_lower))
   
-  # Test with W_POT_TO_ACT at upper boundary (1)
+  # Test with W_ET_REFACT at upper boundary (2)
   weather_upper <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = rep(1, 12)
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(2, 12)
   )
   
   result_upper <- rc_update_weather(weather_upper)
-  expect_equal(result_upper$W_POT_TO_ACT, rep(1, 12))
+  expect_equal(result_upper$W_ET_REFACT, rep(2, 12))
   
-  # Test with mixed W_POT_TO_ACT values
+  # Test with mixed W_ET_REFACT values
   weather_mixed <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
-    W_POT_TO_ACT = seq(0, 1, length.out = 12)
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = seq(0.3, 2, length.out = 12)
   )
   
   result_mixed <- rc_update_weather(weather_mixed)
-  expect_equal(result_mixed$W_POT_TO_ACT, seq(0, 1, length.out = 12), tolerance = 1e-10)
+  expect_equal(result_mixed$W_ET_REFACT, seq(0.3, 2, length.out = 12), tolerance = 1e-10)
 })
 
-test_that("rc_update_weather default weather includes W_POT_TO_ACT", {
-  # When no weather data is provided, default should include W_POT_TO_ACT
+test_that("rc_update_weather default weather includes W_ET_REFACT", {
+  # When no weather data is provided, default should include W_ET_REFACT
   default_weather <- rc_update_weather(NULL)
   
-  expect_true("W_POT_TO_ACT" %in% names(default_weather))
-  expect_equal(default_weather$W_POT_TO_ACT, rep(0.75, 12))
+  expect_true("W_ET_REFACT" %in% names(default_weather))
+  expect_equal(default_weather$W_ET_REFACT, rep(0.75, 12))
   expect_equal(nrow(default_weather), 12)
   expect_equal(ncol(default_weather), 6)
 })
 
-test_that("rc_update_weather with only actual ET and W_POT_TO_ACT", {
-  # Test scenario with only actual ET and W_POT_TO_ACT
+test_that("rc_update_weather with only actual ET and W_ET_REFACT", {
+  # Test scenario with only actual ET and W_ET_REFACT
   weather_actual_only <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
     W_ET_ACT_MONTH = rep(40, 12),
-    W_POT_TO_ACT = rep(0.85, 12)
+    W_ET_REFACT = rep(0.85, 12)
   )
   
   result <- rc_update_weather(weather_actual_only)
-  expect_true("W_POT_TO_ACT" %in% names(result))
-  expect_equal(result$W_POT_TO_ACT, rep(0.85, 12))
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.85, 12))
 })
 
-test_that("rc_update_weather edge case with both ET types and W_POT_TO_ACT", {
-  # Both potential and actual ET provided with W_POT_TO_ACT
+test_that("rc_update_weather edge case with both ET types and W_ET_REFACT", {
+  # Both reference and actual ET provided with W_ET_REFACT
   weather_both <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_POT_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
     W_ET_ACT_MONTH = c(rep(40, 6), rep(NA_real_, 6)),
-    W_POT_TO_ACT = rep(0.8, 12)
+    W_ET_REFACT = rep(0.8, 12)
   )
   
   result <- rc_update_weather(weather_both)
-  expect_equal(result$W_POT_TO_ACT, rep(0.8, 12))
+  expect_equal(result$W_ET_REFACT, rep(0.8, 12))
   expect_equal(nrow(result), 12)
 })
 
-test_that("rc_update_weather preserves other columns when adding W_POT_TO_ACT", {
+test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
   # Ensure no side effects on other columns
   weather_original <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5)
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5)
   )
   
   result <- rc_update_weather(weather_original)
@@ -880,5 +880,5 @@ test_that("rc_update_weather preserves other columns when adding W_POT_TO_ACT", 
   expect_equal(result$month, weather_original$month)
   expect_equal(result$W_TEMP_MEAN_MONTH, weather_original$W_TEMP_MEAN_MONTH)
   expect_equal(result$W_PREC_SUM_MONTH, weather_original$W_PREC_SUM_MONTH)
-  expect_equal(result$W_ET_POT_MONTH, weather_original$W_ET_POT_MONTH)
+  expect_equal(result$W_ET_REF_MONTH, weather_original$W_ET_REF_MONTH)
 })
