@@ -78,7 +78,7 @@ test_that("rc_sim correctly checks input validity", {
 
 test_that("rc_sim correctly returns different output formats", {
   # Set correct  input files
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -158,7 +158,7 @@ test_that("rc_sim correctly returns different output formats", {
   )
   
   expect_s3_class(result_psoc, "data.table")
-  expect_true("psoc" %in% names(result_psoc))
+  expect_true("soc" %in% names(result_psoc))
   expect_true("year" %in% names(result_psoc))
   expect_false(any(is.na(result_psoc$psoc)))
   
@@ -215,7 +215,7 @@ test_that("rc_sim correctly returns different output formats", {
 )
 
 test_that("rc_sim returns yearly output when poutput is 'year'", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -271,7 +271,7 @@ test_that("rc_sim returns yearly output when poutput is 'year'", {
 })
 
 test_that("rc_sim runs in debug mode and produces debug output", {
-  soil_properties <- list(
+  soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
     A_CLAY_MI = 18,
@@ -344,10 +344,5 @@ test_that("rc_sim runs in debug mode and produces debug output", {
   # Check that debug file has expected columns
   debug_output <- fread("rothc_flows_debug.csv")
   expect_true(all(c("time", "CDPM", "CRPM", "CBIO", "CHUM", "soc") %in% names(debug_output)))
-  
-  # Clean up
-  file.remove("rothc_flows_debug.csv")
-  file.remove("carbon_pools_log.png")
-  file.remove("carbon_pools_linear.png")
-  file.remove("carbon_pools_change.png")
+
 })

@@ -712,13 +712,13 @@ debug_plot <- function(dt, save_dir = getwd()){
   
   # plot variables on log scale
   out_log <- ggplot2::ggplot(data = dt_long)+ 
-    ggplot2::geom_line(aes(x = time, y = value, colour = pool))+
+    ggplot2::geom_line(ggplot2::aes(x = time, y = value, colour = pool))+
     ggplot2::scale_y_log10() +
     ggplot2::labs(title = "Carbon Pools (log scale)", y = "Value (log)", x = "Time [yr]")
   
   # plot variables on a continuous scale
   out_cont <- ggplot2::ggplot(data = dt_long)+ 
-    ggplot2::geom_line(aes(x = time, y = value, colour = pool))+
+    ggplot2::geom_line(ggplot2::aes(x = time, y = value, colour = pool))+
     ggplot2::scale_y_continuous()+
     ggplot2::labs(title = "Carbon Pools (linear scale)", y = "Value [kg C/ha]", x = "Time [yr]")
   
@@ -734,7 +734,7 @@ debug_plot <- function(dt, save_dir = getwd()){
   
   # plot variables on a continuous scale
   out_change_cont <- ggplot2::ggplot(data = dt_change_long)+ 
-    ggplot2::geom_line(aes(x = time, y = value, colour = pool))+
+    ggplot2::geom_line(ggplot2::aes(x = time, y = value, colour = pool))+
     ggplot2::scale_y_continuous()+
     ggplot2::labs(title = "Change in Carbon Pools", y = "Delta C [kg C/ha]", x = "Time [yr]")
   

@@ -744,7 +744,6 @@ test_that("debug_plot runs without error", {
   expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
 
   # Clean up
-  file.remove("rothc_flows_debug.csv")
   file.remove("carbon_pools_log.png")
   file.remove("carbon_pools_linear.png")
   file.remove("carbon_pools_change.png")
