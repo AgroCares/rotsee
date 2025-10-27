@@ -8,7 +8,6 @@
 * allow input of partial c_fractions distribution in rothc_parms
 
 # rotsee v0.1.5 2025-10-16
-# rotsee v0.1.4 2025-10-15
 
 ## added
 * package table `parameters.rda`, with information on all used parameters in the rotsee package
@@ -18,10 +17,15 @@
 ## changed
 * Validation of input data based on information in `parameters.rda`
 
+# rotsee v0.1.4 2025-10-15
 
 ## added
 * rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
-* Weather input supports `W_POT_TO_ACT` (factor to convert potential to actual ET; defaults to 0.75 when missing).
+* Weather input supports `W_ET_REFACT` (factor to convert reference to actual ET; defaults to 0.75 when missing).
+
+## changed
+* Parameter name `W_ET_POT_MONTH` to `W_ET_REF_MONTH` to avoid amiguous use of potential evapotranspiration
+
 
 # rotsee v0.1.3 2025-10-15
 
