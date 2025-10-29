@@ -70,7 +70,6 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
 test_that("rc_update_parms accepts and validates dec_rates", {
   # Set default crop table
   crops <- create_rotation()
-  
   parms <- list(dec_rates = c(k1 = 5, k2 = 0.2, k3 = 0.5, k4 = 0.01))
   result <- rc_update_parms(parms, crops = crops)
   expect_equal(result$dec_rates, c(k1 = 5, k2 = 0.2, k3 = 0.5, k4 = 0.01))

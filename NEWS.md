@@ -1,3 +1,9 @@
+# rotsee v0.1.7 2025-10-29
+
+## changed
+* split total C input `B_C_OF_INPUT` into separate C input from plants `B_C_CULT` and C input from amendments `B_C_AMENDMENT` 
+
+
 # rotsee v0.1.6  2025-10-20
 
 ## added

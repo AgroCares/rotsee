@@ -21,7 +21,7 @@ rc_input_amendment <- function(dt = NULL){
   
 
   # add visual bindings
-  B_C_AMENDMENT = P_DATE_FERTILIZATION = P_DOSE = P_HC =  NULL
+  B_C_AMENDMENT = P_C_OF = P_DATE_FERTILIZATION = P_DOSE = P_HC =  NULL
   cin_dpm = cin_hum = cin_rpm = cin_tot = fr_dpm_rpm = NULL
   
   # Check amendment table
@@ -38,12 +38,12 @@ rc_input_amendment <- function(dt = NULL){
       if (anyNA(dt$B_C_AMENDMENT)) {
          checkmate::assert(
           all(c("P_DOSE","P_C_OF") %in% names(dt)),
-          msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided"
+          msg = "For rows with NA B_C_AMENDMENT, both P_DOSE and P_C_OF must be provided"
           )
         checkmate::assert(
-          all(!is.na(dt$P_DOSE[is.na(dt$B_C_OF_INPUT)]) &
-              !is.na(dt$P_C_OF[is.na(dt$B_C_OF_INPUT)])),
-          msg = "For rows with NA B_C_OF_INPUT, both P_DOSE and P_C_OF must be provided"
+          all(!is.na(dt$P_DOSE[is.na(dt$B_C_AMENDMENT)]) &
+              !is.na(dt$P_C_OF[is.na(dt$B_C_AMENDMENT)])),
+          msg = "For rows with NA B_C_AMENDMENT, both P_DOSE and P_C_OF must be provided"
           )
       }
     # Check P_DOSE and P_C_OF
@@ -73,7 +73,7 @@ rc_input_amendment <- function(dt = NULL){
   # estimate total Carbon input per crop and year (kg C/ha)
     if("B_C_AMENDMENT" %in% names(dt.org)){
       # If supplied, copy value, calculate from P_DOSE and P_C_OF only for NA rows
-      dt.org[, cin_tot := B_C_OF_INPUT]
+      dt.org[, cin_tot := B_C_AMENDMENT]
       if (anyNA(dt.org$B_C_AMENDMENT)) {
         dt.org[is.na(cin_tot), cin_tot := P_DOSE * P_C_OF/1000]
       }
