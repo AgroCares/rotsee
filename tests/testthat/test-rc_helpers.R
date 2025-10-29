@@ -728,8 +728,18 @@ test_that("debug_plot runs without error", {
     soc = rnorm(10, 1000, 100)
   )
 
- 
+  # Save current working directory and switch to temp directory
+  old_wd <- getwd()
+  temp_dir <- file.path(tempdir(), "rotsee_debug_plot_test")
+  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
+  setwd(temp_dir)
   
+    # Restore working directory on exit (even if test fails)
+    on.exit({
+      setwd(old_wd)
+      unlink(temp_dir, recursive = TRUE)
+      }, add = TRUE)
+    
   # Run the plot function
   expect_no_error(debug_plot(dt))
  

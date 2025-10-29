@@ -160,7 +160,7 @@ test_that("rc_sim correctly returns different output formats", {
   expect_s3_class(result_psoc, "data.table")
   expect_true("soc" %in% names(result_psoc))
   expect_true("year" %in% names(result_psoc))
-  expect_false(any(is.na(result_psoc$psoc)))
+  expect_false(any(is.na(result_psoc$soc)))
   
   # unit = "psomperfraction"
   parms_pspf <- parms
@@ -266,8 +266,10 @@ test_that("rc_sim returns yearly output when poutput is 'year'", {
     weather = weather,
     rothc_parms = parms
   )
-  
-  expect_true(all(result$time %% 1 == 0))
+  # Verify yearly output: should have one row per year
+  expect_equal(nrow(result), 2)  # 2022-04-01 to 2023-10-01 spans 2 years
+  expect_true("year" %in% names(result))
+  expect_equal(result$year, c(2022, 2023))
 })
 
 test_that("rc_sim runs in debug mode and produces debug output", {
