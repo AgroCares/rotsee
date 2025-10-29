@@ -693,16 +693,17 @@ rc_maxval <- function(this.parameter){
 #' Function to plot information on C pools when rc_sim is run in debug mode
 #'
 #' @param dt (data.table) data table with monthly information on the state of the pools CDPM, CRPM, CBIO, and CHUM
+#' @param event (data.table) data table with information on c inputs, contains columns time, var, and value
 #' @param save_dir (character) directory to save PNGs; defaults to current working directory
 #'
 #' @returns
 #' data table with monthly totals and changes in different C pools, plots of their trends
 #' @export
 #'
-debug_plot <- function(dt, save_dir = getwd()){
+debug_plot <- function(dt, event = NULL, save_dir = getwd()){
   
   # add visible bindings
-  pool = value = CDPM = CRPM = CBIO = CHUM = soc = time = NULL
+  pool = value = CDPM = CRPM = CBIO = CHUM = soc = time = . = NULL
   
   # copy data table
   dt <- copy(dt)
@@ -710,18 +711,28 @@ debug_plot <- function(dt, save_dir = getwd()){
   # set data table to long format
   dt_long <- melt(dt, id.vars = "time", variable.name = "pool")
   
-  # plot variables on log scale
-  out_log <- ggplot2::ggplot(data = dt_long)+ 
-    ggplot2::geom_line(ggplot2::aes(x = time, y = value, colour = pool))+
-    ggplot2::scale_y_log10() +
-    ggplot2::labs(title = "Carbon Pools (log scale)", y = "Value (log)", x = "Time [yr]")
+if(!is.null(event)){  
+  # Copy event table
+  event <- copy(event)
+  
+  # calculate total soc input for each event
+  event_soc <- event[, .(soc = sum(value)), by=.(time)]
+}
   
   # plot variables on a continuous scale
-  out_cont <- ggplot2::ggplot(data = dt_long)+ 
-    ggplot2::geom_line(ggplot2::aes(x = time, y = value, colour = pool))+
+  if(!is.null(event)){
+  out_cont <- ggplot2::ggplot()+ 
+    ggplot2::geom_line(data = dt_long, ggplot2::aes(x = time, y = value, colour = pool))+
+    ggplot2::geom_point(data = event_soc, ggplot2::aes(x = time, y = soc))+
     ggplot2::scale_y_continuous()+
     ggplot2::labs(title = "Carbon Pools (linear scale)", y = "Value [kg C/ha]", x = "Time [yr]")
   
+  } else {
+    out_cont <- ggplot2::ggplot()+ 
+      ggplot2::geom_line(data = dt_long, ggplot2::aes(x = time, y = value, colour = pool))+
+      ggplot2::scale_y_continuous()+
+      ggplot2::labs(title = "Carbon Pools (linear scale)", y = "Value [kg C/ha]", x = "Time [yr]") 
+  }
   ## calculate fraction change
 
   dt_change <- copy(dt)
@@ -733,25 +744,27 @@ debug_plot <- function(dt, save_dir = getwd()){
   dt_change_long <- melt(dt_change, id.vars = "time", variable.name = "pool", na.rm = TRUE)
   
   # plot variables on a continuous scale
-  out_change_cont <- ggplot2::ggplot(data = dt_change_long)+ 
-    ggplot2::geom_line(ggplot2::aes(x = time, y = value, colour = pool))+
+  if(!is.null(event)) {
+   out_change_cont <- ggplot2::ggplot()+ 
+    ggplot2::geom_line(data = dt_change_long, ggplot2::aes(x = time, y = value, colour = pool))+
+    ggplot2::geom_point(data = event_soc, ggplot2::aes(x = time, y = soc))+
     ggplot2::scale_y_continuous()+
     ggplot2::labs(title = "Change in Carbon Pools", y = "Delta C [kg C/ha]", x = "Time [yr]")
-  
-  # Display plots in RStudio/device
-  print(out_log)
-  print(out_cont)
-  print(out_change_cont)
+  } else{
+    out_change_cont <- ggplot2::ggplot()+ 
+      ggplot2::geom_line(data = dt_change_long, ggplot2::aes(x = time, y = value, colour = pool))+
+      ggplot2::scale_y_continuous()+
+      ggplot2::labs(title = "Change in Carbon Pools", y = "Delta C [kg C/ha]", x = "Time [yr]")
+  }
   
   # Save plots to files
   if (!dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
-  ggplot2::ggsave(file.path(save_dir, "carbon_pools_log.png"), plot = out_log, width = 10, height = 6)
   ggplot2::ggsave(file.path(save_dir, "carbon_pools_linear.png"), plot = out_cont, width = 10, height = 6)
   ggplot2::ggsave(file.path(save_dir, "carbon_pools_change.png"), plot = out_change_cont, width = 10, height = 6)
   
   invisible(list(
     data  = list(total = dt, delta = dt_change),
-    plots = list(log = out_log, linear = out_cont, change = out_change_cont)
+    plots = list( linear = out_cont, change = out_change_cont)
     ))
   
 }

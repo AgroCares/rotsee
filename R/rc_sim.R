@@ -271,7 +271,7 @@ rc_sim <- function(soil_properties,
   
   # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
-
+  
   # save debug output if requested
   if(debug == TRUE){
     out_debug <- copy(out)
@@ -280,7 +280,7 @@ rc_sim <- function(soil_properties,
     message("Debug mode: C flows saved to rothc_flows_debug.csv")
     
     # create visualization of C flows
-    debug_plot(out_debug, save_dir = getwd())
+    debug_plot(out_debug, event = rothc.event, save_dir = getwd())
   }
  
  
