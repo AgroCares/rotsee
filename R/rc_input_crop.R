@@ -12,22 +12,22 @@
 #' * B_LU (a crop id)
 #' * B_LU_NAME (a crop name, optional):
 #' * B_LU_HC (the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used)
-#' * B_C_OF_INPUT (the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF})
+#' * B_C_CULT (numeric), the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_CULT})
 #'
 #' @export
 rc_input_crop <- function(dt){
   
   # add visual bindings
-  B_C_OF_INPUT  = B_LU  = B_LU_END  = B_LU_HC = B_LU_START = cin_dpm = NULL
+  B_C_CULT  = B_LU  = B_LU_END  = B_LU_HC = B_LU_START = cin_dpm = NULL
     cin_rpm = fr_dpm_rpm = NULL
   
   # check crop table
   checkmate::assert_data_table(dt,null.ok = FALSE)
-  req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
+  req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_CULT")
   checkmate::assert_names(colnames(dt), must.include = req)
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = FALSE)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = FALSE)
-  checkmate::assert_numeric(dt$B_C_OF_INPUT, any.missing = FALSE, lower = rc_minval("B_C_OF_INPUT"), upper = rc_maxval("B_C_OF_INPUT"))
+  checkmate::assert_numeric(dt$B_C_CULT, any.missing = FALSE, lower = rc_minval("B_C_CULT"), upper = rc_maxval("B_C_CULT"))
   
   # create a copy of the crop table
   dt.crop <- copy(dt)
@@ -48,8 +48,8 @@ rc_input_crop <- function(dt){
   # estimate total Carbon input per crop and year (kg C / ha)
 
     # Estimate averaged C input for DPM and RDM pool (kg C / ha)
-    dt.crop[,cin_dpm := B_C_OF_INPUT * fr_dpm_rpm / (1 + fr_dpm_rpm)]
-    dt.crop[,cin_rpm := B_C_OF_INPUT * 1 / (1 + fr_dpm_rpm)]
+    dt.crop[,cin_dpm := B_C_CULT * fr_dpm_rpm / (1 + fr_dpm_rpm)]
+    dt.crop[,cin_rpm := B_C_CULT * 1 / (1 + fr_dpm_rpm)]
 
 
   # select only relevant columns with C input (kg C/ ha)

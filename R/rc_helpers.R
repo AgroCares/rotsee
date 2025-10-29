@@ -23,7 +23,7 @@ cf_ind_importance <- function(x) {
 #' *month (1 - 12)
 #' *W_TEMP_MEAN_MONTH (°C)
 #' *W_PREC_SUM_MONTH (mm)
-#' *W_ET_POT_MONTH (mm)
+#' *W_ET_REF_MONTH (mm)
 #' *W_ET_ACT_MONTH (mm; optional, can be NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' 
@@ -42,25 +42,25 @@ rc_update_weather <- function(dt = NULL){
     req <- c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH")
     checkmate::assert_names(colnames(dt), must.include = req)
     checkmate::assert(
-      any(c("W_ET_POT_MONTH", "W_ET_ACT_MONTH") %in% names(dt)),
-      msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided."
+      any(c("W_ET_REF_MONTH", "W_ET_ACT_MONTH") %in% names(dt)),
+      msg = "At least one of 'W_ET_REF_MONTH' or 'W_ET_ACT_MONTH' must be provided."
     )
     checkmate::assert_subset(dt$month, 1:12, add = FALSE)
     checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = rc_minval('W_TEMP_MEAN_MONTH'), upper = rc_maxval('W_TEMP_MEAN_MONTH'), any.missing = FALSE, len = 12)
     checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = rc_minval('W_PREC_SUM_MONTH'), upper = rc_maxval('W_PREC_SUM_MONTH'), any.missing = FALSE, len = 12)
     
     # Check if both potential and actual ET are provided
-    if ("W_ET_POT_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
+    if ("W_ET_REF_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
       checkmate::assert(
-        !all(is.na(dt$W_ET_POT_MONTH)) || !all(is.na(dt$W_ET_ACT_MONTH)),
-        msg = "At least one of W_ET_POT_MONTH and W_ET_ACT_MONTH should not contain NA values."
+        !all(is.na(dt$W_ET_REF_MONTH)) || !all(is.na(dt$W_ET_ACT_MONTH)),
+        msg = "At least one of W_ET_REF_MONTH and W_ET_ACT_MONTH should not contain NA values."
       )
       # Check ranges, allow NAs
-      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = rc_minval('W_ET_POT_MONTH'), upper = rc_maxval('W_ET_POT_MONTH'), any.missing = TRUE)
+      checkmate::assertNumeric(dt$W_ET_REF_MONTH, lower = rc_minval('W_ET_REF_MONTH'), upper = rc_maxval('W_ET_REF_MONTH'), any.missing = TRUE)
       checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = rc_minval('W_ET_ACT_MONTH'), upper = rc_maxval('W_ET_ACT_MONTH'), any.missing = TRUE)
-    } else if ("W_ET_POT_MONTH" %in% colnames(dt)) {
+    } else if ("W_ET_REF_MONTH" %in% colnames(dt)) {
       # Only potential ET provided: no NA allowed
-      checkmate::assertNumeric(dt$W_ET_POT_MONTH, lower = rc_minval('W_ET_POT_MONTH'), upper = rc_maxval('W_ET_POT_MONTH'), any.missing = FALSE)
+      checkmate::assertNumeric(dt$W_ET_REF_MONTH, lower = rc_minval('W_ET_REF_MONTH'), upper = rc_maxval('W_ET_REF_MONTH'), any.missing = FALSE)
     } else if ("W_ET_ACT_MONTH" %in% colnames(dt)) {
       # Only actual ET provided: no NA allowed
       checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = rc_minval('W_ET_ACT_MONTH'), upper = rc_maxval('W_ET_ACT_MONTH'), any.missing = FALSE)
@@ -71,7 +71,7 @@ rc_update_weather <- function(dt = NULL){
   dt <- data.table(month = 1:12,
                    W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-                   W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                   W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                    W_ET_ACT_MONTH = NA_real_)
 }
   
@@ -247,7 +247,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 #'
 #' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_INPUT, and P_HC.
+#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_AMEND, and P_HC.
 #'
 #' @returns
 #' Error messages indicating if input data is not in order
@@ -274,11 +274,11 @@ rc_check_inputs <- function(soil_properties,
   if(!is.null(rothc_rotation)){
     checkmate::assert_data_table(rothc_rotation, null.ok = TRUE, min.rows = 1)
 
-    req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
+    req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_CULT")
     checkmate::assert_names(colnames(rothc_rotation), must.include = req)
     
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = FALSE)
-    checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = FALSE)
+    checkmate::assert_numeric(rothc_rotation$B_C_CULT, lower = rc_minval('B_C_CULT'), upper = rc_maxval('B_C_CULT'), any.missing = FALSE)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
     }
@@ -298,8 +298,8 @@ rc_check_inputs <- function(soil_properties,
        checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = rc_minval('P_DOSE'), upper = rc_maxval('P_DOSE'), any.missing = TRUE)
     if ("P_C_OF" %in% names(rothc_amendment))
       checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = rc_minval('P_C_OF'), upper = rc_maxval('P_C_OF'), any.missing = TRUE)
-    if ("B_C_OF_INPUT" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = TRUE)
+    if ("B_C_AMENDMENT" %in% names(rothc_amendment))
+      checkmate::assert_numeric(rothc_amendment$B_C_AMENDMENT, lower = rc_minval('B_C_AMENDMENT'), upper = rc_maxval('B_C_AMENDMENT'), any.missing = TRUE)
   }
 }
 
@@ -362,11 +362,10 @@ rc_calculate_bd <- function(dt){
 #' * M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
 #' @export
-
-rc_calculate_B_C_OF <- function(dt){
+rc_calculate_B_C_CULT <- function(dt){
   # Add visible bindings
   cin_aboveground = B_LU_YIELD = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
-  cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_INPUT = NULL
+  cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_CULT = NULL
   
   # Check input data
   req <- c("B_LU_YIELD", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE")
@@ -374,7 +373,7 @@ rc_calculate_B_C_OF <- function(dt){
   checkmate::assert_numeric(dt$B_LU_YIELD, lower = rc_minval('B_LU_YIELD'), upper = rc_maxval('B_LU_YIELD'), any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI, lower = rc_minval('B_LU_HI'), upper = rc_maxval('B_LU_HI'), any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI_RES, lower = rc_minval('B_LU_HI_RES'), upper = rc_maxval('B_LU_HI_RES'), any.missing = F)
-  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = 0.01, upper = 5, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = rc_minval('B_LU_RS_FR'), upper = rc_maxval('B_LU_RS_FR'), any.missing = F)
   checkmate::assert_logical(dt$M_CROPRESIDUE)
   
   # Make copy of input table
@@ -384,7 +383,7 @@ rc_calculate_B_C_OF <- function(dt){
   dt.crop[, cin_aboveground := B_LU_YIELD / B_LU_HI * 0.5]
   dt.crop[, cin_roots := cin_aboveground * B_LU_RS_FR]
   dt.crop[, cin_residue := fifelse(M_CROPRESIDUE, cin_aboveground * B_LU_HI_RES, 0)]
-  dt.crop[, B_C_OF_INPUT := cin_roots + cin_residue]
+  dt.crop[, B_C_CULT := cin_roots + cin_residue]
   
 return(dt.crop)
 }
@@ -425,11 +424,11 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   crops <- as.data.table(crops)
   setnames(crops,toupper(colnames(crops)))
   
-  req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT")
+  req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_CULT")
   checkmate::assert_names(colnames(crops), must.include = req)
   if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
   checkmate::assert_numeric(crops$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = F)
-  checkmate::assert_numeric(crops$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = F)
+  checkmate::assert_numeric(crops$B_C_CULT, lower = rc_minval('B_C_CULT'), upper = rc_maxval('B_C_CULT'), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
   checkmate::assert_date(as.Date(start_date))
@@ -515,7 +514,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' * P_NAME (character), name of the soil amendment product, optional
 #' * P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
-#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_AMENDMENT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #' 
@@ -695,7 +694,7 @@ create_weather <- function(){
   dt <- data.table(month = 1:12,
                       W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                       W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-                      W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                      W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                       W_ET_ACT_MONTH = NA_real_)
   
   return(dt)
@@ -712,7 +711,7 @@ create_rotation <- function(){
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
     B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
+    B_C_CULT = c(1500, 1500)
   )
   
   return(dt)
