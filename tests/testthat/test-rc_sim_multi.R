@@ -61,7 +61,6 @@ test_that("rc_sim_multi runs with normal inputs", {
                          final = FALSE,
                          strategy = 'multisession')
 
-  
   expect_s3_class(result, "data.table")
   expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))
   expect_equal(nrow(result), 57)

@@ -727,24 +727,21 @@ test_that("debug_plot runs without error", {
     CHUM = rnorm(10, 400, 40),
     soc = rnorm(10, 1000, 100)
   )
-  # Create a temporary directory for saved files
+
  
   
   # Run the plot function
   expect_no_error(debug_plot(dt))
  
   # Check that debug files were created
-  expect_true(file.exists("carbon_pools_log.png"))
   expect_true(file.exists("carbon_pools_linear.png"))
   expect_true(file.exists("carbon_pools_change.png"))
   
   # Check that the files are not empty
-  expect_true(file.info(file.path("carbon_pools_log.png"))$size > 0)
   expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
   expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
 
   # Clean up
-  file.remove("carbon_pools_log.png")
   file.remove("carbon_pools_linear.png")
   file.remove("carbon_pools_change.png")
 

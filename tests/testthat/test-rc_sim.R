@@ -342,7 +342,6 @@ test_that("rc_sim runs in debug mode and produces debug output", {
   
   # Check that debug files were created
   expect_true(file.exists("rothc_flows_debug.csv"))
-  expect_true(file.exists("carbon_pools_log.png"))
   expect_true(file.exists("carbon_pools_linear.png"))
   expect_true(file.exists("carbon_pools_change.png"))
   
