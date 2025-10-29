@@ -12,8 +12,8 @@ A data.table with x rows and x columns:
   \item{rc_parm_type}{the type of the parameter. Options: measurement, field property}
   \item{rc_parm_description}{a short description of the parameters}
   \item{rc_parm_unit}{the unit of the parameter}
-  \item{rc_parm_min}{the maximum allowed value for the parameter}
-  \item{rc_parm_max}{the minimum allowed value for the parameter}
+  \item{rc_parm_min}{the minimum allowed value for the parameter}
+  \item{rc_parm_max}{the maximum allowed value for the parameter}
   \item{rc_parm_data_type}{the data type of the parameter: numeric, character or boolean}
   \item{rc_parm_enum}{does the parameter have predefined options}
   \item{rc_parm_options}{allowed options for the parameteer}

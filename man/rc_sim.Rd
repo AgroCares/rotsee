@@ -30,7 +30,7 @@ rc_sim(
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
-\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
+\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH. For more information, see details.}
 }
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
@@ -50,8 +50,8 @@ Includes the columns:
 rothc_amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
 Includes the columns:
 * B_C_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_AMENDMENT is not supplied
+* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_AMENDMENT is not supplied
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
@@ -80,6 +80,6 @@ Includes the columns:
 * month
 * W_TEMP_MEAN_MONTH (temperature in °C)
 * W_PREC_SUM_MONTH (precipitation in mm)
-* W_ET_POT_MONTH (potential evapotranspiration in mm)
+* W_ET_REF_MONTH (potential evapotranspiration in mm)
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 }

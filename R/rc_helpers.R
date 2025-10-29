@@ -247,7 +247,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 #'
 #' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_AMEND, and P_HC.
+#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_AMENDMENT, and P_HC.
 #'
 #' @returns
 #' Error messages indicating if input data is not in order
@@ -512,9 +512,9 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' Includes the columns:
 #' * P_ID (character), ID of the soil amendment product
 #' * P_NAME (character), name of the soil amendment product, optional
-#' * P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
-#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_AMENDMENT is not supplied
+#' * B_C_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_AMENDMENT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_AMENDMENT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #' 
@@ -523,7 +523,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyears = NULL){
   
   # Add visible bindings
-  id = yr_rep = P_DATE_FERTILIZATION = NULL
+  id = yr_rep = year_ext =  P_DATE_FERTILIZATION = NULL
   
   # Check input data
   checkmate::assert_data_table(amendments, null.ok = FALSE, min.rows = 1)
@@ -566,19 +566,19 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
     
   # Update P_DATE_FERTILIZATION for all repetitions of rotation block
   amendments_ext[, yr_rep := 1:.N, by = id]
-  amendments_ext[, year := year(P_DATE_FERTILIZATION) + (yr_rep - 1) * rotation_length]
-  amendments_ext[, P_DATE_FERTILIZATION := paste0(year,substr(P_DATE_FERTILIZATION, start = 5, stop = 10))]
+  amendments_ext[, year_ext := year(P_DATE_FERTILIZATION) + (yr_rep - 1) * rotation_length]
+  amendments_ext[, P_DATE_FERTILIZATION := paste0(year_ext,substr(P_DATE_FERTILIZATION, start = 5, stop = 10))]
     
   # filter only the years for simulation
   if (!is.null(end_date)) {
     this.amendments <- amendments_ext[as.Date(P_DATE_FERTILIZATION) <= as.Date(end_date), ]
     } else {
-      this.amendments <- amendments_ext[year <= (year(start_date) + simyears),]
+      this.amendments <- amendments_ext[year_ext <= (year(start_date) + simyears),]
     }
   
   # Select relevant columns
   this.amendments <- this.amendments[, .SD, .SDcols =!names(this.amendments) %in% 
-                                         c("id", "year", "year_start", "year_end",
+                                         c("id", "year_ext", "year_start", "year_end",
                                            "yr_rep", "year_start_ext", "year_end_ext")
     ]
 

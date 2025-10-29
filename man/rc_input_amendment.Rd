@@ -19,8 +19,8 @@ This helper function assists the checking and controlling of amendments properti
 rothc_amendment: amendment table
 Includes the columns:
 * B_C_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_AMENDMENT is not supplied
+* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_AMENDMENT is not supplied
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 }
