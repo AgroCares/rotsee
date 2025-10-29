@@ -52,8 +52,18 @@ rc_input_amendment <- function(dt = NULL){
   }else{
     checkmate::assert(all(c("P_DOSE","P_C_OF") %in% names(dt)),
                       msg = "Provide both P_DOSE and P_C_OF when B_C_AMENDMENT is absent")
-    checkmate::assert_numeric(dt$P_DOSE, any.missing = FALSE)
-    checkmate::assert_numeric(dt$P_C_OF, any.missing = FALSE)
+    checkmate::assert_numeric(
+      dt$P_DOSE,
+      lower = rc_minval("P_DOSE"),
+      upper = rc_maxval("P_DOSE"),
+      any.missing = FALSE
+      )
+    checkmate::assert_numeric(
+      dt$P_C_OF,
+      lower = rc_minval("P_C_OF"),
+      upper = rc_maxval("P_C_OF"),
+      any.missing = FALSE
+      )
   }
 
   # Create copy of data table

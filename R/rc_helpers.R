@@ -408,7 +408,7 @@ return(dt.crop)
 #' * B_LU (a crop id), 
 #' * B_LU_NAME (a crop name, optional),
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+#' * B_C_CULT, the organic carbon input on field level (kg C/ha)
 #' 
 #' 
 #' @export
@@ -527,6 +527,10 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
   
   # Check input data
   checkmate::assert_data_table(amendments, null.ok = FALSE, min.rows = 1)
+  
+  amendments <- as.data.table(amendments)
+  setnames(amendments,toupper(colnames(amendments)))
+  
   req <- c("P_HC","P_DATE_FERTILIZATION")
   checkmate::assert_names(colnames(amendments), must.include = req)
   if ("P_NAME" %in% names(amendments)) checkmate::assert_character(amendments$P_NAME, any.missing = TRUE)
@@ -542,9 +546,7 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
     !any(grepl("-02-29$", amendments$P_DATE_FERTILIZATION)),
     msg = "February 29th dates are not allowed in P_DATE_FERTILIZATION to avoid leap year complications during date shifting"
   )
-  # Make copy of amendments table
-    amendments <- as.data.table(amendments)
-    setnames(amendments,toupper(colnames(amendments)))
+  
     
   # Define total length of amendment rotation (years)
   rotation_length <- max(year(amendments$P_DATE_FERTILIZATION)) - year(start_date) + 1
@@ -575,11 +577,10 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
     } else {
       this.amendments <- amendments_ext[year_ext <= (year(start_date) + simyears),]
     }
-  
+
   # Select relevant columns
   this.amendments <- this.amendments[, .SD, .SDcols =!names(this.amendments) %in% 
-                                         c("id", "year_ext", "year_start", "year_end",
-                                           "yr_rep", "year_start_ext", "year_end_ext")
+                                         c("id", "year_ext","yr_rep")
     ]
 
   # order amendments file
