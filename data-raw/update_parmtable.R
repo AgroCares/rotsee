@@ -1,6 +1,6 @@
 # This script updates the internal parameter table (parameters.rda) from the CSV file
   # read in location of csv file
-  csv_path <- "data-raw/rothc_params.csv"
+  csv_path <- "data-raw/rc_params.csv"
   
   # check if CSV file exists
   if(!file.exists(csv_path)){
