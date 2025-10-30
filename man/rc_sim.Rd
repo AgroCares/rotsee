@@ -32,6 +32,9 @@ rc_sim(
 
 \item{weather}{(data.table) Table with following column names: year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
 }
+\value{
+Table with development of C pools in the field over the given simulation period
+}
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
 }
