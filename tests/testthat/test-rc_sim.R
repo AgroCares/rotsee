@@ -68,7 +68,7 @@ test_that("rc_sim correctly runs with different weather data", {
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
     B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
+    B_C_CULT = c(1500, 1500)
   )
   
   rothc_amendment <- data.table(
@@ -96,7 +96,7 @@ test_that("rc_sim correctly runs with different weather data", {
                         month = rep(1:12, 19),
                         W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 19),
                         W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),19),
-                        W_ET_POT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19),
+                        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19),
                         W_ET_ACT_MONTH = rep(c(6, 12, 25, 45, 70, 75, 78, 65, 40, 20, 8, 4), 19))
   
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
@@ -104,12 +104,12 @@ test_that("rc_sim correctly runs with different weather data", {
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = weather_all, rothc_parms = parms))
   
-  # Only W_ET_POT_MONTH
+  # Only W_ET_REF_MONTH
   weather_pot <- data.table(year = rep(2022:2040, each = 12),
                             month = rep(1:12, 19),
                             W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 19),
                             W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),19),
-                            W_ET_POT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19))
+                            W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19))
   
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                          B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
@@ -163,7 +163,7 @@ test_that("rc_sim provides correct output in years or months", {
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
     B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
+    B_C_CULT = c(1500, 1500)
   )
   
   rothc_amendment <- data.table(
@@ -191,7 +191,7 @@ test_that("rc_sim provides correct output in years or months", {
                             month = rep(1:12, 19),
                             W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 19),
                             W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),19),
-                            W_ET_POT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19),
+                            W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19),
                             W_ET_ACT_MONTH = rep(c(6, 12, 25, 45, 70, 75, 78, 65, 40, 20, 8, 4), 19))
   
   
