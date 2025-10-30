@@ -61,6 +61,8 @@
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 #'
 #' @import deSolve
+#' 
+#' @returns Table with development of C pools in the field over the given simulation period
 #'
 #' @export
 rc_sim <- function(soil_properties,
