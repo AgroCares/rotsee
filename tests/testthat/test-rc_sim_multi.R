@@ -1,5 +1,7 @@
 # Unit tests to check if parallel rothc
 
+testthat::source("tests/testthat/helper-data.R")
+
 test_that("rc_sim_multi runs with normal inputs", {
   soil_properties <- create_soil_properties()[rep(1:.N, 3)][, ID := .I]
   

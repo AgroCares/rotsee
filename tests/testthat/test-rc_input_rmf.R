@@ -1,3 +1,5 @@
+testthat::source("tests/testthat/helper-data.R")
+
 test_that("rc_input_rmf runs correctly", {
   # Set crop table
   rothc_rotation <- create_rotation()

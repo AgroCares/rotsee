@@ -3,6 +3,8 @@
 
 library(testthat)
 library(data.table)
+testthat::source("tests/testthat/helper-data.R")
+
 
 test_that("rc_input_event_crop validates input parameters correctly", {
   
