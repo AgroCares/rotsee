@@ -142,7 +142,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
   if("time" %in% names(dt)) dt[, time := NULL]
   
   # Reorder columns
-  setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
+  setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_REF_MONTH","W_ET_ACT_MONTH"))
 }
 
   return(dt)
