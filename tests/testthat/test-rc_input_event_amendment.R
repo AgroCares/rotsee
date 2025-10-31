@@ -49,7 +49,7 @@ test_that("rc_input_event_amendment validates amendment parameter correctly", {
   )
   
   # Test with negative cin_hum values
-  negative_amendment <- copy(valid_amendment)[, cin_hum := c(-10, 150, 200)]
+  negative_amendment <- copy(valid_amendment)[1, cin_hum := -10]
   
   expect_error(
     rc_input_event_amendment(negative_amendment, dt.time),
@@ -57,7 +57,7 @@ test_that("rc_input_event_amendment validates amendment parameter correctly", {
   )
   
   # Test with excessive cin_tot values
-  excessive_amendment <- copy(valid_amendment)[, cin_tot := c(150000, 1500, 2000)]
+  excessive_amendment <- copy(valid_amendment)[1, cin_tot := 150000]
 
   expect_error(
     rc_input_event_amendment(excessive_amendment, dt.time),
