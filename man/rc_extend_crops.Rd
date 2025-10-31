@@ -29,5 +29,5 @@ Includes the columns:
 * B_LU (a crop id), 
 * B_LU_NAME (a crop name, optional),
 * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-* B_C_CULT, the organic carbon input on field level (kg C/ha)
+* B_C_OF_CULT, the organic carbon input on field level (kg C/ha)
 }

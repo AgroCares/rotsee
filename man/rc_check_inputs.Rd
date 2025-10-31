@@ -11,7 +11,7 @@ rc_check_inputs(soil_properties, rothc_rotation, rothc_amendment)
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
-\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_AMENDMENT, and P_HC.}
+\item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_AMENDMENT, and P_HC.}
 }
 \value{
 Error messages indicating if input data is not in order
