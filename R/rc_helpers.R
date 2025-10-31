@@ -318,7 +318,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 #'
 #' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_AMENDMENT, and P_HC.
+#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_AMENDMENT, and P_HC.
 #'
 #' @returns
 #' Error messages indicating if input data is not in order
@@ -345,11 +345,11 @@ rc_check_inputs <- function(soil_properties,
   if(!is.null(rothc_rotation)){
     checkmate::assert_data_table(rothc_rotation, null.ok = TRUE, min.rows = 1)
 
-    req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_CULT")
+    req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_CULT")
     checkmate::assert_names(colnames(rothc_rotation), must.include = req)
     
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = FALSE)
-    checkmate::assert_numeric(rothc_rotation$B_C_CULT, lower = rc_minval('B_C_CULT'), upper = rc_maxval('B_C_CULT'), any.missing = FALSE)
+    checkmate::assert_numeric(rothc_rotation$B_C_OF_CULT, lower = rc_minval('B_C_OF_CULT'), upper = rc_maxval('B_C_OF_CULT'), any.missing = FALSE)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
     }
@@ -369,8 +369,8 @@ rc_check_inputs <- function(soil_properties,
        checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = rc_minval('P_DOSE'), upper = rc_maxval('P_DOSE'), any.missing = TRUE)
     if ("P_C_OF" %in% names(rothc_amendment))
       checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = rc_minval('P_C_OF'), upper = rc_maxval('P_C_OF'), any.missing = TRUE)
-    if ("B_C_AMENDMENT" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$B_C_AMENDMENT, lower = rc_minval('B_C_AMENDMENT'), upper = rc_maxval('B_C_AMENDMENT'), any.missing = TRUE)
+    if ("B_C_OF_AMENDMENT" %in% names(rothc_amendment))
+      checkmate::assert_numeric(rothc_amendment$B_C_OF_AMENDMENT, lower = rc_minval('B_C_OF_AMENDMENT'), upper = rc_maxval('B_C_OF_AMENDMENT'), any.missing = TRUE)
   }
 }
 
@@ -433,10 +433,10 @@ rc_calculate_bd <- function(dt){
 #' * M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
 #' @export
-rc_calculate_B_C_CULT <- function(dt){
+rc_calculate_B_C_OF_CULT <- function(dt){
   # Add visible bindings
   cin_aboveground = B_LU_YIELD = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
-  cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_CULT = NULL
+  cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_CULT = NULL
   
   # Check input data
   req <- c("B_LU_YIELD", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE")
@@ -454,7 +454,7 @@ rc_calculate_B_C_CULT <- function(dt){
   dt.crop[, cin_aboveground := B_LU_YIELD / B_LU_HI * 0.5]
   dt.crop[, cin_roots := cin_aboveground * B_LU_RS_FR]
   dt.crop[, cin_residue := fifelse(M_CROPRESIDUE, cin_aboveground * B_LU_HI_RES, 0)]
-  dt.crop[, B_C_CULT := cin_roots + cin_residue]
+  dt.crop[, B_C_OF_CULT := cin_roots + cin_residue]
   
 return(dt.crop)
 }
@@ -479,7 +479,7 @@ return(dt.crop)
 #' * B_LU (a crop id), 
 #' * B_LU_NAME (a crop name, optional),
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-#' * B_C_CULT, the organic carbon input on field level (kg C/ha)
+#' * B_C_OF_CULT, the organic carbon input on field level (kg C/ha)
 #' 
 #' 
 #' @export
@@ -495,11 +495,11 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   crops <- as.data.table(crops)
   setnames(crops,toupper(colnames(crops)))
   
-  req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_CULT")
+  req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_CULT")
   checkmate::assert_names(colnames(crops), must.include = req)
   if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
   checkmate::assert_numeric(crops$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = F)
-  checkmate::assert_numeric(crops$B_C_CULT, lower = rc_minval('B_C_CULT'), upper = rc_maxval('B_C_CULT'), any.missing = F)
+  checkmate::assert_numeric(crops$B_C_OF_CULT, lower = rc_minval('B_C_OF_CULT'), upper = rc_maxval('B_C_OF_CULT'), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
   checkmate::assert_date(as.Date(start_date))
@@ -583,9 +583,9 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' Includes the columns:
 #' * P_ID (character), ID of the soil amendment product
 #' * P_NAME (character), name of the soil amendment product, optional
-#' * B_C_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_AMENDMENT is not supplied
-#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_AMENDMENT is not supplied
+#' * B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #' 

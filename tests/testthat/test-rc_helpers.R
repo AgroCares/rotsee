@@ -289,16 +289,16 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
 
 
 
-test_that("rc_calculate_B_C_CULT correctly validates input", {
+test_that("rc_calculate_B_C_OF_CULT correctly validates input", {
   # Missing required column
   expect_error(
-    rc_calculate_B_C_CULT(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
+    rc_calculate_B_C_OF_CULT(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
     "must include"
   )
   
   # B_LU_YIELD out of bounds
   expect_error(
-    rc_calculate_B_C_CULT(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = -1,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -310,7 +310,7 @@ test_that("rc_calculate_B_C_CULT correctly validates input", {
   
   # B_LU_HI out of bounds
   expect_error(
-    rc_calculate_B_C_CULT(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0,
       B_LU_HI_RES = 0.5,
@@ -322,7 +322,7 @@ test_that("rc_calculate_B_C_CULT correctly validates input", {
   
   # B_LU_HI_RES out of bounds
   expect_error(
-    rc_calculate_B_C_CULT(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 1.1,
@@ -334,7 +334,7 @@ test_that("rc_calculate_B_C_CULT correctly validates input", {
   
   # B_LU_RS_FR out of bounds
   expect_error(
-    rc_calculate_B_C_CULT(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -346,7 +346,7 @@ test_that("rc_calculate_B_C_CULT correctly validates input", {
   
   # M_CROPRESIDUE not logical
   expect_error(
-    rc_calculate_B_C_CULT(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -357,7 +357,7 @@ test_that("rc_calculate_B_C_CULT correctly validates input", {
   )
 })
 
-test_that("rc_calculate_B_C_CULT correctly calculates C inputs", {
+test_that("rc_calculate_B_C_OF_CULT correctly calculates C inputs", {
   # Set correct input data
   valid_dt <- data.table(
     B_LU_YIELD = 30000,
@@ -368,17 +368,17 @@ test_that("rc_calculate_B_C_CULT correctly calculates C inputs", {
   )
   
   # Run function with valid DT
-  valid <- rc_calculate_B_C_CULT(valid_dt)
+  valid <- rc_calculate_B_C_OF_CULT(valid_dt)
   
   # Check if everything went correctly
   expect_s3_class(valid, "data.table")
   expect_equal(valid$cin_aboveground, 30000 / 0.6 * 0.5, tolerance = 0.001)
   expect_equal(valid$cin_roots, valid$cin_aboveground * 1, tolerance = 0.001)
   expect_equal(valid$cin_residue, valid$cin_aboveground * 0.5, tolerance = 0.001)
-  expect_equal(valid$B_C_CULT, valid$cin_roots + valid$cin_residue, tolerance = 0.001)
+  expect_equal(valid$B_C_OF_CULT, valid$cin_roots + valid$cin_residue, tolerance = 0.001)
 })
 
-test_that("rc_calculate_B_C_CULT handles edge cases", {
+test_that("rc_calculate_B_C_OF_CULT handles edge cases", {
   # Zero yield
   zero_yield_dt <- data.table(
     B_LU_YIELD = 0,
@@ -387,11 +387,11 @@ test_that("rc_calculate_B_C_CULT handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = TRUE
   )
-  zero_yield <- rc_calculate_B_C_CULT(zero_yield_dt)
+  zero_yield <- rc_calculate_B_C_OF_CULT(zero_yield_dt)
   expect_equal(zero_yield$cin_aboveground, 0)
   expect_equal(zero_yield$cin_roots, 0)
   expect_equal(zero_yield$cin_residue, 0)
-  expect_equal(zero_yield$B_C_CULT, 0)
+  expect_equal(zero_yield$B_C_OF_CULT, 0)
   
   # No residue
   no_residue_dt <- data.table(
@@ -401,9 +401,9 @@ test_that("rc_calculate_B_C_CULT handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = FALSE
   )
-  no_residue <- rc_calculate_B_C_CULT(no_residue_dt)
+  no_residue <- rc_calculate_B_C_OF_CULT(no_residue_dt)
   expect_equal(no_residue$cin_residue, 0)
-  expect_equal(no_residue$B_C_CULT, no_residue$cin_roots)
+  expect_equal(no_residue$B_C_OF_CULT, no_residue$cin_roots)
   
   # Max values
   max_dt <- data.table(
@@ -413,11 +413,11 @@ test_that("rc_calculate_B_C_CULT handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = TRUE
   )
-  max_result <- rc_calculate_B_C_CULT(max_dt)
+  max_result <- rc_calculate_B_C_OF_CULT(max_dt)
   expect_equal(max_result$cin_aboveground, 150000 / 1 * 0.5, tolerance = 0.001)
   expect_equal(max_result$cin_roots, max_result$cin_aboveground, tolerance = 0.001)
   expect_equal(max_result$cin_residue, max_result$cin_aboveground * 1, tolerance = 0.001)
-  expect_equal(max_result$B_C_CULT, max_result$cin_roots + max_result$cin_residue, tolerance = 0.001)
+  expect_equal(max_result$B_C_OF_CULT, max_result$cin_roots + max_result$cin_residue, tolerance = 0.001)
 })
 
 
@@ -435,7 +435,7 @@ test_that("rc_extend_crops validates inputs correctly", {
     B_LU_END = "2020-12-31",
     B_LU = "Crop1",
     B_LU_HC = 1.1,
-    B_C_CULT = 100
+    B_C_OF_CULT = 100
   )
   expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "Element 1 is not <= ")
   
@@ -445,7 +445,7 @@ test_that("rc_extend_crops validates inputs correctly", {
     B_LU_END = "2020-12-31",
     B_LU = "Crop1",
     B_LU_HC = 0.5,
-    B_C_CULT = 100
+    B_C_OF_CULT = 100
   )
   expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "February 29th")
   
@@ -455,7 +455,7 @@ test_that("rc_extend_crops validates inputs correctly", {
     B_LU_END = "2020-01-01",
     B_LU = "Crop1",
     B_LU_HC = 0.5,
-    B_C_CULT = 100
+    B_C_OF_CULT = 100
   )
   expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01"), simyears = 1), "Crop end date must be after crop start date")
   
@@ -465,7 +465,7 @@ test_that("rc_extend_crops validates inputs correctly", {
     B_LU_END = "2019-12-31",
     B_LU = "Crop1",
     B_LU_HC = 0.5,
-    B_C_CULT = 100
+    B_C_OF_CULT = 100
   )
   expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01"), simyears = 1), "crop rotation plan is outside of simulation period")
 })
@@ -476,7 +476,7 @@ test_that("rc_extend_crops extends crops correctly with end_date", {
     B_LU_END = c("2020-03-31", "2020-08-31"),
     B_LU = c("Crop1", "Crop2"),
     B_LU_HC = c(0.5, 0.3),
-    B_C_CULT = c(100, 200)
+    B_C_OF_CULT = c(100, 200)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), as.Date("2022-12-31"))
@@ -498,7 +498,7 @@ test_that("rc_extend_crops extends crops correctly with end_date", {
   ))
   
   # Check columns are preserved
-  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_CULT"))
+  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_CULT"))
 })
 
 test_that("rc_extend_crops extends crops correctly with simyears", {
@@ -507,7 +507,7 @@ test_that("rc_extend_crops extends crops correctly with simyears", {
     B_LU_END = c("2020-03-31", "2020-08-31"),
     B_LU = c("Crop1", "Crop2"),
     B_LU_HC = c(0.5, 0.3),
-    B_C_CULT = c(100, 200)
+    B_C_OF_CULT = c(100, 200)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 3)
@@ -529,7 +529,7 @@ test_that("rc_extend_crops extends crops correctly with simyears", {
   ))
   
   # Check columns are preserved
-  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_CULT"))
+  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_CULT"))
 })
 
 test_that("rc_extend_crops handles single year rotation", {
@@ -538,7 +538,7 @@ test_that("rc_extend_crops handles single year rotation", {
     B_LU_END = c("2020-03-31", "2020-08-31"),
     B_LU = c("Crop1", "Crop2"),
     B_LU_HC = c(0.5, 0.3),
-    B_C_CULT = c(100, 200)
+    B_C_OF_CULT = c(100, 200)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
@@ -557,7 +557,7 @@ test_that("rc_extend_crops orders output by start date", {
     B_LU_END = c("2020-08-31", "2020-03-31"),
     B_LU = c("Crop2", "Crop1"),
     B_LU_HC = c(0.3, 0.5),
-    B_C_CULT = c(200, 100)
+    B_C_OF_CULT = c(200, 100)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
@@ -572,7 +572,7 @@ test_that("rc_extend_crops removes temporary columns", {
     B_LU_END = c("2020-03-31", "2020-08-31"),
     B_LU = c("Crop1", "Crop2"),
     B_LU_HC = c(0.5, 0.3),
-    B_C_CULT = c(100, 200)
+    B_C_OF_CULT = c(100, 200)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)

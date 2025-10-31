@@ -21,7 +21,7 @@ create_rotation <- function(){
     B_LU = c("nl_308", "nl_308"),
     B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
     B_LU_HC = c(0.32, 0.32),
-    B_C_CULT = c(1500, 1500)
+    B_C_OF_CULT = c(1500, 1500)
   )
   
   return(dt)
