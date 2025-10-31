@@ -12,7 +12,8 @@ rc_sim(
   rothc_rotation = NULL,
   rothc_amendment = NULL,
   rothc_parms = NULL,
-  weather = NULL
+  weather = NULL,
+  irrigation = NULL
 )
 }
 \arguments{
@@ -30,7 +31,9 @@ rc_sim(
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
-\item{weather}{(data.table) Table with following column names: year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
+\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.}
+
+\item{irrigation}{(data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.}
 }
 \value{
 Table with development of C pools in the field over the given simulation period
@@ -69,10 +72,10 @@ Includes the columns:
 
 rothc_parms: parameters to adapt calculations (optional)
 May include the following columns:
-* initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE
+* initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is TRUE
 * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
-* unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'Cstock' (kg C/ha of each fraction)
+* unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
 * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
 * poutput (character) Resolution of data ouptut. Options: 'year', 'month'
 * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
@@ -84,6 +87,12 @@ Includes the columns:
 * month
 * W_TEMP_MEAN_MONTH (temperature in °C)
 * W_PREC_SUM_MONTH (precipitation in mm)
-* W_ET_POT_MONTH (potential evapotranspiration in mm)
+* W_ET_REF_MONTH (reference evapotranspiration in mm)
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
+* W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
+
+Irrigation: Irrigation table, optional.
+Includes the columns:
+* B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
+* B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 }

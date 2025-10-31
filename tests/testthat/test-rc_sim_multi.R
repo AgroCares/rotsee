@@ -37,7 +37,7 @@ test_that("rc_sim_multi runs with normal inputs", {
   weather <- data.table(month = 1:12,
                         W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                         W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-                        W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                         W_ET_ACT_MONTH = NA_real_)
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
@@ -61,7 +61,6 @@ test_that("rc_sim_multi runs with normal inputs", {
                          final = FALSE,
                          strategy = 'multisession')
 
-  
   expect_s3_class(result, "data.table")
   expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))
   expect_equal(nrow(result), 57)
