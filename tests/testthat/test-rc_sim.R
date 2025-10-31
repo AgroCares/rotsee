@@ -63,11 +63,11 @@ test_that("rc_sim correctly checks input validity", {
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                          weather = weather, rothc_parms = parms))
   
-    # No crop table (not allowed)
-  expect_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
+    # No crop table (allowed)
+  rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH,  M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                    rothc_rotation = NULL, rothc_amendment = rothc_amendment, 
-                   weather = weather))
+                   weather = weather, rothc_parms = parms)
   
   # No weather table (allowed)
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,

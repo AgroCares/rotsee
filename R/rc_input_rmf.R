@@ -32,14 +32,20 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
   
   # Input tables
+  if(!is.null(dt)){
   checkmate::assert_data_table(dt,null.ok = TRUE)
   checkmate::assert_true(all(c('B_LU_START', 'B_LU_END') %in% colnames(dt)))
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = F)
+  }
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
   checkmate::assert_subset(c("year", "month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH"), colnames(dt.weather))
   checkmate::assert(any(c("W_ET_POT_MONTH","W_ET_ACT_MONTH") %in% colnames(dt.weather)),
                          msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided.")
+  
+  
+  # Establish crop cover cover data
+  if(!is.null(dt)){
   # Establish months of crop cover based on start and end of crop rotation
   dt.growth <- dt[, {
     
@@ -53,7 +59,10 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   # Merge and fill missing crop_cover values with 0
   dt.crop_cover <- merge(dt.time, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
   dt.crop_cover <- unique(dt.crop_cover[,list(year,month, time, crop_cover)])
-
+  }else{
+  dt.crop_cover <- copy(dt.time)[, crop_cover := 0]
+  }
+  
   # Merge time and weather table
   weather <- merge(dt.time, dt.weather, by = c('month', 'year'), all.x=TRUE)
 
