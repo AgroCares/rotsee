@@ -368,7 +368,7 @@ test_that("rc_input_rmf handles NULL crop rotation with irrigation", {
   )
 })
 
-test_that("rc_input_rmf uses W_POT_TO_ACT in ET calculations with irrigation", {
+test_that("rc_input_rmf uses W_ET_REFACT in ET calculations with irrigation", {
   rothc_rotation <- data.table(
     B_LU_START = c("2022-04-01"),
     B_LU_END = c("2022-10-01"),
@@ -377,7 +377,7 @@ test_that("rc_input_rmf uses W_POT_TO_ACT in ET calculations with irrigation", {
     B_C_OF_INPUT = c(1500)
   )
   
-  # Weather with custom W_POT_TO_ACT
+  # Weather with custom W_ET_REFACT
   weather_custom <- data.table(month = 1:12,
                         W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                         W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),

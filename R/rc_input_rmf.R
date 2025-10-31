@@ -22,7 +22,7 @@
 #' * W_TEMP_MEAN_MONTH
 #' * W_PREC_SUM_MONTH
 #' * W_ET_REF_MONTH
-#' * W_ET_ACT_MONTH (optional), calculated from W_ET_POT_MONTH when not supplied
+#' * W_ET_ACT_MONTH (optional), calculated from W_ET_REF_MONTH when not supplied
 #' * W_ET_REFACT
 #'
 #' dt.irrigation: irrigation table
@@ -62,7 +62,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   checkmate::assert_data_table(dt.irrigation, null.ok = TRUE)
   if(!is.null(dt.irrigation)){
   checkmate::assert_true(all(c('B_DATE_IRRIGATION', 'B_IRR_AMOUNT') %in% colnames (dt.irrigation)))
-  checkmate::assert_date(as.Date(dt.irrigation$B_DATE_IRRIGATION))
+  checkmate::assert_date(as.Date(dt.irrigation$B_DATE_IRRIGATION), any.missing = FALSE)
   checkmate::assert_numeric(dt.irrigation$B_IRR_AMOUNT, lower = 0, upper = 1000)
   }
   
@@ -86,10 +86,13 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
    dt <- merge(dt.time, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
    
       if(!is.null(dt.irrigation)){
+        # copy irrigation table
+        irrig <- copy(dt.irrigation)
+   
    # Derive year and month from irrigation data, aggregate per month
-   dt.irrigation[, year := year(B_DATE_IRRIGATION)]
-   dt.irrigation[,month := month(B_DATE_IRRIGATION)]
-   dt.irr.month <- dt.irrigation[, .(B_IRR_AMOUNT = sum(B_IRR_AMOUNT, na.rm = TRUE)), by = .(year, month)]
+        irrig[, year := year(B_DATE_IRRIGATION)]
+        irrig[,month := month(B_DATE_IRRIGATION)]
+        dt.irr.month <- irrig[, .(B_IRR_AMOUNT = sum(B_IRR_AMOUNT, na.rm = TRUE)), by = .(year, month)]
    
   
    # Merge irrigation and crop cover data

@@ -20,7 +20,7 @@ If not supplied, default monthly weather based on the Netherlands is added}
 \item{dt.time}{Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}}
 }
 \value{
-A data table returning in order the columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
+A data table returning in order the columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT
 covering the simulation period. When year is not supplied in dt, rows are expanded for all years.
 }
 \description{

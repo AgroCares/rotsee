@@ -37,7 +37,7 @@ cf_ind_importance <- function(x) {
 #'
 rc_update_weather <- function(dt = NULL, dt.time = dt.time){
   # Add visible bindings
-  W_ET_REFACT = W_ET_ACT_MONTH = . = time = NULL
+  W_ET_REFACT = W_ET_ACT_MONTH = W_ET_REF_MONTH = . = time = NULL
   
   # Validate dt.time 
   checkmate::assert_data_table(dt.time, min.rows = 1)
