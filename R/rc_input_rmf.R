@@ -17,7 +17,7 @@
 #' 
 #' dt.weather: weather table
 #' contains the following columns:
-#' * year (optional), monthly weather repeated when not supplied
+#' * year 
 #' * month
 #' * W_TEMP_MEAN_MONTH
 #' * W_PREC_SUM_MONTH
@@ -65,7 +65,6 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   checkmate::assert_date(as.Date(dt.irrigation$B_DATE_IRRIGATION))
   checkmate::assert_numeric(dt.irrigation$B_IRR_AMOUNT, lower = 0, upper = 1000)
   }
-  
   
   # Establish months of crop cover
   if(is.null(dt)){
@@ -164,6 +163,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
 
   # Replace deficit of starting months with next year if there is already soil moisture deficit
   # Check if year starts with a soil moisture deficit
+  setorder(dt,time)
   if(nrow(dt) >= 13 && dt[13, acc_smd] < 0){
    
   dt[1:12, acc_smd :={
@@ -186,7 +186,6 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   # add rate modifying factor for moisture
   dt[,cf_moist := fifelse(acc_smd > 0.444 * tsmdmax_cor,1, pmax(0.2, 0.2 + (1 - 0.2) * (tsmdmax_cor - acc_smd)/ (tsmdmax_cor - 0.444*tsmdmax_cor)))]
  
-  
   # add rate modifying factor for soil cover
   dt[,cf_soilcover := fifelse(crop_cover==1,0.6,1)]
  

@@ -54,6 +54,7 @@
 #' 
 #' weather: Weather table. If no table is given, average Dutch conditions are used
 #' Includes the columns:
+#' * year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
 #' * month
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
 #' * W_PREC_SUM_MONTH (precipitation in mm)
@@ -67,6 +68,8 @@
 #' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'
 #' @import deSolve
+#' 
+#' @returns Table with development of C pools in the field over the given simulation period
 #'
 #' @export
 rc_sim <- function(soil_properties,
@@ -92,10 +95,7 @@ rc_sim <- function(soil_properties,
                   rothc_rotation = rothc_rotation,
                   rothc_amendment = rothc_amendment)
 
-  # Check and update weather data(see rc_helpers)
-  dt.weather <- rc_update_weather(dt = weather)
-  
-  # Check and update parameter tabel rothc_parms
+   # Check and update parameter table rothc_parms
   rothc_parms <- rc_update_parms(parms = rothc_parms, crops = rothc_rotation, amendments = rothc_amendment)
  
   # Define decomposition rates
@@ -125,6 +125,12 @@ rc_sim <- function(soil_properties,
   # Define initialize
   initialize <- rothc_parms$initialize
   
+  # Define dates of complete simulation period
+  dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
+  
+  # Check and update weather data (see rc_helpers)
+  dt.weather <- rc_update_weather(dt = weather, dt.time = dt.time)
+  
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = rc_minval("A_DEPTH"), upper = rc_maxval("A_DEPTH"), any.missing = FALSE, len = 1)
   checkmate::assert_numeric(B_DEPTH, lower = rc_minval("B_DEPTH"), upper = rc_maxval("B_DEPTH"), any.missing = FALSE, len = 1)
@@ -132,9 +138,6 @@ rc_sim <- function(soil_properties,
   # rothC model parameters
 
   # prepare the RothC model inputs
-  # Define dates of complete simulation period
-  dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
-
   # create an internal crop rotation file
   if(!is.null(rothc_rotation)){
     dt.crop <- rc_input_crop(dt = rothc_rotation)
@@ -368,7 +371,6 @@ rc_sim <- function(soil_properties,
   if(poutput=='year'){
     out <- out[abs(time - round(time)) < 1e-5]
   }
-  out <- out[,.SD, .SDcols = !names(out) %in% "time"]
 
   # update year
   # out[,year := year + rotation[1,year] - 1]

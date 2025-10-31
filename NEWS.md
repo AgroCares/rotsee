@@ -9,6 +9,7 @@
 
 # rotsee v0.1.5 2025-10-16
 
+
 ## added
 * package table `parameters.rda`, with information on all used parameters in the rotsee package
 * file `rothc_params.csv`, which developers can edit to add additional parameters
@@ -17,7 +18,7 @@
 ## changed
 * Validation of input data based on information in `parameters.rda`
 
-# rotsee v0.1.4 2025-10-15
+# rotsee v0.1.4 2025-10-16
 
 ## added
 * rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
@@ -25,6 +26,14 @@
 
 ## changed
 * Parameter name `W_ET_POT_MONTH` to `W_ET_REF_MONTH` to avoid ambiguous use of potential evapotranspiration
+
+
+## added
+* unit tests of `rc_update_weather` and `rc_sim` to evaluate different weather inputs
+
+## changed
+* weather input now optionally takes year as input. If supplied it should cover the entire simulation period
+* soil moisture deficit calculations in `rc_input_rmf` are now based on monthly weather and changes per year
 
 
 # rotsee v0.1.3 2025-10-15

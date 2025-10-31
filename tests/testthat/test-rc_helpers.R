@@ -1,9 +1,14 @@
 library(data.table)
 
 test_that("rc_update_weather returns default weather data when input is NULL", {
-  default_weather <- rc_update_weather(NULL)
+ 
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")
+  
+  default_weather <- rc_update_weather(NULL,
+                                       dt.time = dt.time)
+  
   expect_s3_class(default_weather, "data.table")
-  expect_equal(nrow(default_weather), 12)
+  expect_equal(nrow(default_weather), 24)
   expect_equal(ncol(default_weather), 6)
   expect_equal(names(default_weather), c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_REF_MONTH", "W_ET_ACT_MONTH", "W_ET_REFACT"))
 })
@@ -18,37 +23,109 @@ test_that("rc_update_weather validates input data table", {
     W_ET_ACT_MONTH = rep(47, 12)
   )
   
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")
+  
   # Test with valid data table
-  expect_no_error(rc_update_weather(valid_dt))
+  expect_no_error(rc_update_weather(dt = valid_dt, dt.time = dt.time))
   
   # Test missing columns
   invalid_dt <- valid_dt[, W_ET_REF_MONTH := NULL]
   expect_no_error(rc_update_weather(invalid_dt)) # allowed if W_ET_ACT_MONTH is supplied
   
-  invalid_dt <- valid_dt[, month := NULL]
-  expect_error(rc_update_weather(invalid_dt), "missing elements") # month must be provided
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[, month := NULL]
+  expect_error(rc_update_weather(invalid_dt, dt.time = dt.time), "missing elements") # month must be provided
   
-  invalid_dt <- valid_dt[, `:=`(W_TEMP_MEAN_MONTH = NULL, W_PREC_SUM_MONTH = NULL)]
-  expect_error(rc_update_weather(invalid_dt), "missing elements") # W_TEMP_MEAN_MONTH and W_PREC_SUM_MONTH must be provided
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[, `:=`(W_TEMP_MEAN_MONTH = NULL, W_PREC_SUM_MONTH = NULL)]
+  expect_error(rc_update_weather(invalid_dt, dt.time = dt.time), "missing elements") # W_TEMP_MEAN_MONTH and W_PREC_SUM_MONTH must be provided
   
   # Test invalid month values
   invalid_dt <- copy(valid_dt)
   invalid_dt[, month := 0]
-  expect_error(rc_update_weather(invalid_dt), "month", fixed = FALSE)
+  expect_error(rc_update_weather(invalid_dt, dt.time), "month")
   
   # Test invalid temperature values
   invalid_dt <- copy(valid_dt)
   invalid_dt[, W_TEMP_MEAN_MONTH := -50]
-  expect_error(rc_update_weather(invalid_dt), "W_TEMP_MEAN_MONTH")
+  expect_error(rc_update_weather(invalid_dt, dt.time), "W_TEMP_MEAN_MONTH")
   
   # Test invalid precipitation values
   invalid_dt <- copy(valid_dt)
   invalid_dt[, W_PREC_SUM_MONTH := -10]
-  expect_error(rc_update_weather(invalid_dt), "W_PREC_SUM_MONTH")
+  expect_error(rc_update_weather(invalid_dt, dt.time), "W_PREC_SUM_MONTH")
   
+  # Test both ET columns NULL (invalid)
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[,`:=`(W_ET_POT_MONTH = NULL, W_ET_ACT_MONTH = NULL)]
+  expect_error(rc_update_weather(invalid_dt, dt.time),
+               "one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH'")
+  
+  # Test both ET columns NA (invalid)
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[,W_ET_POT_MONTH := NA_real_][,W_ET_ACT_MONTH := NA_real_]
+  expect_error(rc_update_weather(invalid_dt, dt.time),
+               "should not contain NA values", fixed = TRUE)
+  
+  # Test if not all 12 months are provided (invalid)
+  invalid_dt <- copy(valid_dt)
+  invalid_dt <- invalid_dt[month %in% c(1:6),]
+  expect_error(rc_update_weather(invalid_dt, dt.time),
+               "provide exactly one row per month")
+  
+  # Test if ET_POT is too high (invalid)
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[,W_ET_POT_MONTH := 2000]
+  expect_error(rc_update_weather(invalid_dt, dt.time),
+               "W_ET_POT_MONTH", fixed = TRUE)
+  
+  # Test if ET_ACT is too high (invalid)
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[, W_ET_ACT_MONTH := 20000]  # too high
+  expect_error(rc_update_weather(invalid_dt, dt.time),
+               "W_ET_ACT_MONTH", fixed = TRUE)
   
 })
 
+test_that("rc_update_weather handles input with year column", {
+  dt.time <- rc_time_period("2022-01-01", "2022-12-31")
+  
+  valid_dt <- data.table(
+    year = 2022,
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = 10,
+    W_PREC_SUM_MONTH = 50,
+    W_ET_POT_MONTH = 40,
+    W_ET_ACT_MONTH = 30
+  )
+  
+  out <- rc_update_weather(valid_dt, dt.time)
+  expect_s3_class(out, "data.table")
+  expect_true(all(c("year", "month") %in% names(out)))
+  expect_equal(nrow(out), nrow(dt.time))
+  expect_false(anyNA(out$W_ET_POT_MONTH))
+  
+  # test if year range does not cover simulation period
+  invalid_dt <- copy(valid_dt)
+  invalid_dt[, year := 2020]
+  expect_error(rc_update_weather(invalid_dt, dt.time),
+               "must contain all months in the simulation window", fixed = FALSE)
+  
+})
+
+
+
+test_that("rc_update_weather default weather replicates correctly for simulation years", {
+  dt.time <- rc_time_period("2020-01-01", "2021-12-31")
+  out <- rc_update_weather(NULL, dt.time)
+  
+  # should repeat pattern for each year in dt.time
+  n_years <- length(unique(dt.time$year))
+  expect_equal(nrow(out), 24)
+  expect_equal(uniqueN(out$month), 12)
+  expect_true(all(c("year", "month", "W_ET_POT_MONTH") %in% names(out)))
+  expect_s3_class(out, "data.table")
+})
 
 test_that("rc_update_parms correctly runs when no parms supplied", {
 
@@ -66,7 +143,7 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
   expect_true(result_crop$initialize)
   expect_equal(result_crop$unit, "A_SOM_LOI")
   expect_equal(result_crop$method, "adams")
-  expect_equal(result_crop$poutput, "year")
+  expect_equal(result_crop$poutput, "month")
   expect_equal(result_crop$start_date, min(as.Date(crops$B_LU_START)))
   expect_equal(result_crop$end_date, max(as.Date(crops$B_LU_END)))
 })

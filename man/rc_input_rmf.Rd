@@ -37,7 +37,7 @@ contains at least the following columns:
 
 dt.weather: weather table
 contains the following columns:
-* year (optional), monthly weather repeated when not supplied
+* year 
 * month
 * W_TEMP_MEAN_MONTH
 * W_PREC_SUM_MONTH
