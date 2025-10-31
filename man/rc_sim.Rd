@@ -50,7 +50,7 @@ Includes the columns:
 * A_CLAY_MI (numeric), clay fraction (\%)
 * A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
 
-rothc_amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
+rothc_amendment: amendment table (optional). Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
 Includes the columns:
 * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
@@ -58,7 +58,7 @@ Includes the columns:
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
-rothc_rotation: crop table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_crops}
+rothc_rotation: crop table (optional). Input can be duplicated to cover the entire simulation period using \link{rc_extend_crops}
 Includes the columns: 
 * B_LU_START (start of crop rotation),
 * B_LU_END (end of crop rotation),
