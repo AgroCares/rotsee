@@ -3,7 +3,7 @@
 
 library(testthat)
 library(data.table)
-testthat::source("tests/testthat/helper-data.R")
+testthat::source_file("helper-testdata.R")
 
 create_test_amendment <- function() {
   data.table(

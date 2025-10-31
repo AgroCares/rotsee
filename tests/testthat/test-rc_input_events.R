@@ -1,6 +1,6 @@
 # test functions for rc_input_events
 
-testthat::source("tests/testthat/helper-data.R")
+testthat::source_file("helper-testdata.R")
 
 test_that("rc_input_events combines crops and amendment data correctly", {
   crops <- data.table(
