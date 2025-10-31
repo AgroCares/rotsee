@@ -774,8 +774,8 @@ rc_maxval <- function(this.parameter){
 #' Function to determine W_ET_REFACT given a crop profile and supplied weather table, based on Dutch Makkink factors
 #'
 #' @param weather (data.table) weather data table containing columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT.
-#' @param crop (data.table) data table with crop information. Contains at least the columns B_LU_START, B_LU_END, and D_MAKKINK_JAN through DEC
-#' @param dt.time (data.table) Data table with the combination of years and months spanning the entire simulation period
+#' @param crop (data.table) data table with crop information. Contains at least the columns B_LU_START, B_LU_END, and D_MAKKINK_JAN through DEC for the unique crops.
+#' @param dt.time (data.table) Data table with the combination of years and months spanning the entire simulation period. Can be generated using \link{rc_time_period}.
 #'
 #' @returns
 #' Weather table with W_ET_REFACT column added

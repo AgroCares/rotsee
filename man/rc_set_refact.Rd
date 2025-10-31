@@ -9,9 +9,9 @@ rc_set_refact(weather, crop, dt.time)
 \arguments{
 \item{weather}{(data.table) weather data table containing columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT.}
 
-\item{crop}{(data.table) data table with crop information. Contains at least the columns B_LU_START, B_LU_END, and D_MAKKINK_JAN through DEC}
+\item{crop}{(data.table) data table with crop information. Contains at least the columns B_LU_START, B_LU_END, and D_MAKKINK_JAN through DEC for the unique crops.}
 
-\item{dt.time}{(data.table) Data table with the combination of years and months spanning the entire simulation period}
+\item{dt.time}{(data.table) Data table with the combination of years and months spanning the entire simulation period. Can be generated using \link{rc_time_period}.}
 }
 \value{
 Weather table with W_ET_REFACT column added
