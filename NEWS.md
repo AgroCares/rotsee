@@ -1,3 +1,13 @@
+# rotsee v0.1.7 2025-10-31
+
+## added
+* unit tests of `rc_update_weather` and `rc_sim` to evaluate different weather inputs
+
+## changed
+* weather input now optionally takes year as input. If supplied it should cover the entire simulation period
+* soil moisture deficit calculations in `rc_input_rmf` are now based on monthly weather and changes per year
+
+
 # rotsee v0.1.6  2025-10-20
 
 ## added
@@ -26,14 +36,6 @@
 
 ## changed
 * Parameter name `W_ET_POT_MONTH` to `W_ET_REF_MONTH` to avoid ambiguous use of potential evapotranspiration
-
-
-## added
-* unit tests of `rc_update_weather` and `rc_sim` to evaluate different weather inputs
-
-## changed
-* weather input now optionally takes year as input. If supplied it should cover the entire simulation period
-* soil moisture deficit calculations in `rc_input_rmf` are now based on monthly weather and changes per year
 
 
 # rotsee v0.1.3 2025-10-15

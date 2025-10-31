@@ -31,13 +31,13 @@ cf_ind_importance <- function(x) {
 #' @param dt.time Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}
 #' 
 #' @returns
-#' A data table returning in order the columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH
+#' A data table returning in order the columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT
 #' covering the simulation period. When year is not supplied in dt, rows are expanded for all years.
 #' @export
 #'
-rc_update_weather <- function(dt = NULL){
+rc_update_weather <- function(dt = NULL, dt.time = dt.time){
   # Add visible bindings
-  W_ET_REFACT = NULL
+  W_ET_REFACT = W_ET_ACT_MONTH = . = time = NULL
   
   # Validate dt.time 
   checkmate::assert_data_table(dt.time, min.rows = 1)
@@ -85,7 +85,7 @@ rc_update_weather <- function(dt = NULL){
       checkmate::assert_integerish(dt$year, lower = 1, any.missing = FALSE)
       
       # Ensure missing ET column exists (as NA) to keep schema stable
-      if (!"W_ET_POT_MONTH" %in% names(dt)) dt[, W_ET_POT_MONTH := NA_real_]
+      if (!"W_ET_REF_MONTH" %in% names(dt)) dt[, W_ET_REF_MONTH := NA_real_]
       if (!"W_ET_ACT_MONTH" %in% names(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
       
       # Enforce complete coverage of simulation window
@@ -103,7 +103,7 @@ rc_update_weather <- function(dt = NULL){
       # remove time column
       if("time" %in% names(dt)) dt[, time := NULL]
       
-      setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
+      setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_REF_MONTH","W_ET_ACT_MONTH"))
       
     }else{
       # Require full monthly coverage when no 'year' is present
@@ -112,7 +112,7 @@ rc_update_weather <- function(dt = NULL){
   
     
         # Ensure missing ET column exists (as NA) to keep schema stable
-          if (!"W_ET_POT_MONTH" %in% names(dt)) dt[, W_ET_POT_MONTH := NA_real_]
+          if (!"W_ET_REF_MONTH" %in% names(dt)) dt[, W_ET_REF_MONTH := NA_real_]
           if (!"W_ET_ACT_MONTH" %in% names(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
         setkey(dt, month)
         dt <- dt[dt.time, on = .(month)]
@@ -121,11 +121,9 @@ rc_update_weather <- function(dt = NULL){
         if("time" %in% names(dt)) dt[, time := NULL]
         
         # Reorder columns
-          setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
+          setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_REF_MONTH","W_ET_ACT_MONTH"))
           
          }
-    
-    
     
     # Define values of ET correction factor
     if("W_ET_REF_MONTH" %in% colnames(dt)){
@@ -158,7 +156,7 @@ rc_update_weather <- function(dt = NULL){
   if("time" %in% names(dt)) dt[, time := NULL]
   
   # Reorder columns
-  setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_POT_MONTH","W_ET_ACT_MONTH"))
+  setcolorder(dt, c("year","month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH","W_ET_REF_MONTH","W_ET_ACT_MONTH"))
 }
 
   return(dt)

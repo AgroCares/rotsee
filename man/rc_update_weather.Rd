@@ -4,7 +4,7 @@
 \alias{rc_update_weather}
 \title{Function to check user weather table and, if not supplied, insert default weather}
 \usage{
-rc_update_weather(dt = NULL, dt.time)
+rc_update_weather(dt = NULL, dt.time = dt.time)
 }
 \arguments{
 \item{dt}{(data.table) Monthly weather table with the following columns:

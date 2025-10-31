@@ -675,7 +675,7 @@ test_that("rc_sim handles extreme irrigation scenarios", {
                         month = rep(1:12, 19),
                         W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 19),
                         W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),19),
-                        W_ET_POT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19),
+                        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19),
                         W_ET_ACT_MONTH = rep(c(6, 12, 25, 45, 70, 75, 78, 65, 40, 20, 8, 4), 19))
   
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
@@ -683,12 +683,12 @@ test_that("rc_sim handles extreme irrigation scenarios", {
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = weather_all, rothc_parms = parms))
   
-  # Only W_ET_POT_MONTH
+  # Only W_ET_REF_MONTH
   weather_pot <- data.table(year = rep(2022:2040, each = 12),
                             month = rep(1:12, 19),
                             W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 19),
                             W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),19),
-                            W_ET_POT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19))
+                            W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19))
   
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                          B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
@@ -770,7 +770,7 @@ test_that("rc_sim provides correct output in years or months", {
                             month = rep(1:12, 19),
                             W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 19),
                             W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),19),
-                            W_ET_POT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19),
+                            W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19),
                             W_ET_ACT_MONTH = rep(c(6, 12, 25, 45, 70, 75, 78, 65, 40, 20, 8, 4), 19))
   
   
