@@ -24,7 +24,7 @@ test_that("rc_update_weather validates input data table", {
   
   # Test missing columns
   valid_dt_ref <- copy(valid_dt)[, W_ET_ACT_MONTH := NULL]
-  expect_no_error(rc_update_weather(valid_dt_ref, dt.time = dt.time)) # only one of W_ET_POT_MONTH or W_ET_ACT_MONTH must be provided
+  expect_no_error(rc_update_weather(valid_dt_ref, dt.time = dt.time)) # only one of W_ET_REF_MONTH or W_ET_ACT_MONTH must be provided
   
   invalid_dt <- copy(valid_dt)[, W_ET_REF_MONTH := NULL]
   expect_error(rc_update_weather(invalid_dt, dt.time = dt.time), "missing values") # At least one of W_ET_REF_MONTH or W_ET_ACT_MONTH should not contain NAs
@@ -70,10 +70,9 @@ test_that("rc_update_weather validates input data table", {
   
   # Test if ET_REF is too high (invalid)
   invalid_dt <- copy(valid_dt)
-  invalid_dt[,W_ET_REF_MONTH := 2000]
-  rc_update_weather(invalid_dt, dt.time)
-  #expect_error(rc_update_weather(invalid_dt, dt.time),
-  #             "W_ET_REF_MONTH", fixed = TRUE)
+  invalid_dt[,W_ET_REF_MONTH := 20000]
+  expect_error(rc_update_weather(invalid_dt, dt.time),
+               "W_ET_REF_MONTH", fixed = TRUE)
   
   # Test if ET_ACT is too high (invalid)
   invalid_dt <- copy(valid_dt)
@@ -91,7 +90,7 @@ test_that("rc_update_weather handles input with year column", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = 10,
     W_PREC_SUM_MONTH = 50,
-    W_ET_POT_MONTH = 40,
+    W_ET_REF_MONTH = 40,
     W_ET_ACT_MONTH = 30
   )
   
@@ -99,7 +98,7 @@ test_that("rc_update_weather handles input with year column", {
   expect_s3_class(out, "data.table")
   expect_true(all(c("year", "month") %in% names(out)))
   expect_equal(nrow(out), nrow(dt.time))
-  expect_false(anyNA(out$W_ET_POT_MONTH))
+  expect_false(anyNA(out$W_ET_REF_MONTH))
   
   # test if year range does not cover simulation period
   invalid_dt <- copy(valid_dt)

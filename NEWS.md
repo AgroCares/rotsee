@@ -6,7 +6,7 @@
 ## changed
 * split total C input `B_C_OF_INPUT` into separate C input from plants `B_C_OF_CULT` and C input from amendments `B_C_OF_AMENDMENT` 
 * replaced weather parameter `W_ET_POT_MONTH` with `W_ET_REF_MONTH` to align with scientific standard
-* renamed function `rc_calculate_B_C_OF` to `rc_calculate_B_C_CULT`to align with namechange
+* renamed function `rc_calculate_B_C_OF` to `rc_calculate_B_C_OF_CULT`to align with the new naming
 
 
 # rotsee v0.1.6  2025-10-20
