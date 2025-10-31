@@ -17,25 +17,6 @@
 #' }
 "rc_crops"
 
-#' Table with input parameters being used in the package
-#'
-#' This table contains all parameters being used in the rotsee package.
-#'
-#' @format A data.table with x rows and x columns:
-#' \describe{
-#'   \item{rc_parm_id}{the parameter id}
-#'   \item{rc_parm_name}{the name of the parameter}
-#'   \item{rc_parm_type}{the type of the parameter. Options: measurement, field property}
-#'   \item{rc_parm_description}{a short description of the parameters}
-#'   \item{rc_parm_unit}{the unit of the parameter}
-#'   \item{rc_parm_min}{the minimum allowed value for the parameter}
-#'   \item{rc_parm_max}{the maximum allowed value for the parameter}
-#'   \item{rc_parm_data_type}{the data type of the parameter: numeric, character or boolean}
-#'   \item{rc_parm_enum}{does the parameter have predefined options}
-#'   \item{rc_parm_options}{allowed options for the parameteer}
-#'}
-"rc_parms"
-
 #' Makkink correction factor table
 #'
 #' This table contains the makkink correction factors for evapo-transpiration per month
