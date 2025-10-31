@@ -771,5 +771,48 @@ rc_maxval <- function(this.parameter){
   return(out)
 }
 
-
-
+#' Function to determine W_ET_REFACT given a crop profile and supplied weather table, based on Dutch Makkink factors
+#'
+#' @param weather (data.table) weather data table containing columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT.
+#' @param crop (data.table) data table with crop information. Contains at least the columns B_LU_START, B_LU_END, and D_MAKKINK_JAN through DEC
+#' @param dt.time (data.table) Data table with the combination of years and months spanning the entire simulation period
+#'
+#' @returns
+#' Weather table with W_ET_REFACT column added
+#' 
+#' @export
+#'
+rc_set_refact <- function(weather, crop, dt.time){
+  # add visible bindings
+  B_LU_END  = B_LU_START = W_ET_REFACT = NULL
+  
+  # copy data tables
+  weather <- copy(weather)
+  crop <- copy(crop)
+  
+  # establish crop growth
+  # base crop cover on supplied start and end dates of crop growth
+  crop <- crop[, {
+    
+    # Create a sequence of year-month combinations when crops are growing
+    seq_dates <- seq.Date(as.Date(B_LU_START), as.Date(B_LU_END), by = 'month')
+    
+    # Derive year and month of growth
+    growth_months <- month(seq_dates)
+    growth_years <- year(seq_dates)
+    
+    # Set correct W_ET_REFACT value
+    values_refact <- sapply(growth_months, function(m) {
+      col_name <- paste0("D_MAKKINK_", toupper(month.abb[m]))
+      get(col_name)
+      
+    }) 
+   
+    # Extract year and month
+    list(year = growth_years, month = growth_months, W_ET_REFACT = values_refact)
+  }, by = 1:nrow(crop)] 
+ 
+  # Merge with dt.time to span entire simulation period fill missing dates values with 0.36
+  dt <- merge(dt.time, crop, by = c("year", "month"), all.x = TRUE)[, W_ET_REFACT := fifelse(is.na(W_ET_REFACT), 0.36, W_ET_REFACT)]
+ 
+}
