@@ -70,3 +70,34 @@ create_parms <- function(){
   
   return(dt)
 }
+
+# Helper function to generate crop events table
+create_event_rotation <- function(){
+  dt <- data.table(
+    B_LU = c("nl_308", "nl_252"),
+    year = c(2020, 2021),
+    month = c(8, 8),
+    cin_dpm = c(500, 750),
+    cin_rpm = c(300, 450)
+  )
+  
+  return(dt)
+}
+
+
+# Helper function to generate amendment events table
+create_event_amendment <- function(){
+  
+  dt <- data.table(
+    P_ID = c(1, 2, 3),
+    P_NAME = c("low", "mid", "high"),
+    year = c(2020, 2021, 2022),
+    month = c(4, 5, 6),
+    cin_tot = c(1000, 1500, 2000),
+    cin_hum = c(100, 150, 200),
+    cin_dpm = c(300, 450, 600),
+    cin_rpm = c(600, 900, 1200)
+  )
+  
+  return(dt)
+  }

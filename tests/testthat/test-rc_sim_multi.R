@@ -11,15 +11,8 @@ test_that("rc_sim_multi runs with normal inputs", {
   
   rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
   
-  rothc_amendment <- data.table(
-    ID = rep(1:3, each = 2),
-    P_ID = rep(1, 6),
-    P_NAME = rep('cattle_slurry', 6),
-    P_DOSE = rep(c(100000, 25000, 70000), 2),
-    P_HC = rep(0.7,6),
-    P_C_OF = rep(35, 6),
-    P_DATE_FERTILIZATION = rep(c("2022-05-01", "2023-05-01"),each=3)
-  )
+  rothc_amendment <- create_amendment()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), 2)]
   
   weather <- create_weather()
   
@@ -71,6 +64,7 @@ test_that("rc_sim_multi handles progress reporting", {
   
   
   rothc_amendment <- create_amendment()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), 2)]
   
   weather <- create_weather()
   

@@ -5,23 +5,12 @@ library(testthat)
 library(data.table)
 testthat::source_file("helper-testdata.R")
 
-create_test_amendment <- function() {
-  data.table(
-    P_ID = c(1, 2, 3),
-    P_NAME = c("low", "mid", "high"),
-    year = c(2020, 2021, 2022),
-    month = c(4, 5, 6),
-    cin_tot = c(1000, 1500, 2000),
-    cin_hum = c(100, 150, 200),
-    cin_dpm = c(300, 450, 600),
-    cin_rpm = c(600, 900, 1200)
-  )
-}
 
 # Test basic functionality with valid inputs
 test_that("rc_input_event_amendment returns correct structure with valid inputs", {
   
-  amendment <- create_test_amendment()
+  amendment <- create_event_amendment()
+  
   dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   
   result <- rc_input_event_amendment(amendment = amendment, dt.time = dt.time)
@@ -46,32 +35,30 @@ test_that("rc_input_event_amendment handles NULL amendment correctly", {
 
 # Test input validation - amendment parameter
 test_that("rc_input_event_amendment validates amendment parameter correctly", {
+  valid_amendment <- create_event_amendment()
   
-  # Test with invalid column names
-  invalid_amendment <- data.table(
-    invalid_col = 2020,
-    month = 4
-  )
   dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   
+  # Test with invalid column names
+  invalid_amendment <- copy(valid_amendment)
+  colnames(invalid_amendment)[colnames(invalid_amendment) == "year"] <- "invalid_name"
+
   expect_error(
     rc_input_event_amendment(invalid_amendment, dt.time),
     "Assertion"
   )
   
   # Test with negative cin_hum values
-  negative_amendment <- create_test_amendment()
-  negative_amendment$cin_hum <- c(-10, 150, 200)
-  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
+  negative_amendment <- copy(valid_amendment)[, cin_hum := c(-10, 150, 200)]
+  
   expect_error(
     rc_input_event_amendment(negative_amendment, dt.time),
     "not >= 0"
   )
   
   # Test with excessive cin_tot values
-  excessive_amendment <- create_test_amendment()
-  excessive_amendment$cin_tot <- c(150000, 150, 200)
-  dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
+  excessive_amendment <- copy(valid_amendment)[, cin_tot := c(150000, 1500, 2000)]
+
   expect_error(
     rc_input_event_amendment(excessive_amendment, dt.time),
     "not <= 100000"
@@ -129,7 +116,8 @@ test_that("rc_input_event_amendment handles multiple years correctly", {
 
 # Test melt operation and output structure
 test_that("rc_input_event_amendment output has correct melted structure", {
-  amendment <- create_test_amendment()
+  amendment <- create_event_amendment()
+  
   dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   
   result <- rc_input_event_amendment(amendment, dt.time = dt.time)
