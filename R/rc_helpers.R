@@ -792,7 +792,7 @@ rc_set_refact <- function(weather, crop, dt.time){
   
   # establish crop growth
   # base crop cover on supplied start and end dates of crop growth
-  crop <- crop[, {
+  crop_refact <- crop[, {
     
     # Create a sequence of year-month combinations when crops are growing
     seq_dates <- seq.Date(as.Date(B_LU_START), as.Date(B_LU_END), by = 'month')
@@ -812,7 +812,16 @@ rc_set_refact <- function(weather, crop, dt.time){
     list(year = growth_years, month = growth_months, W_ET_REFACT = values_refact)
   }, by = 1:nrow(crop)] 
  
-  # Merge with dt.time to span entire simulation period fill missing dates values with 0.36
-  dt <- merge(dt.time, crop, by = c("year", "month"), all.x = TRUE)[, W_ET_REFACT := fifelse(is.na(W_ET_REFACT), 0.36, W_ET_REFACT)]
+  # Expand weather data to simulation period
+  weather_ext <- merge(dt.time, weather, by = c("year", "month"), all.x = TRUE)
+  
+  # Remove provided refact values
+  if("W_ET_REFACT" %in% colnames(weather_ext)) weather_ext[, W_ET_REFACT := NULL]
  
+  # Merge weather and crop data table, fill missing dates values with 0.36
+  dt <- merge(weather_ext, crop_refact, by = c("year", "month"), all.x = TRUE)
+  dt[, W_ET_REFACT := fifelse(is.na(W_ET_REFACT), 0.36, W_ET_REFACT)]
+ 
+  
+  return(dt)
 }
