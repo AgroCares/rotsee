@@ -479,6 +479,214 @@ test_that("rc_update_parms accepts and validates poutput", {
   expect_error(rc_update_parms(list(poutput = "invalid"), crops = crops), "additional elements")
 })
 
+test_that("rc_check_inputs correctly validates soil_properties data", {
+  # Generate valid soil properties data
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
+  valid_amendment <- data.table(
+    P_ID = c(1, 1),
+    P_NAME = c('cattle_slurry', 'cattle_slurry'),
+    P_DOSE = c(63300, 63300),
+    P_HC = c(0.7,0.7),
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+  
+  
+  # Run with valid values (should not error)
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
+                                  rothc_amendment = valid_amendment,
+                                  soil_properties = valid_soil))
+  
+  # Run as a list (not allowed)
+  soil_list <- as.list(valid_soil)
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_list), "Must be a data.table")
+  
+  # Run without A_C_OF
+  soil_no_ac <- copy(valid_soil)[, A_C_OF := NULL]
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_ac))
+  
+  # Run without B_C_ST03
+  soil_no_bc <- copy(valid_soil)[, B_C_ST03 := NULL]
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_bc))
+
+  # Run without A_C_OF and B_C_ST03
+  soil_no_acbc <- copy(valid_soil)[, A_C_OF := NULL][, B_C_ST03 := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_acbc),
+               "Both A_C_OF and B_C_ST03 are missing")
+  
+  # Run without clay
+  soil_no_clay <- copy(valid_soil)[, A_CLAY_MI := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_clay),
+               "Must be of type 'numeric'")
+  
+  # Run without bulk density
+  soil_no_dens <- copy(valid_soil)[, A_DENSITY_SA := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_dens),
+               "Must be of type 'numeric'")
+})
+
+
+
+test_that("rc_check_inputs correctly validates crop data", {
+  # Generate valid soil properties data
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
+  valid_amendment <- data.table(
+    P_ID = c(1, 1),
+    P_NAME = c('cattle_slurry', 'cattle_slurry'),
+    P_DOSE = c(63300, 63300),
+    P_HC = c(0.7,0.7),
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+  
+ 
+  
+  # Run as a list (not allowed)
+  crop_list <- as.list(valid_crop)
+  expect_error(rc_check_inputs(rothc_rotation = crop_list,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil), "Must be a data.table")
+  
+  # Without B_LU_START
+  crop_no_start <- copy(valid_crop)[,B_LU_START := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_start,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # Without B_LU_END
+  crop_no_end <- copy(valid_crop)[,B_LU_END := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_end,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # Without B_LU
+  crop_no_lu <- copy(valid_crop)[,B_LU := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_lu,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # Without B_LU_HC
+  crop_no_hc <- copy(valid_crop)[,B_LU_HC := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_hc,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # Without B_C_OF_INPUT
+  crop_no_bc <- copy(valid_crop)[,B_C_OF_INPUT := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_bc,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+})
+
+
+test_that("rc_check_inputs correctly validates amendment data", {
+  # Generate valid soil properties data
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
+  valid_amendment <- data.table(
+    P_ID = c(1, 1),
+    P_NAME = c('cattle_slurry', 'cattle_slurry'),
+    P_DOSE = c(63300, 63300),
+    P_HC = c(0.7,0.7),
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+  
+  
+  
+  # Run as a list (not allowed)
+  amendment_list <- as.list(valid_amendment)
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_list,
+                  soil_properties = valid_soil), "Must be a data.table")
+  
+  # run without HC
+  amendment_no_hc <- copy(valid_amendment)[, P_HC := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_no_hc,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # run without dose
+  amendment_no_dose <- copy(valid_amendment)[, P_DOSE := NULL]
+  rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_no_dose,
+                  soil_properties = valid_soil)
+  
+  amendment_no_pc <- copy(valid_amendment)[, P_C_OF := NULL]
+  rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_no_pc,
+                  soil_properties = valid_soil)
+  
+  amendment_no_date <- copy(valid_amendment)[, P_DATE_FERTILIZATION := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_no_date,
+                  soil_properties = valid_soil),
+               "missing elements")
+})
 
 
 test_that("rc_calculate_bd correctly calculates bulk density",{
@@ -496,7 +704,6 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
     C_dt <- dt[, A_C_OF := 80]
     expect_no_error(rc_calculate_bd(dt = C_dt))
 })
-
 
 
 test_that("rc_calculate_B_C_OF correctly validates input", {
