@@ -3,7 +3,7 @@
 \docType{data}
 \name{rc_params}
 \alias{rc_params}
-\title{Parameter table}
+\title{rc_params table}
 \format{
 A data.table with 23 rows and 13 columns:
 \describe{

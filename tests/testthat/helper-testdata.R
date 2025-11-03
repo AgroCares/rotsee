@@ -101,3 +101,14 @@ create_event_amendment <- function(){
   
   return(dt)
   }
+
+# Helper function to generate irrigation table
+create_irrigation <- function(){
+  
+  dt <-data.table(
+    B_DATE_IRRIGATION = c("2022-07-01", "2023-07-01", "2024-06-15"),
+    B_IRR_AMOUNT = c(20, 25, 18)
+  )
+  
+  return(dt)
+}
