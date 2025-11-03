@@ -112,6 +112,8 @@ test_that("rc_input_rmf validates irrigation amount ranges", {
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
+  
   # Negative irrigation amount
   invalid_irrigation_negative <- data.table(
     B_DATE_IRRIGATION = c("2022-07-01"),
@@ -156,6 +158,8 @@ test_that("rc_input_rmf handles boundary irrigation amounts", {
   weather <- create_weather()
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
+  
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
   
   # Zero irrigation amount
   irrigation_zero <- data.table(
@@ -227,6 +231,8 @@ test_that("rc_input_rmf handles irrigation dates correctly", {
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
+  
   # Invalid date format
   invalid_date <- data.table(
     B_DATE_IRRIGATION = c("not-a-date"),
@@ -256,6 +262,8 @@ test_that("rc_input_rmf handles NULL crop rotation with irrigation", {
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
+  
   # Should work with NULL crop rotation
   expect_no_error(
     rc_input_rmf(
@@ -282,6 +290,8 @@ test_that("rc_input_rmf uses W_ET_REFACT in ET calculations with irrigation", {
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
+  weather <- rc_update_weather(dt = weather_custom, dt.time = dt.time)
+  
   result <- rc_input_rmf(
     dt = rothc_rotation,
     B_DEPTH = 0.3,
@@ -301,6 +311,8 @@ test_that("rc_input_rmf handles irrigation at different times of year", {
   weather <- create_weather()
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
+  
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
   
   # Irrigation in winter month
   irrigation_winter <- data.table(
@@ -350,6 +362,8 @@ test_that("rc_input_rmf handles same month multiple irrigation events", {
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
   
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
+  
   # Should handle and aggregate correctly
   expect_no_error(
     rc_input_rmf(
@@ -376,6 +390,8 @@ test_that("rc_input_rmf irrigation integration with crop cover", {
   )
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
+  
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
   
   result_during <- rc_input_rmf(
     dt = rothc_rotation,
