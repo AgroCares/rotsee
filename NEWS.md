@@ -57,6 +57,15 @@
 ## changed
 * Loosened checks for `rc_calculate_B_C_OF` and `rc_update_weather` to allow additional input columns
 
+# rotsee v0.1.1 2025-10-08
+
+## added
+* Added multiple initialisation options to `rc_initialise`, called under "type"
+* linked `rc_sim` and `rc_initialise`
+
+## changed
+* Input checks on multiple functions
+
 # rotsee v0.1.0 2025-09-24
 
 ## added

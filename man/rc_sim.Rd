@@ -8,7 +8,6 @@ rc_sim(
   soil_properties,
   A_DEPTH = 0.3,
   B_DEPTH = 0.3,
-  M_TILLAGE_SYSTEM = "CT",
   rothc_rotation = NULL,
   rothc_amendment = NULL,
   rothc_parms = NULL,
@@ -22,8 +21,6 @@ rc_sim(
 \item{A_DEPTH}{(numeric) Depth for which soil sample is taken (m). Default set to 0.3.}
 
 \item{B_DEPTH}{(numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.}
-
-\item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till).}
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
@@ -72,12 +69,12 @@ Includes the columns:
 
 rothc_parms: parameters to adapt calculations (optional)
 May include the following columns:
-* initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is TRUE
+* initialization_method (character) scenario to initialize the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'spinup_analytical_bodemcoolstof'
 * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
 * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
-* poutput (character) Resolution of data ouptut. Options: 'year', 'month'
+* poutput (character) Resolution of data output. Options: 'year', 'month'
 * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
 * end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
 
