@@ -1,3 +1,5 @@
+testthat::source_file("helper-testdata.R")
+
 library(data.table)
 
 test_that("rc_update_weather returns default weather data when input is NULL", {
@@ -15,13 +17,7 @@ test_that("rc_update_weather returns default weather data when input is NULL", {
 
 test_that("rc_update_weather validates input data table", {
   # Create a valid data table
-  valid_dt <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = rep(47, 12)
-  )
+  valid_dt <- create_weather()
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")
   
@@ -31,6 +27,7 @@ test_that("rc_update_weather validates input data table", {
   # Test missing columns
   valid_dt_ref <- copy(valid_dt)[, W_ET_ACT_MONTH := NULL]
   expect_no_error(rc_update_weather(valid_dt_ref, dt.time = dt.time)) # only one of W_ET_REF_MONTH or W_ET_ACT_MONTH must be provided
+  
   
   invalid_dt <- copy(valid_dt)[, W_ET_REF_MONTH := NULL]
   expect_error(rc_update_weather(invalid_dt, dt.time = dt.time), "missing values") # At least one of W_ET_REF_MONTH or W_ET_ACT_MONTH should not contain NAs
@@ -91,14 +88,7 @@ test_that("rc_update_weather validates input data table", {
 test_that("rc_update_weather handles input with year column", {
   dt.time <- rc_time_period("2022-01-01", "2022-12-31")
   
-  valid_dt <- data.table(
-    year = 2022,
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = 10,
-    W_PREC_SUM_MONTH = 50,
-    W_ET_REF_MONTH = 40,
-    W_ET_ACT_MONTH = 30
-  )
+  valid_dt <- create_weather()[, year := 2022]
   
   out <- rc_update_weather(valid_dt, dt.time)
   expect_s3_class(out, "data.table")
