@@ -25,5 +25,5 @@
   # save parameter table as rda file
   usethis::use_data(rc_params, overwrite = TRUE, compress = "xz")
   
-  message("Parameter table updated in data/. Rebuild the package for changes to take effect.")
+  message("rc_params table updated in data/. Rebuild the package for changes to take effect.")
   

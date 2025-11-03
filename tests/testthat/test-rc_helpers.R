@@ -9,13 +9,19 @@ test_that("rc_update_weather returns default weather data when input is NULL", {
   
   expect_s3_class(default_weather, "data.table")
   expect_equal(nrow(default_weather), 24)
-  expect_equal(ncol(default_weather), 6)
-  expect_equal(names(default_weather), c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_REF_MONTH", "W_ET_ACT_MONTH"))
+  expect_equal(ncol(default_weather), 7)
+  expect_equal(names(default_weather), c("year", "month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_REF_MONTH", "W_ET_ACT_MONTH", "W_ET_REFACT"))
 })
 
 test_that("rc_update_weather validates input data table", {
   # Create a valid data table
-  valid_dt <- create_weather()
+  valid_dt <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = rep(47, 12)
+  )
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")
   
@@ -60,17 +66,17 @@ test_that("rc_update_weather validates input data table", {
   invalid_dt <- copy(valid_dt)
   invalid_dt[,W_ET_REF_MONTH := NA_real_][,W_ET_ACT_MONTH := NA_real_]
   expect_error(rc_update_weather(invalid_dt, dt.time),
-               "should not contain NA values", fixed = TRUE)
+               "should not contain NA", fixed = TRUE)
   
   # Test if not all 12 months are provided (invalid)
   invalid_dt <- copy(valid_dt)
   invalid_dt <- invalid_dt[month %in% c(1:6),]
   expect_error(rc_update_weather(invalid_dt, dt.time),
-               "provide exactly one row per month")
+               "Must have at least 12 rows")
   
   # Test if ET_REF is too high (invalid)
   invalid_dt <- copy(valid_dt)
-  invalid_dt[,W_ET_REF_MONTH := 20000]
+  invalid_dt[,W_ET_REF_MONTH := 20000] # too high
   expect_error(rc_update_weather(invalid_dt, dt.time),
                "W_ET_REF_MONTH", fixed = TRUE)
   
@@ -774,3 +780,191 @@ test_that("rc_time_period handles edge cases", {
   expect_equal(end_of_month$time, (1:2 - 1) / 12, tolerance = 0.001)
 })
 
+
+test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
+  # Test with W_ET_REFACT supplied
+  weather_with_correction <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = rep(NA_real_, 12),
+    W_ET_REFACT = rep(0.8, 12)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_with_correction, dt.time = dt.time)
+  
+  expect_s3_class(result, "data.table")
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.8, 12))
+})
+
+test_that("rc_update_weather handles partials NAs in W_ET_REFACT", {
+    # Test with partial NAs in W_ET_REFACT - should fill with 0.75
+    weather_partial_na <- data.table(
+      month = 1:12,
+      W_TEMP_MEAN_MONTH = rep(10, 12),
+      W_PREC_SUM_MONTH = rep(50, 12),
+      W_ET_REF_MONTH = rep(50, 12),
+      W_ET_REFACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
+    )
+    
+    dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+    
+    result <- rc_update_weather(weather_partial_na, dt.time)
+    expect_equal(result$W_ET_REFACT, c(0.8, 0.75, 0.7, 0.75, rep(0.75, 8)))
+})
+  
+test_that("rc_update_weather runs without W_ET_REFACT column", {
+  # Test without W_ET_REFACT column - should add default 0.75
+  weather_no_correction <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_no_correction, dt.time)
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.75, 12))
+})
+
+test_that("rc_update_weather validates W_ET_REFACT ranges", {
+  # Test with out of range W_ET_REFACT values (too high)
+  invalid_high <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(2.5, 12)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  expect_error(rc_update_weather(invalid_high, dt.time), "W_ET_REFACT")
+  
+  # Test with negative W_ET_REFACT values
+  invalid_negative <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(-0.1, 12)
+  )
+  
+  expect_error(rc_update_weather(invalid_negative, dt.time), "W_ET_REFACT")
+})
+
+test_that("rc_update_weather boundary values for W_ET_REFACT", {
+  # Test with W_ET_REFACT at lower boundary (0.3)
+  weather_lower <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(0.3, 12)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  expect_no_error(rc_update_weather(weather_lower, dt.time))
+  
+  # Test with W_ET_REFACT at upper boundary (2)
+  weather_upper <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(2, 12)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result_upper <- rc_update_weather(weather_upper, dt.time)
+  expect_equal(result_upper$W_ET_REFACT, rep(2, 12))
+  
+  # Test with mixed W_ET_REFACT values
+  weather_mixed <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = seq(0.3, 2, length.out = 12)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result_mixed <- rc_update_weather(weather_mixed, dt.time)
+  expect_equal(result_mixed$W_ET_REFACT, seq(0.3, 2, length.out = 12), tolerance = 1e-10)
+})
+
+test_that("rc_update_weather default weather includes W_ET_REFACT", {
+  # When no weather data is provided, default should include W_ET_REFACT
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  default_weather <- rc_update_weather(NULL, dt.time)
+  
+  expect_true("W_ET_REFACT" %in% names(default_weather))
+  expect_equal(default_weather$W_ET_REFACT, rep(0.75, 12))
+  expect_equal(nrow(default_weather), 12)
+  expect_equal(ncol(default_weather), 7)
+})
+
+test_that("rc_update_weather with only actual ET and W_ET_REFACT", {
+  # Test scenario with only actual ET and W_ET_REFACT
+  weather_actual_only <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = rep(40, 12),
+    W_ET_REFACT = rep(0.85, 12)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_actual_only, dt.time)
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.85, 12))
+})
+
+test_that("rc_update_weather edge case with both ET types and W_ET_REFACT", {
+  # Both reference and actual ET provided with W_ET_REFACT
+  weather_both <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = c(rep(40, 6), rep(NA_real_, 6)),
+    W_ET_REFACT = rep(0.8, 12)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_both, dt.time)
+  expect_equal(result$W_ET_REFACT, rep(0.8, 12))
+  expect_equal(nrow(result), 12)
+})
+
+test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
+  # Ensure no side effects on other columns
+  weather_original <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5)
+  )
+  
+  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_original, dt.time)
+  
+  # Check original columns are preserved
+  expect_equal(result$month, weather_original$month)
+  expect_equal(result$W_TEMP_MEAN_MONTH, weather_original$W_TEMP_MEAN_MONTH)
+  expect_equal(result$W_PREC_SUM_MONTH, weather_original$W_PREC_SUM_MONTH)
+  expect_equal(result$W_ET_REF_MONTH, weather_original$W_ET_REF_MONTH)
+})

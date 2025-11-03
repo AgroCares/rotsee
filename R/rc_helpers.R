@@ -26,17 +26,18 @@ cf_ind_importance <- function(x) {
 #' *W_PREC_SUM_MONTH (mm)
 #' *W_ET_REF_MONTH (mm)
 #' *W_ET_ACT_MONTH (mm; optional, can be NA)
+#' *W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' @param dt.time Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}
 #' 
 #' @returns
-#' A data table returning in order the columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH
+#' A data table returning in order the columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT
 #' covering the simulation period. When year is not supplied in dt, rows are expanded for all years.
 #' @export
 #'
-rc_update_weather <- function(dt = NULL, dt.time){
+rc_update_weather <- function(dt = NULL, dt.time = dt.time){
   # Add visible bindings
-  W_ET_REF_MONTH = W_ET_ACT_MONTH = time = . = NULL
+  W_ET_REFACT = W_ET_ACT_MONTH = W_ET_REF_MONTH = . = time = NULL
   
   # Validate dt.time 
   checkmate::assert_data_table(dt.time, min.rows = 1)
@@ -44,14 +45,14 @@ rc_update_weather <- function(dt = NULL, dt.time){
   checkmate::assert_integerish(dt.time$year, lower = 1, any.missing = FALSE)
   checkmate::assert_integerish(dt.time$month, lower = 1, upper = 12, any.missing = FALSE)
   
+  # Check if there is a weather data table
   if(!is.null(dt)){
-
-    # check weather inputs
-    checkmate::assert_data_table(dt)
     
-    # Copy weather data table
+    # Create weather data table
     dt <- copy(dt)
     
+    # Check inputs
+    checkmate::assert_data_table(dt, min.rows = 12)
     req <- c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH")
     checkmate::assert_names(colnames(dt), must.include = req)
     checkmate::assert(
@@ -62,7 +63,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
     checkmate::assert_numeric(dt$W_TEMP_MEAN_MONTH, lower = rc_minval('W_TEMP_MEAN_MONTH'), upper = rc_maxval('W_TEMP_MEAN_MONTH'), any.missing = FALSE)
     checkmate::assert_numeric(dt$W_PREC_SUM_MONTH, lower = rc_minval('W_PREC_SUM_MONTH'), upper = rc_maxval('W_PREC_SUM_MONTH'), any.missing = FALSE)
     
-    # Check if both potential and actual ET are provided
+    # Check if both reference and actual ET are provided
     if ("W_ET_REF_MONTH" %in% colnames(dt) && "W_ET_ACT_MONTH" %in% colnames(dt)) {
       checkmate::assert(
         !all(is.na(dt$W_ET_REF_MONTH)) || !all(is.na(dt$W_ET_ACT_MONTH)),
@@ -72,7 +73,7 @@ rc_update_weather <- function(dt = NULL, dt.time){
       checkmate::assertNumeric(dt$W_ET_REF_MONTH, lower = rc_minval('W_ET_REF_MONTH'), upper = rc_maxval('W_ET_REF_MONTH'), any.missing = TRUE)
       checkmate::assertNumeric(dt$W_ET_ACT_MONTH, lower = rc_minval('W_ET_ACT_MONTH'), upper = rc_maxval('W_ET_ACT_MONTH'), any.missing = TRUE)
     } else if ("W_ET_REF_MONTH" %in% colnames(dt)) {
-      # Only potential ET provided: no NA allowed
+      # Only reference ET provided: no NA allowed
       checkmate::assertNumeric(dt$W_ET_REF_MONTH, lower = rc_minval('W_ET_REF_MONTH'), upper = rc_maxval('W_ET_REF_MONTH'), any.missing = FALSE)
     } else if ("W_ET_ACT_MONTH" %in% colnames(dt)) {
       # Only actual ET provided: no NA allowed
@@ -124,16 +125,29 @@ rc_update_weather <- function(dt = NULL, dt.time){
           
          }
     
-    
-    
+    # Define values of ET correction factor
+    if("W_ET_REF_MONTH" %in% colnames(dt)){
+      
+      # create W_ET_REFACT column if non-existent
+      if (!"W_ET_REFACT" %in% colnames(dt)) dt[, W_ET_REFACT := NA_real_]
+      
+      # set NA W_ET_REFACT values to 0.75
+      dt[, W_ET_REFACT := fifelse(is.na(W_ET_REFACT), 0.75, W_ET_REFACT)]
+      
+      # check supplied values
+      checkmate::assert_numeric(dt$W_ET_REFACT, lower = rc_minval('W_ET_REFACT'), upper = rc_maxval('W_ET_REFACT'))
+    }
 }else{
   # If no weather data has been supplied, set to standard Dutch conditions
   # Set default weather
-  dt <- data.table(month = 1:12,
-                   W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
-                   W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+  dt <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
                    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
-                   W_ET_ACT_MONTH = NA_real_)
+                   W_ET_ACT_MONTH = NA_real_,
+                   W_ET_REFACT = rep(0.75, 12)
+                   )
  
   # Join to time table
   dt <- dt[dt.time, on = .(month)]

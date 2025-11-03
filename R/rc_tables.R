@@ -17,6 +17,7 @@
 #' }
 "rc_crops"
 
+
 #' Makkink correction factor table
 #'
 #' This table contains the makkink correction factors for evapo-transpiration per month
@@ -40,7 +41,7 @@
 "rc_makkink"
 
 
-#' Parameter table
+#' rc_params table
 #'
 #' This table contains information on attributes of parameters used in rotsee
 #'
