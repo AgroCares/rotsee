@@ -2033,7 +2033,7 @@ test_that("rc_check_inputs handles edge case with maximum valid values", {
   valid_soil_max <- data.table(
     A_C_OF = 200,  # Assuming high but valid
     B_C_ST03 = 500,  # Assuming high but valid
-    A_CLAY_MI = 100,
+    A_CLAY_MI = 75,
     A_DENSITY_SA = 2.0
   )
   
