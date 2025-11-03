@@ -47,7 +47,7 @@ soil_properties <- data.table(
 dt.weather <- data.table(month = 1:12,
                          W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
                          W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-                         W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                         W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
                          W_ET_ACT_MONTH = NA_real_)
 
 dt.rmf <- rc_input_rmf(dt = crops,
@@ -69,42 +69,15 @@ rothc.parms <- list(k1 = 10,
  
 
 
-# Check with all valid inputs
-# spinup_analytical_bodemcoolstof
-expect_no_error(rc_initialise(crops = crops,
-                              amendment = amendment,
-                              dt.soc = dt.soc,
-                              rothc.parms = rothc.parms,
-                              rothc.event = rothc.event,
-                              start_date = start_date,
-                              dt.time = dt.time,
-                              soil_properties = soil_properties,
-                              dt.weather = dt.weather,
-                              initialization_method = 'spinup_analytical_bodemcoolstof'))
+# Test all three methods do not error
+methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink', 'spinup_simulation')
 
-# spinup_analytical_heuvelink
-expect_no_error(rc_initialise(crops = crops,
-                              amendment = amendment,
-                              dt.soc = dt.soc,
-                              rothc.parms = rothc.parms,
-                              rothc.event = rothc.event,
-                              start_date = start_date,
-                              dt.time = dt.time,
-                              soil_properties = soil_properties,
-                              dt.weather = dt.weather,
-                              initialization_method = 'spinup_analytical_heuvelink'))
-
-# spinup_simulation
-expect_no_error(rc_initialise(crops = crops,
-                              amendment = amendment,
-                              dt.soc = dt.soc,
-                              rothc.parms = rothc.parms,
-                              rothc.event = rothc.event,
-                              start_date = start_date,
-                              dt.time = dt.time,
-                              soil_properties = soil_properties,
-                              dt.weather = dt.weather,
-                              initialization_method = 'spinup_simulation'))
+for (method in methods) {
+  expect_no_error(rc_initialise(crops = crops, amendment = amendment, dt.soc = dt.soc,
+                          rothc.parms = rothc.parms, rothc.event = rothc.event,
+                          dt.time = dt.time, initialization_method = method,
+                          start_date = "2022-05-01", soil_properties = soil_properties))
+}
 })
 
 test_that("rc_initialise validates required inputs for spinup_simulation", {
@@ -136,7 +109,7 @@ test_that("rc_initialise validates required inputs for spinup_simulation", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_
   )
   
@@ -199,7 +172,7 @@ test_that("rc_initialise validates required inputs for analytical methods", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_
   )
   
@@ -266,7 +239,7 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_
   )
   
@@ -323,8 +296,15 @@ test_that("rc_initialise returns valid fraction structure", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_
+  )
+  
+  soil_properties <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
   )
   
   dt.rmf <- rc_input_rmf(dt = crops, B_DEPTH = 0.3, A_CLAY_MI = dt.soc$A_CLAY_MI,
@@ -334,12 +314,13 @@ test_that("rc_initialise returns valid fraction structure", {
                       R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
   
   # Test all three methods return valid structure
-  methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink')
+  methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink', 'spinup_simulation')
   
   for (method in methods) {
     result <- rc_initialise(crops = crops, amendment = amendment, dt.soc = dt.soc,
                             rothc.parms = rothc.parms, rothc.event = rothc.event,
-                            dt.time = dt.time, initialization_method = method)
+                            dt.time = dt.time, initialization_method = method,
+                            start_date = "2022-05-01", soil_properties = soil_properties)
     
     # Check structure
     expect_type(result, "double")
@@ -378,7 +359,7 @@ test_that("rc_initialise handles edge case with zero C inputs", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_
   )
   
@@ -423,7 +404,7 @@ test_that("rc_initialise spinup_analytical_heuvelink handles singular matrix", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_
   )
   
@@ -469,7 +450,7 @@ test_that("rc_initialise bodemcoolstof handles negative biohum", {
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_
   )
   
@@ -489,7 +470,7 @@ test_that("rc_initialise bodemcoolstof handles negative biohum", {
   expect_true(all(is.finite(result)))
 })
 
-test_that("rc_initialise handles amendments with B_C_OF_INPUT vs P_DOSE*P_C_OF", {
+test_that("rc_initialise handles amendments with B_C_OF_CULT vs P_DOSE*P_C_OF", {
   set.seed(123)
   
   rothc.event <- data.table(
@@ -514,7 +495,7 @@ test_that("rc_initialise handles amendments with B_C_OF_INPUT vs P_DOSE*P_C_OF",
     month = 1:12,
     W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
     W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_POT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),
     W_ET_ACT_MONTH = NA_real_
   )
   

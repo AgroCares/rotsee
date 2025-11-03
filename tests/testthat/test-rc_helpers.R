@@ -285,7 +285,7 @@ test_that("rc_update_parms accepts and validates poutput", {
   expect_equal(result$poutput, "year")
   
   # Test invalid poutput
-  expect_error(rc_update_parms(list(poutput = "invalid"), crops = crops), "element of set")
+  expect_error(rc_update_parms(list(poutput = "invalid"), crops = crops), "has additional elements")
 })
 
 
