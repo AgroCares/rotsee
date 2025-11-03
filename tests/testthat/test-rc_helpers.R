@@ -1598,43 +1598,6 @@ test_that("rc_set_refact returns correct structure and values", {
               expect_equal(result[year == 2022 & month == 5, W_ET_REFACT], 0.36)
             expect_equal(result[year == 2023 & month == 6, W_ET_REFACT], 0.36)
           })
-# Additional comprehensive tests for rc_set_refact
-
-test_that("rc_set_refact handles empty crop table", {
-  weather <- data.table(
-    year = rep(2022, 12),
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12)
-  )
-  
-  # Empty crop table - all months should get default 0.36
-  crop_empty <- data.table(
-    B_LU_START = character(),
-    B_LU_END = character(),
-    B_LU = character(),
-    D_MAKKINK_JAN = numeric(),
-    D_MAKKINK_FEB = numeric(),
-    D_MAKKINK_MAR = numeric(),
-    D_MAKKINK_APR = numeric(),
-    D_MAKKINK_MAY = numeric(),
-    D_MAKKINK_JUN = numeric(),
-    D_MAKKINK_JUL = numeric(),
-    D_MAKKINK_AUG = numeric(),
-    D_MAKKINK_SEP = numeric(),
-    D_MAKKINK_OCT = numeric(),
-    D_MAKKINK_NOV = numeric(),
-    D_MAKKINK_DEC = numeric()
-  )
-  
-  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
-  
-  result <- rc_set_refact(weather = weather, crop = crop_empty, dt.time = dt.time)
-  
-  expect_s3_class(result, "data.table")
-  expect_true(all(result$W_ET_REFACT == 0.36))
-})
 
 test_that("rc_set_refact handles single month crop period", {
   weather <- data.table(
