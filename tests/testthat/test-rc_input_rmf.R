@@ -24,7 +24,7 @@ test_that("rc_input_rmf runs correctly", {
   weather <- rc_update_weather(dt = weather, dt.time = dt.time)
   
   # Check there are no errors with all valid input
- rc_input_rmf(dt = rothc_rotation,
+  rc_input_rmf(dt = rothc_rotation,
               B_DEPTH = B_DEPTH,
               A_CLAY_MI = A_CLAY_MI,
               dt.weather = weather,
@@ -34,10 +34,12 @@ test_that("rc_input_rmf runs correctly", {
  # Check that model runs when there is a accumulated soil moisture deficit in the starting month
   dt.time1 <- rc_time_period(start_date = "2022-05-01", end_date = "2030-01-01")
   
+  weather1<- rc_update_weather(dt = weather, dt.time = dt.time1)
+  
   result <- rc_input_rmf(dt = rothc_rotation,
                                B_DEPTH = B_DEPTH,
                                A_CLAY_MI = A_CLAY_MI,
-                               dt.weather = weather,
+                               dt.weather = weather1,
                                dt.time = dt.time1,
                dt.irrigation = irrigation)
   
@@ -51,8 +53,8 @@ test_that("rc_input_rmf runs correctly", {
                                dt.weather = weather,
                                dt.time = dt.time)
   
-  expect_type(result, "list")
-  expect_true(all(c("R1", "abc", "time") %in% names(result)))
+  expect_type(result_no_irri, "list")
+  expect_true(all(c("R1", "abc", "time") %in% names(result_no_irri)))
   
   
   
@@ -64,8 +66,9 @@ test_that("rc_input_rmf validates irrigation input correctly", {
   
   weather <- create_weather()
   
-  
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-01-01")
+  
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
   
   # Missing B_DATE_IRRIGATION column
   invalid_irrigation1 <- data.table(
@@ -201,6 +204,8 @@ test_that("rc_input_rmf handles multiple irrigation events", {
   )
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2024-01-01")
+  
+  weather <- rc_update_weather(dt = weather, dt.time = dt.time)
   
   result <- rc_input_rmf(
     dt = rothc_rotation,
