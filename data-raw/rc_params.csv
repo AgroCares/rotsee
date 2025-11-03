@@ -15,6 +15,7 @@
 "P_DOSE","Dose for soil amendment product","kg / ha","P","DOSE","","","num",0,250000,"",FALSE,""
 "P_HC","Hummification coeficient","unitless","P","HC","","","num",0,1,"",FALSE,""
 "W_ET_ACT_MONTH","Monthly sum of actual evapotranspiration","mm","W","ET","ACT","MONTH","num",0,10000,"",FALSE,""
-"W_ET_POT_MONTH","Monthly sum of potential evapotranspiration","mm","W","ET","POT","MONTH","num",0,1000,"",FALSE,""
+"W_ET_REFACT","Factor to recalculate reference to actual evapotranspiration","unitless","W","ET","REFACT","","num",0.3,2,"",FALSE,""
+"W_ET_REF_MONTH","Monthly sum of reference evapotranspiration","mm","W","ET","REF","MONTH","num",0,10000,"",FALSE,""
 "W_PREC_SUM_MONTH","Sum of monthly precipitation","mm","W","PREC","SUM","MONTH","num",0,10000,"",FALSE,""
 "W_TEMP_MEAN_MONTH","Mean monthly air temperature at 2m","°C","W","TEMP","MEAN","MONTH","num",-30,50,"",FALSE,""

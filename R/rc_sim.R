@@ -8,7 +8,8 @@
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
-#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.
+#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.
+#' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
 #'
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
@@ -52,13 +53,22 @@
 #' 
 #' weather: Weather table. If no table is given, average Dutch conditions are used
 #' Includes the columns:
+#' * year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
 #' * month
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
 #' * W_PREC_SUM_MONTH (precipitation in mm)
-#' * W_ET_POT_MONTH (potential evapotranspiration in mm)
+#' * W_ET_REF_MONTH (reference evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
+#' * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
+#' 
+#' Irrigation: Irrigation table, optional.
+#' Includes the columns:
+#' * B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
+#' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'
 #' @import deSolve
+#' 
+#' @returns Table with development of C pools in the field over the given simulation period
 #'
 #' @export
 rc_sim <- function(soil_properties,
@@ -67,7 +77,8 @@ rc_sim <- function(soil_properties,
                    rothc_rotation = NULL,
                    rothc_amendment = NULL,
                    rothc_parms = NULL,
-                   weather = NULL){
+                   weather = NULL,
+                   irrigation = NULL){
   
   # add visual bindings
   a_depth = toc = A_CLAY_MI = A_C_OF = B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
@@ -82,10 +93,7 @@ rc_sim <- function(soil_properties,
                   rothc_rotation = rothc_rotation,
                   rothc_amendment = rothc_amendment)
 
-  # Check and update weather data(see rc_helpers)
-  dt.weather <- rc_update_weather(dt = weather)
-  
-  # Check and update parameter tabel rothc_parms
+   # Check and update parameter table rothc_parms
   rothc_parms <- rc_update_parms(parms = rothc_parms, crops = rothc_rotation, amendments = rothc_amendment)
  
   # Define decomposition rates
@@ -115,6 +123,12 @@ rc_sim <- function(soil_properties,
   # Define initialize
   initialization_method <- rothc_parms$initialization_method
   
+  # Define dates of complete simulation period
+  dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
+  
+  # Check and update weather data (see rc_helpers)
+  dt.weather <- rc_update_weather(dt = weather, dt.time = dt.time)
+  
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = rc_minval("A_DEPTH"), upper = rc_maxval("A_DEPTH"), any.missing = FALSE, len = 1)
   checkmate::assert_numeric(B_DEPTH, lower = rc_minval("B_DEPTH"), upper = rc_maxval("B_DEPTH"), any.missing = FALSE, len = 1)
@@ -122,9 +136,6 @@ rc_sim <- function(soil_properties,
   # rothC model parameters
 
   # prepare the RothC model inputs
-  # Define dates of complete simulation period
-  dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
-
   # create an internal crop rotation file
   if(!is.null(rothc_rotation)){
     dt.crop <- rc_input_crop(dt = rothc_rotation)
@@ -141,9 +152,19 @@ rc_sim <- function(soil_properties,
 
   # make rate modifying factors input database
   if(!is.null(dt.crop)){
-  dt.rmf <- rc_input_rmf(dt = dt.crop,A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
+  dt.rmf <- rc_input_rmf(dt = dt.crop,
+                         A_CLAY_MI = soil_properties$A_CLAY_MI,
+                         B_DEPTH = B_DEPTH,
+                         dt.time = dt.time,
+                         dt.weather = dt.weather,
+                         dt.irrigation = irrigation)
+ 
   }else{
-    dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI, B_DEPTH = B_DEPTH, dt.time = dt.time, dt.weather = dt.weather)
+    dt.rmf <- rc_input_rmf(A_CLAY_MI = soil_properties$A_CLAY_MI,
+                           B_DEPTH = B_DEPTH,
+                           dt.time = dt.time,
+                           dt.weather = dt.weather,
+                           dt.irrigation = irrigation)
     
   }
  
@@ -279,7 +300,7 @@ dt.soc[,CHUM0 := pmax(0, toc-CIOM0-CDPM0-CRPM0-CBIO0)]
     rothc.soc[A_DEPTH < 0.3 & A_CLAY_MI > 10, psoc := psoc / (1 - 0.33 * ((0.20 - (pmax(0.10, A_DEPTH) - 0.10))/ 0.20))]
     
     # select output variables
-    out <- rothc.soc[,.(time, A_SOM_LOI, soc)]
+    out <- rothc.soc[,.(time, soc, psoc)]
     
   } else if (unit == 'psomperfraction'){
     # Output in %SOM per rothc pool
@@ -316,7 +337,6 @@ dt.soc[,CHUM0 := pmax(0, toc-CIOM0-CDPM0-CRPM0-CBIO0)]
   if(poutput=='year'){
     out <- out[abs(time - round(time)) < 1e-5]
   }
-  out <- out[,.SD, .SDcols = !names(out) %in% "time"]
 
   # update year
   # out[,year := year + rotation[1,year] - 1]

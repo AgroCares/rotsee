@@ -11,7 +11,8 @@ rc_sim(
   rothc_rotation = NULL,
   rothc_amendment = NULL,
   rothc_parms = NULL,
-  weather = NULL
+  weather = NULL,
+  irrigation = NULL
 )
 }
 \arguments{
@@ -27,7 +28,12 @@ rc_sim(
 
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
-\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_POT_MONTH, W_ET_ACT_MONTH. For more information, see details.}
+\item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.}
+
+\item{irrigation}{(data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.}
+}
+\value{
+Table with development of C pools in the field over the given simulation period
 }
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
@@ -74,9 +80,16 @@ May include the following columns:
 
 weather: Weather table. If no table is given, average Dutch conditions are used
 Includes the columns:
+* year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
 * month
 * W_TEMP_MEAN_MONTH (temperature in °C)
 * W_PREC_SUM_MONTH (precipitation in mm)
-* W_ET_POT_MONTH (potential evapotranspiration in mm)
+* W_ET_REF_MONTH (reference evapotranspiration in mm)
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
+* W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
+
+Irrigation: Irrigation table, optional.
+Includes the columns:
+* B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
+* B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 }

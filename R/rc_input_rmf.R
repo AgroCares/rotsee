@@ -7,6 +7,7 @@
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param dt.weather (data.table) Data table of monthly weather
 #' @param dt.time (data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}
+#' @param dt.irrigation (data.table) Data table of irrigation events
 #'
 #' @details
 #' dt: crop rotation table
@@ -16,32 +17,62 @@
 #' 
 #' dt.weather: weather table
 #' contains the following columns:
-#' * year (optional), monthly weather repeated when not supplied
+#' * year 
 #' * month
 #' * W_TEMP_MEAN_MONTH
 #' * W_PREC_SUM_MONTH
-#' * W_ET_POT_MONTH
-#' * W_ET_ACT_MONTH (optional), calculated from W_ET_POT_MONTH when not supplied
+#' * W_ET_REF_MONTH
+#' * W_ET_ACT_MONTH (optional), calculated from W_ET_REF_MONTH when not supplied
+#' * W_ET_REFACT
+#'
+#' dt.irrigation: irrigation table
+#' contains the following columns:
+#' * B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
+#' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'
 #' @export
-rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.time){
+rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.time, dt.irrigation = NULL){
   
   # add visual bindings
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
-  tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_POT_MONTH = smd = acc_smd = NULL
+  tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_REF_MONTH = smd = acc_smd = NULL
   W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
-  
-  # Input tables
-  checkmate::assert_data_table(dt,null.ok = FALSE)
+  B_DATE_IRRIGATION = B_IRR_AMOUNT = W_ET_REFACT = . = NULL
+ 
+  # Check input tables
+  # crop table
+  checkmate::assert_data_table(dt,null.ok = TRUE)
+  if(!is.null(dt)){
   checkmate::assert_true(all(c('B_LU_START', 'B_LU_END') %in% colnames(dt)))
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = F)
+  }
+  
+  # weather table
   checkmate::assert_data_table(dt.weather, null.ok = FALSE)
-  checkmate::assert_subset(c("month","W_TEMP_MEAN_MONTH","W_PREC_SUM_MONTH"), colnames(dt.weather))
-  checkmate::assert(any(c("W_ET_POT_MONTH","W_ET_ACT_MONTH") %in% colnames(dt.weather)),
-                         msg = "At least one of 'W_ET_POT_MONTH' or 'W_ET_ACT_MONTH' must be provided.")
-  # Establish months of crop cover based on start and end of crop rotation
-  dt.growth <- dt[, {
+  req <- c("month", "W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH")
+  checkmate::assert_names(colnames(dt.weather), must.include = req)
+  checkmate::assert(
+    "W_ET_ACT_MONTH" %in% colnames(dt.weather) ||
+      all(c("W_ET_REF_MONTH","W_ET_REFACT") %in% colnames(dt.weather)),
+    msg = "Provide 'W_ET_ACT_MONTH' or both 'W_ET_REF_MONTH' and 'W_ET_REFACT' in dt.weather."
+    )
+  
+    # irrigation table
+  checkmate::assert_data_table(dt.irrigation, null.ok = TRUE)
+  if(!is.null(dt.irrigation)){
+  checkmate::assert_true(all(c('B_DATE_IRRIGATION', 'B_IRR_AMOUNT') %in% colnames (dt.irrigation)))
+  checkmate::assert_date(as.Date(dt.irrigation$B_DATE_IRRIGATION), any.missing = FALSE)
+  checkmate::assert_numeric(dt.irrigation$B_IRR_AMOUNT, lower = 0, upper = 1000, any.missing = FALSE)
+  }
+  
+  # Establish months of crop cover
+  if(is.null(dt)){
+    # if no crop file is supplied, assume bare soil
+    dt.growth <- dt.time[, .(year, month, crop_cover = 0)]
+  }else{
+    # base crop cover on supplied start and end dates of crop growth
+    dt.growth <- dt[, {
     
     # Create a sequence of year-month combinations when crops are growing
     seq_dates <- seq.Date(as.Date(B_LU_START), as.Date(B_LU_END), by = 'month')
@@ -49,23 +80,44 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
     # Extract year and month
     list(year = year(seq_dates), month = month(seq_dates), crop_cover = 1)
   }, by = list(B_LU_START,B_LU_END)] 
- 
+  }
+  
   # Merge and fill missing crop_cover values with 0
-  dt.crop_cover <- merge(dt.time, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
-  dt.crop_cover <- unique(dt.crop_cover[,list(year,month, time, crop_cover)])
+   dt <- merge(dt.time, dt.growth, by = c("year", "month"), all.x = TRUE)[, crop_cover := fifelse(is.na(crop_cover), 0, crop_cover)]
+   
+      if(!is.null(dt.irrigation)){
+        # copy irrigation table
+        irrig <- copy(dt.irrigation)
+   
+   # Derive year and month from irrigation data, aggregate per month
+        irrig[, year := year(B_DATE_IRRIGATION)]
+        irrig[,month := month(B_DATE_IRRIGATION)]
+        dt.irr.month <- irrig[, .(B_IRR_AMOUNT = sum(B_IRR_AMOUNT, na.rm = TRUE)), by = .(year, month)]
+   
+  
+   # Merge irrigation and crop cover data
+   dt <- merge(dt, dt.irr.month, by = c('year', 'month'), all.x = TRUE)[
+     , B_IRR_AMOUNT := fifelse(is.na(B_IRR_AMOUNT), 0, B_IRR_AMOUNT)]
+      }else{
+        # Set irrigation inputs to 0 when not supplied
+      dt[, B_IRR_AMOUNT:= 0]  
+      }
+
+   # Select required columns
+   dt <- unique(dt[,.(year, month, time, crop_cover, B_IRR_AMOUNT)])
 
   # Merge time and weather table
-  weather <- merge(dt.time, dt.weather, by = 'month', all.x=TRUE)
+  weather_cols <- if ("year" %in% colnames(dt.weather)) c("year","month") else "month"
+  weather <- merge(dt.time, dt.weather, by = weather_cols, all.x=TRUE)
 
   # combine weather and crop cover data
-  dt <- merge(weather, dt.crop_cover, by = c('time', 'year', 'month'))
-  
+  dt <- merge(weather, dt, by = c('time', 'year', 'month'))
+ 
   # Add soil data for rmf calculation
   dt[, B_DEPTH := B_DEPTH]
   dt[, A_CLAY_MI := A_CLAY_MI]
 
   # Add rate modifying factors
-  
   # add correction factor for temperature
   dt[, cf_temp :=  47.9/(1+exp(106/(W_TEMP_MEAN_MONTH + 18.3)))]
   
@@ -77,11 +129,19 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   dt[, tsmdmax_cor := fifelse(crop_cover==1,tsmdmax,tsmdmax/1.8)]
 
   # Calculate actual evapotranspiration for months where only potential is provided (general rothc calculation)
-  dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_POT_MONTH * 0.75]
-
+  if (!"W_ET_REFACT" %in% colnames(dt)) dt[, W_ET_REFACT := NA_real_]
+  if(!"W_ET_ACT_MONTH" %in% colnames(dt)) dt[, W_ET_ACT_MONTH := NA_real_]
+  if("W_ET_REF_MONTH" %in% colnames(dt)){
+  dt[is.na(W_ET_ACT_MONTH) & is.na(W_ET_REFACT), W_ET_REFACT := 0.75]
+  dt[is.na(W_ET_ACT_MONTH), W_ET_ACT_MONTH := W_ET_REF_MONTH * W_ET_REFACT]
+  } else if (any(is.na(dt$W_ET_ACT_MONTH))){
+    stop("W_ET_ACT_MONTH contains NA but W_ET_REF_MONTH is not available for backfilling.")
+}
   # Calculate the monthly soil moisture deficit
-  dt[,smd := W_PREC_SUM_MONTH - W_ET_ACT_MONTH]
+  dt[,smd := W_PREC_SUM_MONTH + B_IRR_AMOUNT - W_ET_ACT_MONTH]
 
+  # Ensure chronological order for accumulation
+  setorder(dt,time)
   
   # Calculate the accumulated soil moisture deficit
   dt[, acc_smd := {
@@ -106,6 +166,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
 
   # Replace deficit of starting months with next year if there is already soil moisture deficit
   # Check if year starts with a soil moisture deficit
+  setorder(dt,time)
   if(nrow(dt) >= 13 && dt[13, acc_smd] < 0){
    
   dt[1:12, acc_smd :={
@@ -128,15 +189,12 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
   # add rate modifying factor for moisture
   dt[,cf_moist := fifelse(acc_smd > 0.444 * tsmdmax_cor,1, pmax(0.2, 0.2 + (1 - 0.2) * (tsmdmax_cor - acc_smd)/ (tsmdmax_cor - 0.444*tsmdmax_cor)))]
  
-  
   # add rate modifying factor for soil cover
   dt[,cf_soilcover := fifelse(crop_cover==1,0.6,1)]
  
   # add combined rate modifying factor
   dt[,cf_combi := cf_temp * cf_moist * cf_soilcover]
-  
-  # order the output on time
-  setorder(dt,time)
+ 
   
   # select only relevant variables for rate modifying factors
   rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, abc = cf_combi)]
