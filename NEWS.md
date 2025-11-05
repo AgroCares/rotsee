@@ -1,8 +1,57 @@
 # rotsee UNRELEASED
 
+# rotsee v0.1.7 2025-10-16
+
 ## added
 * option to run `rc_sim` in debug mode (give input debug = TRUE), to receive output table and visualization of C flows
 * added function `debug_plot` to visualize C flows
+* rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
+* Weather input supports `W_ET_REFACT` (factor to convert reference to actual ET; defaults to 0.75 when missing).
+
+## changed
+* Parameter name `W_ET_POT_MONTH` to `W_ET_REF_MONTH` to avoid ambiguous use of potential evapotranspiration
+
+# rotsee v0.1.6 2025-10-31
+
+## added
+* unit tests of `rc_update_weather` and `rc_sim` to evaluate different weather inputs
+
+## changed
+* weather input now optionally takes year as input. If supplied it should cover the entire simulation period
+* soil moisture deficit calculations in `rc_input_rmf` are now based on monthly weather and changes per year
+
+
+# rotsee v0.1.5  2025-10-20
+
+## added
+* unit tests for `rc_update_parms`
+
+## changed
+* Description correctly reflects used roxygen version
+* allow input of partial c_fractions distribution in rothc_parms
+
+# rotsee v0.1.4 2025-10-16
+
+## added
+* package table `parameters.rda`, with information on all used parameters in the rotsee package
+* file `rothc_params.csv`, which developers can edit to add additional parameters
+* function `rc_update_parmtable`, which developers can use to update `parameters.rda` with updated `rothc_params.csv`
+
+## changed
+* Validation of input data based on information in `parameters.rda`
+
+# rotsee v0.1.3 2025-10-15
+
+## added
+* unit tests for `rc_multicore` and `rc_parallel`
+
+## changed
+* Reworked `rc_multicore` and `rc_parallel` for a clearer workflow for multicore calculations
+* Align required inputs for `rc_multicore` with `rc_sim`
+* Tightened outputs to only time, OM content, and C content of different pools
+
+## removed
+* `rc_shi_field`, with core functions incorporated into `rc_parallel`
 
 # rotsee v0.1.2 2025-10-13
 ## added
