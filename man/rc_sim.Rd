@@ -13,7 +13,7 @@ rc_sim(
   rothc_amendment = NULL,
   rothc_parms = NULL,
   weather = NULL,
-  irrigation = NULL
+  irrigation = NULL,
   debug = FALSE
 )
 }

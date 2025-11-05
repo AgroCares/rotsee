@@ -81,7 +81,7 @@ rc_sim <- function(soil_properties,
                    rothc_amendment = NULL,
                    rothc_parms = NULL,
                    weather = NULL,
-                   irrigation = NULL){
+                   irrigation = NULL,
                    debug = FALSE){
   
   # add visual bindings
@@ -384,9 +384,6 @@ rc_sim <- function(soil_properties,
   if(poutput=='year'){
     out <- out[abs(time - round(time)) < 1e-5]
   }
-
-  # update year
-  # out[,year := year + rotation[1,year] - 1]
 
   # return output
   return(out)

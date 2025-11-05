@@ -803,7 +803,7 @@ if(!is.null(event)){
   # calculate total soc input for each event
   event_soc <- event[, .(soc = sum(value)), by=.(time)]
 }
-  
+
   # plot variables on a continuous scale
   if(!is.null(event)){
   out_cont <- ggplot2::ggplot()+ 
