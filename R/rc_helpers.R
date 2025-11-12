@@ -799,18 +799,16 @@ rc_set_refact <- function(weather, crop, dt.time){
                                                         "B_LU_END"))
   checkmate::assert_date(as.Date(crop$B_LU_START), any.missing = FALSE)
   checkmate::assert_date(as.Date(crop$B_LU_END), any.missing = FALSE)
-  checkmate::assert_numeric(crop$D_MAKKINK_JAN, lower = rc_minval("D_MAKKINK_JAN"), upper = rc_maxval("D_MAKKINK_JAN"))
-  checkmate::assert_numeric(crop$D_MAKKINK_FEB, lower = rc_minval("D_MAKKINK_FEB"), upper = rc_maxval("D_MAKKINK_FEB"))
-  checkmate::assert_numeric(crop$D_MAKKINK_MAR, lower = rc_minval("D_MAKKINK_MAR"), upper = rc_maxval("D_MAKKINK_MAR"))
-  checkmate::assert_numeric(crop$D_MAKKINK_APR, lower = rc_minval("D_MAKKINK_APR"), upper = rc_maxval("D_MAKKINK_APR"))
-  checkmate::assert_numeric(crop$D_MAKKINK_MAY, lower = rc_minval("D_MAKKINK_MAY"), upper = rc_maxval("D_MAKKINK_MAY"))
-  checkmate::assert_numeric(crop$D_MAKKINK_JUN, lower = rc_minval("D_MAKKINK_JUN"), upper = rc_maxval("D_MAKKINK_JUN"))
-  checkmate::assert_numeric(crop$D_MAKKINK_JUL, lower = rc_minval("D_MAKKINK_JUL"), upper = rc_maxval("D_MAKKINK_JUL"))
-  checkmate::assert_numeric(crop$D_MAKKINK_AUG, lower = rc_minval("D_MAKKINK_AUG"), upper = rc_maxval("D_MAKKINK_AUG"))
-  checkmate::assert_numeric(crop$D_MAKKINK_SEP, lower = rc_minval("D_MAKKINK_SEP"), upper = rc_maxval("D_MAKKINK_SEP"))
-  checkmate::assert_numeric(crop$D_MAKKINK_OCT, lower = rc_minval("D_MAKKINK_OCT"), upper = rc_maxval("D_MAKKINK_OCT"))
-  checkmate::assert_numeric(crop$D_MAKKINK_NOV, lower = rc_minval("D_MAKKINK_NOV"), upper = rc_maxval("D_MAKKINK_NOV"))
-  checkmate::assert_numeric(crop$D_MAKKINK_DEC, lower = rc_minval("D_MAKKINK_DEC"), upper = rc_maxval("D_MAKKINK_DEC"))
+  # validate D_MAKKINK inputs
+  month_abbrevs <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", 
+                     "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
+  for (month in month_abbrevs) {
+    col_name <- paste0("D_MAKKINK_", month)
+    checkmate::assert_numeric(crop[[col_name]], 
+                              lower = rc_minval(col_name), 
+                              upper = rc_maxval(col_name))
+  }
+  
   
   # copy data tables
   weather <- copy(weather)
