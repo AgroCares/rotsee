@@ -982,7 +982,7 @@ test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
   expect_equal(result$W_PREC_SUM_MONTH, weather_original$W_PREC_SUM_MONTH)
   expect_equal(result$W_ET_REF_MONTH, weather_original$W_ET_REF_MONTH)
 })
-test_that("debug_plot runs without error", {
+test_that("rc_visualize_plot runs without error", {
   # Use a small subset of your debug output
   dt <- data.table(
     time = 1:10,
@@ -995,7 +995,7 @@ test_that("debug_plot runs without error", {
 
   # Save current working directory and switch to temp directory
   old_wd <- getwd()
-  temp_dir <- file.path(tempdir(), "rotsee_debug_plot_test")
+  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test")
   dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
   setwd(temp_dir)
   
@@ -1006,7 +1006,7 @@ test_that("debug_plot runs without error", {
       }, add = TRUE)
     
   # Run the plot function
-  expect_no_error(debug_plot(dt))
+  expect_no_error(rc_visualize_plot(dt))
  
   # Check that debug files were created
   expect_true(file.exists("carbon_pools_linear.png"))

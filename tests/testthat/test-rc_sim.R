@@ -312,7 +312,7 @@ test_that("rc_sim returns yearly output when poutput is 'year'", {
   expect_equal(result$year, c(2022, 2023))
 })
 
-test_that("rc_sim runs in debug mode and produces debug output", {
+test_that("rc_sim runs in visualize mode and produces visualize output", {
   soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
@@ -378,18 +378,18 @@ test_that("rc_sim runs in debug mode and produces debug output", {
       rothc_amendment = rothc_amendment,
       weather = weather,
       rothc_parms = parms,
-      debug = TRUE
+      visualize = TRUE
     )
   )
  
   # Check that debug files were created
-  expect_true(file.exists("rothc_flows_debug.csv"))
+  expect_true(file.exists("rothc_flows_vis.csv"))
   expect_true(file.exists("carbon_pools_linear.png"))
   expect_true(file.exists("carbon_pools_change.png"))
   
   # Check that debug file has expected columns
-  debug_output <- fread("rothc_flows_debug.csv")
-  expect_true(all(c("time", "CDPM", "CRPM", "CBIO", "CHUM", "soc") %in% names(debug_output)))
+  vis_output <- fread("rothc_flows_vis.csv")
+  expect_true(all(c("time", "CDPM", "CRPM", "CBIO", "CHUM", "soc") %in% names(vis_output)))
 
 })
 test_that("rc_sim accepts irrigation parameter", {

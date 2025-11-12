@@ -775,7 +775,7 @@ rc_maxval <- function(this.parameter){
 
 
 
-#' Function to plot information on C pools when rc_sim is run in debug mode
+#' Function to plot information on C pools when rc_sim is run in visualize mode
 #'
 #' @param dt (data.table) data table with monthly information on the state of the pools CDPM, CRPM, CBIO, and CHUM
 #' @param event (data.table) data table with information on c inputs, contains columns time, var, and value
@@ -783,9 +783,8 @@ rc_maxval <- function(this.parameter){
 #'
 #' @returns
 #' data table with monthly totals and changes in different C pools, plots of their trends
-#' @export
 #'
-debug_plot <- function(dt, event = NULL, save_dir = getwd()){
+rc_visualize_plot <- function(dt, event = NULL, save_dir = getwd()){
   
   # add visible bindings
   pool = value = CDPM = CRPM = CBIO = CHUM = soc = time = . = NULL

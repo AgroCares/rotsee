@@ -11,7 +11,7 @@
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
 #' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.
 #' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
-#' @param debug (boolean) If TRUE, run rc_sim in debug mode. Results are provided in c pools per month, to better understand results.
+#' @param visualize (boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation. 
 #'
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
@@ -82,7 +82,7 @@ rc_sim <- function(soil_properties,
                    rothc_parms = NULL,
                    weather = NULL,
                    irrigation = NULL,
-                   debug = FALSE){
+                   visualize = FALSE){
   
   # add visual bindings
   a_depth = toc = A_CLAY_MI = A_C_OF = B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
@@ -294,14 +294,14 @@ rc_sim <- function(soil_properties,
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   
   # save debug output if requested
-  if(debug == TRUE){
-    out_debug <- copy(out)
+  if(visualize == TRUE){
+    out_vis <- copy(out)
     
-    utils::write.csv(out_debug, "rothc_flows_debug.csv", row.names = FALSE)
-    message("Debug mode: C flows saved to rothc_flows_debug.csv")
+    utils::write.csv(out_vis, "rothc_flows_vis.csv", row.names = FALSE)
+    message("Visualize mode: C flows saved to rothc_flows_vis.csv")
     
     # create visualization of C flows
-    debug_plot(out_debug, event = rothc.event, save_dir = getwd())
+    rc_visualize_plot(out_vis, event = rothc.event, save_dir = getwd())
   }
  
  

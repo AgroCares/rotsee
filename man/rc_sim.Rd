@@ -14,7 +14,7 @@ rc_sim(
   rothc_parms = NULL,
   weather = NULL,
   irrigation = NULL,
-  debug = FALSE
+  visualize = FALSE
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ rc_sim(
 
 \item{irrigation}{(data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.}
 
-\item{debug}{(boolean) If TRUE, run rc_sim in debug mode. Results are provided in c pools per month, to better understand results.}
+\item{visualize}{(boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation.}
 }
 \value{
 Table with development of C pools in the field over the given simulation period
