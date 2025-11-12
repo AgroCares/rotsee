@@ -1,8 +1,12 @@
-# rotsee UNRELEASED
+# rotsee v0.1.9 2025-11-12
 
 ## added 
 * helper function `rc_set_refact` to calculate `W_ET_REFACT` for the weather data table based on grown crops
 * unit tests for `rc_set_refact` and `rc_check_inputs`
+
+## changed
+* news of `rotsee v0.1.4`, to better reflect the updates of introduced parameters table
+* updated parameter table with new inputs
 
 # rotsee v0.1.7 2025-10-16
 
@@ -37,7 +41,7 @@
 ## added
 * package table `parameters.rda`, with information on all used parameters in the rotsee package
 * file `rothc_params.csv`, which developers can edit to add additional parameters
-* function `rc_update_parmtable`, which developers can use to update `parameters.rda` with updated `rothc_params.csv`
+* script `update_parmtable.R` under `data-raw`, which developers can use to update `parameters.rda` with updated `rothc_params.csv`
 
 ## changed
 * Validation of input data based on information in `parameters.rda`
