@@ -1390,7 +1390,7 @@ test_that("rc_set_refact returns correct structure and values", {
             # Should error when Makkink columns are missing
             expect_error(
                 rc_set_refact(weather = weather, crop = crop_incomplete, dt.time = dt.time),
-                "not found"
+                " Must be of type 'numeric'"
               )
         })
 
