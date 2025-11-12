@@ -1,10 +1,12 @@
-# rotsee UNRELEASED
+# rotsee v0.1.8 2025-11-12
+## added
+* option to run `rc_sim` in visualize mode (give input visualize = TRUE), to receive output table and visualization of C flows
+
 
 # rotsee v0.1.7 2025-10-16
 
 ## added
-* option to run `rc_sim` in debug mode (give input debug = TRUE), to receive output table and visualization of C flows
-* added function `debug_plot` to visualize C flows
+
 * rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
 * Weather input supports `W_ET_REFACT` (factor to convert reference to actual ET; defaults to 0.75 when missing).
 
