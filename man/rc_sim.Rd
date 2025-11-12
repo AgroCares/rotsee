@@ -13,7 +13,8 @@ rc_sim(
   rothc_amendment = NULL,
   rothc_parms = NULL,
   weather = NULL,
-  irrigation = NULL
+  irrigation = NULL,
+  visualize = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ rc_sim(
 \item{weather}{(data.table) Table with following column names: year (optional), month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.}
 
 \item{irrigation}{(data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.}
+
+\item{visualize}{(boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation.}
 }
 \value{
 Table with development of C pools in the field over the given simulation period

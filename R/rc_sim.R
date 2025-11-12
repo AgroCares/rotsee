@@ -11,6 +11,7 @@
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
 #' @param weather (data.table) Table with following column names: year (optional), month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.
 #' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
+#' @param visualize (boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation. 
 #'
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
@@ -80,7 +81,8 @@ rc_sim <- function(soil_properties,
                    rothc_amendment = NULL,
                    rothc_parms = NULL,
                    weather = NULL,
-                   irrigation = NULL){
+                   irrigation = NULL,
+                   visualize = FALSE){
   
   # add visual bindings
   a_depth = toc = A_CLAY_MI = A_C_OF = B_C_ST03 = A_DENSITY_SA = A_SOM_LOI = psoc = NULL
@@ -134,6 +136,7 @@ rc_sim <- function(soil_properties,
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = rc_minval("A_DEPTH"), upper = rc_maxval("A_DEPTH"), any.missing = FALSE, len = 1)
   checkmate::assert_numeric(B_DEPTH, lower = rc_minval("B_DEPTH"), upper = rc_maxval("B_DEPTH"), any.missing = FALSE, len = 1)
+  checkmate::assert_logical(visualize, any.missing = FALSE, len = 1)
 
   # rothC model parameters
 
@@ -275,6 +278,7 @@ rc_sim <- function(soil_properties,
   set.seed(123)
   
   # run the model
+
   out <- deSolve::ode(y = y,
                       times = rothc.times,
                       rc_ode,
@@ -290,6 +294,16 @@ rc_sim <- function(soil_properties,
   # estimate total SOC (kg C/ha)
   out[,soc := round(CDPM + CRPM + CBIO + CHUM + dt.soc$CIOM0)]
   
+  # save debug output if requested
+  if(visualize == TRUE){
+    out_vis <- copy(out)
+    
+    utils::write.csv(out_vis, "rothc_flows_vis.csv", row.names = FALSE)
+    message("Visualize mode: C flows saved to rothc_flows_vis.csv")
+    
+    # create visualization of C flows
+    rc_visualize_plot(out_vis, event = rothc.event, save_dir = getwd())
+  }
  
  
   # select type output
@@ -371,9 +385,6 @@ rc_sim <- function(soil_properties,
   if(poutput=='year'){
     out <- out[abs(time - round(time)) < 1e-5]
   }
-
-  # update year
-  # out[,year := year + rotation[1,year] - 1]
 
   # return output
   return(out)
