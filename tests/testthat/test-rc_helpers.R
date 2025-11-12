@@ -1,3 +1,5 @@
+testthat::source_file("helper-testdata.R")
+
 library(data.table)
 
 test_that("rc_update_weather returns default weather data when input is NULL", {
@@ -15,13 +17,7 @@ test_that("rc_update_weather returns default weather data when input is NULL", {
 
 test_that("rc_update_weather validates input data table", {
   # Create a valid data table
-  valid_dt <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = rep(47, 12)
-  )
+  valid_dt <- create_weather()
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")
   
@@ -29,15 +25,17 @@ test_that("rc_update_weather validates input data table", {
   expect_no_error(rc_update_weather(dt = valid_dt, dt.time = dt.time))
   
   # Test missing columns
-  invalid_dt <- copy(valid_dt)[, W_ET_REF_MONTH := NULL]
-  expect_no_error(rc_update_weather(invalid_dt, dt.time = dt.time)) # allowed if W_ET_ACT_MONTH is supplied
+  valid_dt_ref <- copy(valid_dt)[, W_ET_ACT_MONTH := NULL]
+  expect_no_error(rc_update_weather(valid_dt_ref, dt.time = dt.time)) # only one of W_ET_REF_MONTH or W_ET_ACT_MONTH must be provided
   
-  invalid_dt <- copy(valid_dt)
-  invalid_dt[, month := NULL]
+  
+  invalid_dt <- copy(valid_dt)[, W_ET_REF_MONTH := NULL]
+  expect_error(rc_update_weather(invalid_dt, dt.time = dt.time), "missing values") # At least one of W_ET_REF_MONTH or W_ET_ACT_MONTH should not contain NAs
+  
+  invalid_dt <- copy(valid_dt)[, month := NULL]
   expect_error(rc_update_weather(invalid_dt, dt.time = dt.time), "missing elements") # month must be provided
   
-  invalid_dt <- copy(valid_dt)
-  invalid_dt[, `:=`(W_TEMP_MEAN_MONTH = NULL, W_PREC_SUM_MONTH = NULL)]
+  invalid_dt <- copy(valid_dt)[, `:=`(W_TEMP_MEAN_MONTH = NULL, W_PREC_SUM_MONTH = NULL)]
   expect_error(rc_update_weather(invalid_dt, dt.time = dt.time), "missing elements") # W_TEMP_MEAN_MONTH and W_PREC_SUM_MONTH must be provided
   
   # Test invalid month values
@@ -90,14 +88,7 @@ test_that("rc_update_weather validates input data table", {
 test_that("rc_update_weather handles input with year column", {
   dt.time <- rc_time_period("2022-01-01", "2022-12-31")
   
-  valid_dt <- data.table(
-    year = 2022,
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = 10,
-    W_PREC_SUM_MONTH = 50,
-    W_ET_REF_MONTH = 40,
-    W_ET_ACT_MONTH = 30
-  )
+  valid_dt <- create_weather()[, year := 2022]
   
   out <- rc_update_weather(valid_dt, dt.time)
   expect_s3_class(out, "data.table")
@@ -131,9 +122,7 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
 
   
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   result_crop <- rc_update_parms(crops = crops)
   
@@ -152,10 +141,7 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
 
 test_that("rc_update_parms accepts and validates dec_rates", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
-  
+  crops <- create_rotation()
   parms <- list(dec_rates = c(k1 = 5, k2 = 0.2, k3 = 0.5, k4 = 0.01))
   result <- rc_update_parms(parms, crops = crops)
   expect_equal(result$dec_rates, c(k1 = 5, k2 = 0.2, k3 = 0.5, k4 = 0.01))
@@ -173,9 +159,7 @@ test_that("rc_update_parms accepts and validates dec_rates", {
 
 test_that("rc_update_parms accepts and validates c_fractions", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(c_fractions = c(fr_IOM = 0.05, fr_DPM = 0.02, fr_RPM = 0.1, fr_BIO = 0.02))
   result <- rc_update_parms(parms, crops = crops)
@@ -199,9 +183,7 @@ test_that("rc_update_parms accepts and validates c_fractions", {
 
 test_that("rc_update_parms accepts and validates initialize", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(initialize = FALSE)
   result <- rc_update_parms(parms, crops = crops)
@@ -224,23 +206,23 @@ test_that("rc_update_parms accepts and validates start_date and end_date", {
 })
 
 test_that("rc_update_parms derives start_date and end_date from crops/amendments", {
-  crops <- data.table(B_LU_START = c("2020-01-01", "2021-01-01"), B_LU_END = c("2020-12-31", "2021-12-31"))
-  amendments <- data.table(P_DATE_FERTILIZATION = c("2020-06-01", "2021-06-01"))
+  crops <- create_rotation()
+  amendments <- create_amendment()
   
   # Test with only crops
   result <- rc_update_parms(crops = crops)
-  expect_equal(result$start_date, as.Date("2020-01-01"))
-  expect_equal(result$end_date, as.Date("2021-12-31"))
+  expect_equal(result$start_date, as.Date("2022-04-01"))
+  expect_equal(result$end_date, as.Date("2023-10-01"))
   
   # Test with only amendments
   result <- rc_update_parms(amendments = amendments)
-  expect_equal(result$start_date, as.Date("2020-06-01"))
-  expect_equal(result$end_date, as.Date("2021-06-01"))
+  expect_equal(result$start_date, as.Date("2022-05-01"))
+  expect_equal(result$end_date, as.Date("2023-05-01"))
   
   # Test with both
   result <- rc_update_parms(crops = crops, amendments = amendments)
-  expect_equal(result$start_date, as.Date("2020-01-01"))
-  expect_equal(result$end_date, as.Date("2021-12-31"))
+  expect_equal(result$start_date, as.Date("2022-04-01"))
+  expect_equal(result$end_date, as.Date("2023-10-01"))
   
   # Test error if no dates found
   expect_error(rc_update_parms(), "No dates found in crops/amendments")
@@ -248,9 +230,7 @@ test_that("rc_update_parms derives start_date and end_date from crops/amendments
 
 test_that("rc_update_parms accepts and validates unit", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(unit = "psoc")
   result <- rc_update_parms(parms, crops = crops)
@@ -262,9 +242,7 @@ test_that("rc_update_parms accepts and validates unit", {
 
 test_that("rc_update_parms accepts and validates method", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(method = "adams")
   result <- rc_update_parms(parms, crops = crops)
@@ -276,9 +254,7 @@ test_that("rc_update_parms accepts and validates method", {
 
 test_that("rc_update_parms accepts and validates poutput", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   parms <- list(poutput = "year")
   result <- rc_update_parms(parms, crops = crops)
@@ -308,16 +284,16 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
 
 
 
-test_that("rc_calculate_B_C_OF correctly validates input", {
+test_that("rc_calculate_B_C_OF_CULT correctly validates input", {
   # Missing required column
   expect_error(
-    rc_calculate_B_C_OF(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
+    rc_calculate_B_C_OF_CULT(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
     "must include"
   )
   
   # B_LU_YIELD out of bounds
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = -1,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -329,7 +305,7 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   
   # B_LU_HI out of bounds
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0,
       B_LU_HI_RES = 0.5,
@@ -341,7 +317,7 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   
   # B_LU_HI_RES out of bounds
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 1.1,
@@ -353,19 +329,19 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   
   # B_LU_RS_FR out of bounds
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
-      B_LU_RS_FR = 0,
+      B_LU_RS_FR = -0.1,
       M_CROPRESIDUE = TRUE
     )),
-    "is not >= 0.01"
+    "is not >= 0"
   )
   
   # M_CROPRESIDUE not logical
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_B_C_OF_CULT(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -376,7 +352,7 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   )
 })
 
-test_that("rc_calculate_B_C_OF correctly calculates C inputs", {
+test_that("rc_calculate_B_C_OF_CULT correctly calculates C inputs", {
   # Set correct input data
   valid_dt <- data.table(
     B_LU_YIELD = 30000,
@@ -387,17 +363,17 @@ test_that("rc_calculate_B_C_OF correctly calculates C inputs", {
   )
   
   # Run function with valid DT
-  valid <- rc_calculate_B_C_OF(valid_dt)
+  valid <- rc_calculate_B_C_OF_CULT(valid_dt)
   
   # Check if everything went correctly
   expect_s3_class(valid, "data.table")
   expect_equal(valid$cin_aboveground, 30000 / 0.6 * 0.5, tolerance = 0.001)
   expect_equal(valid$cin_roots, valid$cin_aboveground * 1, tolerance = 0.001)
   expect_equal(valid$cin_residue, valid$cin_aboveground * 0.5, tolerance = 0.001)
-  expect_equal(valid$B_C_OF_INPUT, valid$cin_roots + valid$cin_residue, tolerance = 0.001)
+  expect_equal(valid$B_C_OF_CULT, valid$cin_roots + valid$cin_residue, tolerance = 0.001)
 })
 
-test_that("rc_calculate_B_C_OF handles edge cases", {
+test_that("rc_calculate_B_C_OF_CULT handles edge cases", {
   # Zero yield
   zero_yield_dt <- data.table(
     B_LU_YIELD = 0,
@@ -406,11 +382,11 @@ test_that("rc_calculate_B_C_OF handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = TRUE
   )
-  zero_yield <- rc_calculate_B_C_OF(zero_yield_dt)
+  zero_yield <- rc_calculate_B_C_OF_CULT(zero_yield_dt)
   expect_equal(zero_yield$cin_aboveground, 0)
   expect_equal(zero_yield$cin_roots, 0)
   expect_equal(zero_yield$cin_residue, 0)
-  expect_equal(zero_yield$B_C_OF_INPUT, 0)
+  expect_equal(zero_yield$B_C_OF_CULT, 0)
   
   # No residue
   no_residue_dt <- data.table(
@@ -420,23 +396,23 @@ test_that("rc_calculate_B_C_OF handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = FALSE
   )
-  no_residue <- rc_calculate_B_C_OF(no_residue_dt)
+  no_residue <- rc_calculate_B_C_OF_CULT(no_residue_dt)
   expect_equal(no_residue$cin_residue, 0)
-  expect_equal(no_residue$B_C_OF_INPUT, no_residue$cin_roots)
+  expect_equal(no_residue$B_C_OF_CULT, no_residue$cin_roots)
   
   # Max values
   max_dt <- data.table(
     B_LU_YIELD = 150000,
     B_LU_HI = 1,
     B_LU_HI_RES = 1,
-    B_LU_RS_FR = 5,
+    B_LU_RS_FR = 1,
     M_CROPRESIDUE = TRUE
   )
-  max_result <- rc_calculate_B_C_OF(max_dt)
+  max_result <- rc_calculate_B_C_OF_CULT(max_dt)
   expect_equal(max_result$cin_aboveground, 150000 / 1 * 0.5, tolerance = 0.001)
-  expect_equal(max_result$cin_roots, max_result$cin_aboveground * 5, tolerance = 0.001)
+  expect_equal(max_result$cin_roots, max_result$cin_aboveground, tolerance = 0.001)
   expect_equal(max_result$cin_residue, max_result$cin_aboveground * 1, tolerance = 0.001)
-  expect_equal(max_result$B_C_OF_INPUT, max_result$cin_roots + max_result$cin_residue, tolerance = 0.001)
+  expect_equal(max_result$B_C_OF_CULT, max_result$cin_roots + max_result$cin_residue, tolerance = 0.001)
 })
 
 
@@ -454,7 +430,7 @@ test_that("rc_extend_crops validates inputs correctly", {
     B_LU_END = "2020-12-31",
     B_LU = "Crop1",
     B_LU_HC = 1.1,
-    B_C_OF_INPUT = 100
+    B_C_OF_CULT = 100
   )
   expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "Element 1 is not <= ")
   
@@ -464,7 +440,7 @@ test_that("rc_extend_crops validates inputs correctly", {
     B_LU_END = "2020-12-31",
     B_LU = "Crop1",
     B_LU_HC = 0.5,
-    B_C_OF_INPUT = 100
+    B_C_OF_CULT = 100
   )
   expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "February 29th")
   
@@ -474,7 +450,7 @@ test_that("rc_extend_crops validates inputs correctly", {
     B_LU_END = "2020-01-01",
     B_LU = "Crop1",
     B_LU_HC = 0.5,
-    B_C_OF_INPUT = 100
+    B_C_OF_CULT = 100
   )
   expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01"), simyears = 1), "Crop end date must be after crop start date")
   
@@ -484,7 +460,7 @@ test_that("rc_extend_crops validates inputs correctly", {
     B_LU_END = "2019-12-31",
     B_LU = "Crop1",
     B_LU_HC = 0.5,
-    B_C_OF_INPUT = 100
+    B_C_OF_CULT = 100
   )
   expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01"), simyears = 1), "crop rotation plan is outside of simulation period")
 })
@@ -495,7 +471,7 @@ test_that("rc_extend_crops extends crops correctly with end_date", {
     B_LU_END = c("2020-03-31", "2020-08-31"),
     B_LU = c("Crop1", "Crop2"),
     B_LU_HC = c(0.5, 0.3),
-    B_C_OF_INPUT = c(100, 200)
+    B_C_OF_CULT = c(100, 200)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), as.Date("2022-12-31"))
@@ -517,7 +493,7 @@ test_that("rc_extend_crops extends crops correctly with end_date", {
   ))
   
   # Check columns are preserved
-  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT"))
+  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_CULT"))
 })
 
 test_that("rc_extend_crops extends crops correctly with simyears", {
@@ -526,7 +502,7 @@ test_that("rc_extend_crops extends crops correctly with simyears", {
     B_LU_END = c("2020-03-31", "2020-08-31"),
     B_LU = c("Crop1", "Crop2"),
     B_LU_HC = c(0.5, 0.3),
-    B_C_OF_INPUT = c(100, 200)
+    B_C_OF_CULT = c(100, 200)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 3)
@@ -548,7 +524,7 @@ test_that("rc_extend_crops extends crops correctly with simyears", {
   ))
   
   # Check columns are preserved
-  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT"))
+  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_CULT"))
 })
 
 test_that("rc_extend_crops handles single year rotation", {
@@ -557,7 +533,7 @@ test_that("rc_extend_crops handles single year rotation", {
     B_LU_END = c("2020-03-31", "2020-08-31"),
     B_LU = c("Crop1", "Crop2"),
     B_LU_HC = c(0.5, 0.3),
-    B_C_OF_INPUT = c(100, 200)
+    B_C_OF_CULT = c(100, 200)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
@@ -576,7 +552,7 @@ test_that("rc_extend_crops orders output by start date", {
     B_LU_END = c("2020-08-31", "2020-03-31"),
     B_LU = c("Crop2", "Crop1"),
     B_LU_HC = c(0.3, 0.5),
-    B_C_OF_INPUT = c(200, 100)
+    B_C_OF_CULT = c(200, 100)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
@@ -591,7 +567,7 @@ test_that("rc_extend_crops removes temporary columns", {
     B_LU_END = c("2020-03-31", "2020-08-31"),
     B_LU = c("Crop1", "Crop2"),
     B_LU_HC = c(0.5, 0.3),
-    B_C_OF_INPUT = c(100, 200)
+    B_C_OF_CULT = c(100, 200)
   )
   
   result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)

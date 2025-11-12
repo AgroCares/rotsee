@@ -1,7 +1,16 @@
+# rotsee v0.2.0 2025-10-29
+## added
+* test helper factories to aid with unit test creation
+
+## changed
+* split total C input `B_C_OF_INPUT` into separate C input from plants `B_C_OF_CULT` and C input from amendments `B_C_OF_AMENDMENT` 
+* replaced weather parameter `W_ET_POT_MONTH` with `W_ET_REF_MONTH` to align with scientific standard
+* renamed function `rc_calculate_B_C_OF` to `rc_calculate_B_C_OF_CULT` to align with the new naming
+
+
 # rotsee v0.1.8 2025-11-12
 ## added
 * option to run `rc_sim` in visualize mode (give input visualize = TRUE), to receive output table and visualization of C flows
-
 
 # rotsee v0.1.7 2025-10-16
 
