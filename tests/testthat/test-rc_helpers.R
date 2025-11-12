@@ -958,3 +958,45 @@ test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
   expect_equal(result$W_PREC_SUM_MONTH, weather_original$W_PREC_SUM_MONTH)
   expect_equal(result$W_ET_REF_MONTH, weather_original$W_ET_REF_MONTH)
 })
+test_that("rc_visualize_plot runs without error", {
+  # Use a small subset of your debug output
+  dt <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20),
+    CBIO = rnorm(10, 300, 30),
+    CHUM = rnorm(10, 400, 40),
+    soc = rnorm(10, 1000, 100)
+  )
+
+  # Save current working directory and switch to temp directory
+  old_wd <- getwd()
+  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test")
+  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
+  setwd(temp_dir)
+  
+    # Restore working directory on exit (even if test fails)
+    on.exit({
+      setwd(old_wd)
+      unlink(temp_dir, recursive = TRUE)
+      }, add = TRUE)
+    
+  # Run the plot function
+  expect_no_error(rc_visualize_plot(dt))
+ 
+  # Check that debug files were created
+  expect_true(file.exists("carbon_pools_linear.png"))
+  expect_true(file.exists("carbon_pools_change.png"))
+  
+  # Check that the files are not empty
+  expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
+
+  # Clean up
+  file.remove("carbon_pools_linear.png")
+  file.remove("carbon_pools_change.png")
+
+  
+ 
+
+})
