@@ -52,4 +52,4 @@ docs
 inst/doc
 
 # Files generated when run in visualize mode
-rothc.flows_vis.csv
+rothc_flows_vis.csv
