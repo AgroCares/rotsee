@@ -20,6 +20,7 @@ Imports:
     progressr,
     future,
     parallelly,
+    ggplot2,
     deSolve
 Remotes: AgroCares/rotsee
 License: 
@@ -35,7 +36,6 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    ggplot2,
     patchwork,
     roxygen2
 Config/testthat/edition: 3

@@ -1,7 +1,12 @@
+# rotsee v0.1.8 2025-11-12
+## added
+* option to run `rc_sim` in visualize mode (give input visualize = TRUE), to receive output table and visualization of C flows
+
 
 # rotsee v0.1.7 2025-10-16
 
 ## added
+
 * rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
 * Weather input supports `W_ET_REFACT` (factor to convert reference to actual ET; defaults to 0.75 when missing).
 
@@ -58,7 +63,6 @@
 * Loosened checks for `rc_calculate_B_C_OF` and `rc_update_weather` to allow additional input columns
 
 # rotsee v0.1.0 2025-09-24
-
 ## added
 * B_LU_START and B_LU_END as input parameters in rothc_rotation
 * start_date and end_date to replace simyears
@@ -71,14 +75,12 @@
 * Corrected accumulated soil moisture deficit calculation
 
 # rotsee v0.0.4 2025-09-24
-
 ## Changed
 * Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
 * Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
 * Expand README with some introductory text about the package
   
 # rotsee v0.0.3 2025-09-01
-
 ## Added
 * function rc_check_inputs to check input data
 * Helper function rc_calculate_bd to estimate dry soil bulk density based on soil properties

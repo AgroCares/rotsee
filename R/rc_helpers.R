@@ -773,3 +773,83 @@ rc_maxval <- function(this.parameter){
 
 
 
+
+
+#' Function to plot information on C pools when rc_sim is run in visualize mode
+#'
+#' @param dt (data.table) data table with monthly information on the state of the pools CDPM, CRPM, CBIO, and CHUM
+#' @param event (data.table) data table with information on c inputs, contains columns time, var, and value
+#' @param save_dir (character) directory to save PNGs; defaults to current working directory
+#'
+#' @returns
+#' data table with monthly totals and changes in different C pools, plots of their trends
+#'
+rc_visualize_plot <- function(dt, event = NULL, save_dir = getwd()){
+  
+  # add visible bindings
+  pool = value = CDPM = CRPM = CBIO = CHUM = soc = time = . = NULL
+  
+  # copy data table
+  dt <- copy(dt)
+  
+  # set data table to long format
+  dt_long <- melt(dt, id.vars = "time", variable.name = "pool")
+  
+if(!is.null(event)){  
+  # Copy event table
+  event <- copy(event)
+  
+  # calculate total soc input for each event
+  event_soc <- event[, .(soc = sum(value)), by=.(time)]
+}
+
+  # plot variables on a continuous scale
+  if(!is.null(event)){
+  out_cont <- ggplot2::ggplot()+ 
+    ggplot2::geom_line(data = dt_long, ggplot2::aes(x = time, y = value, colour = pool))+
+    ggplot2::geom_point(data = event_soc, ggplot2::aes(x = time, y = soc))+
+    ggplot2::scale_y_continuous()+
+    ggplot2::labs(title = "Carbon Pools (linear scale)", y = "Value [kg C/ha]", x = "Time [yr]")
+  
+  } else {
+    out_cont <- ggplot2::ggplot()+ 
+      ggplot2::geom_line(data = dt_long, ggplot2::aes(x = time, y = value, colour = pool))+
+      ggplot2::scale_y_continuous()+
+      ggplot2::labs(title = "Carbon Pools (linear scale)", y = "Value [kg C/ha]", x = "Time [yr]") 
+  }
+  ## calculate fraction change
+
+  dt_change <- copy(dt)
+  dt_change[,CDPM := CDPM - shift(CDPM, type = "lag") ]
+  dt_change[, CRPM := CRPM - shift(CRPM, type = "lag")]
+  dt_change[, CBIO := CBIO - shift(CBIO, type = "lag")]
+  dt_change[, CHUM := CHUM - shift(CHUM, type = "lag")]
+  dt_change[, soc := soc - shift(soc, type = "lag")]
+  dt_change_long <- melt(dt_change, id.vars = "time", variable.name = "pool", na.rm = TRUE)
+  
+  # plot variables on a continuous scale
+  if(!is.null(event)) {
+   out_change_cont <- ggplot2::ggplot()+ 
+    ggplot2::geom_line(data = dt_change_long, ggplot2::aes(x = time, y = value, colour = pool))+
+    ggplot2::geom_point(data = event_soc, ggplot2::aes(x = time, y = soc))+
+    ggplot2::scale_y_continuous()+
+    ggplot2::labs(title = "Change in Carbon Pools", y = "Delta C [kg C/ha]", x = "Time [yr]")
+  } else{
+    out_change_cont <- ggplot2::ggplot()+ 
+      ggplot2::geom_line(data = dt_change_long, ggplot2::aes(x = time, y = value, colour = pool))+
+      ggplot2::scale_y_continuous()+
+      ggplot2::labs(title = "Change in Carbon Pools", y = "Delta C [kg C/ha]", x = "Time [yr]")
+  }
+  
+  # Save plots to files
+  if (!dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
+  ggplot2::ggsave(file.path(save_dir, "carbon_pools_linear.png"), plot = out_cont, width = 10, height = 6)
+  ggplot2::ggsave(file.path(save_dir, "carbon_pools_change.png"), plot = out_change_cont, width = 10, height = 6)
+  
+  invisible(list(
+    data  = list(total = dt, delta = dt_change),
+    plots = list( linear = out_cont, change = out_change_cont)
+    ))
+  
+}
+
