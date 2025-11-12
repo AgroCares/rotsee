@@ -136,6 +136,7 @@ rc_sim <- function(soil_properties,
   # add checks
   checkmate::assert_numeric(A_DEPTH, lower = rc_minval("A_DEPTH"), upper = rc_maxval("A_DEPTH"), any.missing = FALSE, len = 1)
   checkmate::assert_numeric(B_DEPTH, lower = rc_minval("B_DEPTH"), upper = rc_maxval("B_DEPTH"), any.missing = FALSE, len = 1)
+  checkmate::assert_logical(visualize, any.missing = FALSE, len = 1)
 
   # rothC model parameters
 
