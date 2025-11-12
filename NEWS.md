@@ -1,8 +1,4 @@
 # rotsee v0.2.0 2025-10-29
-# rotsee v0.1.8 2025-11-12
-## added
-* option to run `rc_sim` in visualize mode (give input visualize = TRUE), to receive output table and visualization of C flows
-
 ## added
 * test helper factories to aid with unit test creation
 
@@ -12,6 +8,9 @@
 * renamed function `rc_calculate_B_C_OF` to `rc_calculate_B_C_OF_CULT` to align with the new naming
 
 
+# rotsee v0.1.8 2025-11-12
+## added
+* option to run `rc_sim` in visualize mode (give input visualize = TRUE), to receive output table and visualization of C flows
 
 # rotsee v0.1.7 2025-10-16
 
