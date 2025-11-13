@@ -57,6 +57,9 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
       all(c("W_ET_REF_MONTH","W_ET_REFACT") %in% colnames(dt.weather)),
     msg = "Provide 'W_ET_ACT_MONTH' or both 'W_ET_REF_MONTH' and 'W_ET_REFACT' in dt.weather."
     )
+  if("W_ET_REFACT" %in% colnames(dt.weather)){
+    checkmate::assert_numeric(dt.weather$W_ET_REFACT, lower = rc_minval("W_ET_REFACT"), upper = rc_maxval("W_ET_REFACT"), any.missing = TRUE)
+  }
   
     # irrigation table
   checkmate::assert_data_table(dt.irrigation, null.ok = TRUE)
