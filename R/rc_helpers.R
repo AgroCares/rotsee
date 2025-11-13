@@ -366,6 +366,9 @@ rc_check_inputs <- function(soil_properties,
     checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = FALSE)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
+    if(any(rothc_rotation$B_LU_START > rothc_rotation$B_LU_END)) {
+      stop('start date of crop after end date')
+    }
     }
 
   # Check amendment properties if supplied
