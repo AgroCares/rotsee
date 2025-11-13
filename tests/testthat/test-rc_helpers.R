@@ -778,8 +778,43 @@ test_that("rc_check_inputs validates date ordering in crops", {
   expect_error(
     rc_check_inputs(rothc_rotation = crop_bad_dates,
                     rothc_amendment = NULL,
-                    soil_properties = valid_soil,
-                    "start date of crop after end date")
+                    soil_properties = valid_soil),
+    "start date after end date in row: 1"
+  )
+  
+  # rc_check_inputs validates that dates are valid Date objects yet ordering is not logical with multiple crops
+  # wrong crop in row 2
+  multi_crop_bad_dates <- data.table(
+    B_LU_START = c("2022-04-01", "2023-10-01", "2024-04-01"),  # Start after end
+    B_LU_END = c("2022-10-01", "2023-04-01", "2024-10-01"),
+    B_LU = rep("nl_308", 3),
+    B_LU_NAME = rep("erwten (droog te oogsten)", 3),
+    B_LU_HC = rep(0.32, 3),
+    B_C_OF_INPUT = rep(1500, 3)
+  )
+  
+  expect_error(
+    rc_check_inputs(rothc_rotation = multi_crop_bad_dates,
+                    rothc_amendment = NULL,
+                    soil_properties = valid_soil),
+    "start date after end date in row: 2"
+  )
+  
+  # wrong crop in rows 1 and 2
+  multi_crop_bad_dates <- data.table(
+    B_LU_START = c("2022-10-01", "2023-10-01", "2024-04-01"),  # Start after end
+    B_LU_END = c("2022-04-01", "2023-04-01", "2024-10-01"),
+    B_LU = rep("nl_308", 3),
+    B_LU_NAME = rep("erwten (droog te oogsten)", 3),
+    B_LU_HC = rep(0.32, 3),
+    B_C_OF_INPUT = rep(1500, 3)
+  )
+  
+  expect_error(
+    rc_check_inputs(rothc_rotation = multi_crop_bad_dates,
+                    rothc_amendment = NULL,
+                    soil_properties = valid_soil),
+    "start date after end date in row: 1, 2"
   )
 })
 
