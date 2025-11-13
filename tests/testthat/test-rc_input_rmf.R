@@ -548,3 +548,136 @@ test_that("rc_input_rmf irrigation integration with crop cover", {
   
   expect_type(result_outside, "list")
 })
+
+# Tests for rc_input_rmf validation of W_ET_REFACT
+
+test_that("rc_input_rmf validates W_ET_REFACT when provided", {
+  # Setup minimal valid inputs
+  dt_crop <- data.table(
+    B_LU_START = "2022-04-01",
+    B_LU_END = "2022-09-01"
+  )
+  
+  dt_time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  # Valid W_ET_REFACT
+  valid_weather <- data.table(
+    year = 2022,
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(0.75, 12)
+  )
+  
+  expect_no_error(
+    rc_input_rmf(dt = dt_crop, A_CLAY_MI = 20, dt.weather = valid_weather, 
+                 dt.time = dt_time)
+  )
+  
+  # Invalid W_ET_REFACT - too high
+  invalid_high <- copy(valid_weather)
+  invalid_high[, W_ET_REFACT := 3.0]
+  
+  expect_error(
+    rc_input_rmf(dt = dt_crop, A_CLAY_MI = 20, dt.weather = invalid_high, 
+                 dt.time = dt_time),
+    "W_ET_REFACT"
+  )
+  
+  # Invalid W_ET_REFACT - too low
+  invalid_low <- copy(valid_weather)
+  invalid_low[, W_ET_REFACT := 0.1]
+  
+  expect_error(
+    rc_input_rmf(dt = dt_crop, A_CLAY_MI = 20, dt.weather = invalid_low, 
+                 dt.time = dt_time),
+    "W_ET_REFACT"
+  )
+})
+
+test_that("rc_input_rmf accepts W_ET_REFACT with NA values", {
+  dt_crop <- data.table(
+    B_LU_START = "2022-04-01",
+    B_LU_END = "2022-09-01"
+  )
+  
+  dt_time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  # W_ET_REFACT with some NA values (should be allowed)
+  weather_with_na <- data.table(
+    year = 2022,
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = c(0.75, NA, 0.8, NA, rep(0.75, 8))
+  )
+  
+  expect_no_error(
+    rc_input_rmf(dt = dt_crop, A_CLAY_MI = 20, dt.weather = weather_with_na, 
+                 dt.time = dt_time)
+  )
+})
+
+test_that("rc_input_rmf works without W_ET_REFACT when W_ET_ACT_MONTH provided", {
+  dt_crop <- data.table(
+    B_LU_START = "2022-04-01",
+    B_LU_END = "2022-09-01"
+  )
+  
+  dt_time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  # Weather with W_ET_ACT_MONTH but no W_ET_REFACT
+  weather_actual <- data.table(
+    year = 2022,
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = rep(40, 12)
+  )
+  
+  expect_no_error(
+    rc_input_rmf(dt = dt_crop, A_CLAY_MI = 20, dt.weather = weather_actual, 
+                 dt.time = dt_time)
+  )
+})
+
+test_that("rc_input_rmf validates W_ET_REFACT at boundary values", {
+  dt_crop <- data.table(
+    B_LU_START = "2022-04-01",
+    B_LU_END = "2022-09-01"
+  )
+  
+  dt_time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  # Test at lower boundary (0.3)
+  weather_lower <- data.table(
+    year = 2022,
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(0.3, 12)
+  )
+  
+  expect_no_error(
+    rc_input_rmf(dt = dt_crop, A_CLAY_MI = 20, dt.weather = weather_lower, 
+                 dt.time = dt_time)
+  )
+  
+  # Test at upper boundary (2.0)
+  weather_upper <- data.table(
+    year = 2022,
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(2.0, 12)
+  )
+  
+  expect_no_error(
+    rc_input_rmf(dt = dt_crop, A_CLAY_MI = 20, dt.weather = weather_upper, 
+                 dt.time = dt_time)
+  )
+})
