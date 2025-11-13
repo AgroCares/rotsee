@@ -843,6 +843,9 @@ rc_set_refact <- function(weather, crop, dt.time){
     list(year = growth_years, month = growth_months, W_ET_REFACT = values_refact)
   }, by = 1:nrow(crop)][, .(year, month, W_ET_REFACT)]
 
+  # if multiple crops growing, take highest value of W_ET_REFACT
+  crop_refact <- crop_refact[, .SD[which.max(W_ET_REFACT)], by = .(year, month)]
+ 
   # Remove provided refact values
   if("W_ET_REFACT" %in% colnames(weather_ext)) weather_ext[, W_ET_REFACT := NULL]
 
@@ -850,7 +853,6 @@ rc_set_refact <- function(weather, crop, dt.time){
   dt <- merge(weather_ext, crop_refact, by = c("year", "month"), all.x = TRUE)
   
   dt[, W_ET_REFACT := fifelse(is.na(W_ET_REFACT), 0.36, W_ET_REFACT)]
- 
   
   return(dt)
 }

@@ -1353,6 +1353,7 @@ test_that("rc_time_period handles edge cases", {
 })
 
 
+
 test_that("rc_set_refact correctly assigns W_ET_REFACT", {
   
   weather <- data.table(year = rep(2022:2023, each = 12),
@@ -1620,7 +1621,7 @@ test_that("rc_set_refact returns correct structure and values", {
             D_MAKKINK_MAY = c(0.9, 0.40),
             D_MAKKINK_JUN = c(1.2, 0.40),
             D_MAKKINK_JUL = c(0.72, 0.80),
-            D_MAKKINK_AUG = c(0.36, 0.85),
+            D_MAKKINK_AUG = c(0.9, 0.85),
             D_MAKKINK_SEP = c(0.36, 0.75),
             D_MAKKINK_OCT = c(0.36, 0.70),
             D_MAKKINK_NOV = c(0.36, 0.36),
@@ -1631,11 +1632,17 @@ test_that("rc_set_refact returns correct structure and values", {
           
             result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
             
-              expect_s3_class(result, "data.table")
+            expect_s3_class(result, "data.table")
             expect_true("W_ET_REFACT" %in% names(result))
             
-              # July should have value from second crop (0.80) since it overlaps
-              expect_true(0.80 %in% result[month == 7, W_ET_REFACT])
+            # Check that result covers entire time period
+            expect_equal(nrow(result), nrow(dt.time))
+            
+            # July should have value from second crop (0.80) since it overlaps and it is the highest value
+            expect_true(0.80 %in% result[month == 7, W_ET_REFACT])
+            
+            # August should have value from 1st crop (0.9) since crops overlap and it is the highest value
+            expect_true(0.9 %in% result[month == 8, W_ET_REFACT])
           })
 
   test_that("rc_set_refact returns correct default for all non-crop months", {
@@ -2015,6 +2022,7 @@ test_that("rc_set_refact preserves all weather columns", {
   expect_equal(result$W_TEMP_MEAN_MONTH, seq(5, 16, length.out = 12))
   expect_equal(result$custom_column, 1:12)
 })
+
 
 
 test_that("rc_visualize_plot runs without error", {
