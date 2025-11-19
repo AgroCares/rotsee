@@ -54,7 +54,101 @@ test_that("rc_input_amendment runs correctly", {
 
 
 test_that("rc_input_amendment throws error for invalid inputs", {
-  # Both dt and B_LU_BRP are NULL, which should fail the assertion
-  expect_error(rc_input_amendment(dt = NULL, B_LU_BRP = NULL))
+  expect_error(rc_input_amendment(dt = NULL))
 })
 
+test_that("rc_input_amendment works with B_C_OF_INPUT only", {
+  amendments_dt <- data.table(
+    P_DATE_FERTILIZATION = c("2023-04-01", "2023-10-01"),
+    P_HC = c(0.5, 0.4),
+    B_C_OF_INPUT = c(1000, 1200)  # Directly provide carbon input
+  )
+  result_dt <- rc_input_amendment(amendments_dt)
+  expect_s3_class(result_dt, "data.table")
+  expect_equal(nrow(result_dt), 2)
+  expect_equal(result_dt$cin_tot, c(1000, 1200))
+})
+
+test_that("rc_input_amendment works with mixed B_C_OF_INPUT and P_DOSE/P_C_OF", {
+  amendments_dt <- data.table(
+    P_DATE_FERTILIZATION = c("2023-04-01", "2023-10-01"),
+    P_HC = c(0.5, 0.4),
+    B_C_OF_INPUT = c(1000, NA),
+    P_DOSE = c(NA, 15000),
+    P_C_OF = c(NA, 80)
+  )
+  result_dt <- rc_input_amendment(amendments_dt)
+  expect_s3_class(result_dt, "data.table")
+  expect_equal(nrow(result_dt), 2)
+  expect_equal(result_dt$cin_tot[1], 1000)
+  expect_equal(result_dt$cin_tot[2], 15000 * 80 / 1000)
+})
+
+
+test_that("rc_input_amendment throws error for missing required columns", {
+  # Missing P_HC
+  amendments_dt <- data.table(
+    P_DATE_FERTILIZATION = c("2023-04-01"),
+    P_DOSE = c(10000),
+    P_C_OF = c(100)
+  )
+  expect_error(rc_input_amendment(amendments_dt))
+  
+  # Missing P_DATE_FERTILIZATION
+  amendments_dt <- data.table(
+    P_HC = c(0.5),
+    P_DOSE = c(10000),
+    P_C_OF = c(100)
+  )
+  expect_error(rc_input_amendment(amendments_dt))
+})
+
+
+test_that("rc_input_amendment throws error for invalid values", {
+  # Invalid P_HC (out of bounds)
+  amendments_dt <- data.table(
+    P_DATE_FERTILIZATION = c("2023-04-01"),
+    P_HC = c(1.5),  # Should be <= 1
+    P_DOSE = c(10000),
+    P_C_OF = c(100)
+  )
+  expect_error(rc_input_amendment(amendments_dt))
+  
+  # Invalid P_DATE_FERTILIZATION (not a date)
+  amendments_dt <- data.table(
+    P_DATE_FERTILIZATION = c("not-a-date"),
+    P_HC = c(0.5),
+    P_DOSE = c(10000),
+    P_C_OF = c(100)
+  )
+  expect_error(rc_input_amendment(amendments_dt))
+})
+
+
+test_that("rc_input_amendment handles edge cases for P_HC", {
+  # P_HC >= 0.92 (fr_dpm_rpm = 0)
+  amendments_dt <- data.table(
+    P_DATE_FERTILIZATION = c("2023-04-01"),
+    P_HC = c(0.95),
+    P_DOSE = c(10000),
+    P_C_OF = c(100)
+  )
+  
+  result_dt <- rc_input_amendment(amendments_dt)
+  expect_equal(result_dt$fr_dpm_rpm, 0)
+  
+  # P_HC = NA (should use default fr_dpm_rpm = 1.44)
+  amendments_dt <- data.table(
+    P_DATE_FERTILIZATION = c("2023-04-01"),
+    P_HC = c(NA),
+    P_DOSE = c(10000),
+    P_C_OF = c(100)
+  )
+  result_dt <- rc_input_amendment(amendments_dt)
+  expect_equal(result_dt$fr_dpm_rpm, 1.44)
+})
+
+test_that("rc_input_amendment throws error for empty data.table", {
+  amendments_dt <- data.table()
+  expect_error(rc_input_amendment(amendments_dt))
+})
