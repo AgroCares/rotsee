@@ -135,7 +135,7 @@ test_that("rc_input_amendment handles edge cases for P_HC", {
   )
   
   result_dt <- rc_input_amendment(amendments_dt)
-  expect_equal(result_dt$fr_dpm_rpm, 0)
+  expect_equal(result_dt$cin_dpm , 0)
   
   # P_HC = NA (should use default fr_dpm_rpm = 1.44)
   amendments_dt <- data.table(
@@ -145,7 +145,7 @@ test_that("rc_input_amendment handles edge cases for P_HC", {
     P_C_OF = c(100)
   )
   result_dt <- rc_input_amendment(amendments_dt)
-  expect_equal(result_dt$fr_dpm_rpm, 1.44)
+  expect_equal(result_dt$cin_dpm, 1.44 * result_dt$cin_rpm)
 })
 
 test_that("rc_input_amendment throws error for empty data.table", {
