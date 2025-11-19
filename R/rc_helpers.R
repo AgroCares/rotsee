@@ -452,7 +452,7 @@ rc_calculate_bd <- function(dt){
 #' @param dt (data table) Table with crop rotation details and crop management actions that have been taken. For more information see details.
 #'
 #' @returns
-#' Data table with total C input from crops
+#' Data table with provided input together with calculated C input from crops
 #' 
 #' @details
 #' Crop data table
@@ -463,6 +463,16 @@ rc_calculate_bd <- function(dt){
 #' * B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
 #' * M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
+#'  @examples
+#'  # calculate crop C inputs with valid input values
+#'  dt_crop <- data.table(B_LU_YIELD = 30000,
+#'  B_LU_HI = 0.6,
+#'  B_LU_HI_RES = 0.5,
+#'  B_LU_RS_FR = 1,
+#'  M_CROPRESIDUE = TRUE
+#'  )
+#'  
+#'  rc_calculate_B_C_OF(dt_crop)
 #' @export
 
 rc_calculate_B_C_OF <- function(dt){
