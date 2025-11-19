@@ -982,6 +982,7 @@ test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
   expect_equal(result$W_PREC_SUM_MONTH, weather_original$W_PREC_SUM_MONTH)
   expect_equal(result$W_ET_REF_MONTH, weather_original$W_ET_REF_MONTH)
 })
+
 test_that("rc_visualize_plot runs without error", {
   # Use a small subset of your debug output
   dt <- data.table(
@@ -1006,7 +1007,7 @@ test_that("rc_visualize_plot runs without error", {
       }, add = TRUE)
     
   # Run the plot function
-  expect_no_error(rc_visualize_plot(dt))
+  expect_no_error(rc_visualize_plot(dt, save_dir = temp_dir))
  
   # Check that debug files were created
   expect_true(file.exists("carbon_pools_linear.png"))
@@ -1019,8 +1020,132 @@ test_that("rc_visualize_plot runs without error", {
   # Clean up
   file.remove("carbon_pools_linear.png")
   file.remove("carbon_pools_change.png")
+})
 
+test_that("rc_visualize_plot handles events correctly", {
+  # Create test data with events
+  dt <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20),
+    CBIO = rnorm(10, 300, 30),
+    CHUM = rnorm(10, 400, 40),
+    soc = rnorm(10, 1000, 100)
+  )
+  event <- data.table(
+    time = c(2, 5, 8),
+    var = c("input1", "input2", "input3"),
+    value = c(50, 100, 75)
+  )
   
- 
+  # Save current working directory and switch to temp directory
+  old_wd <- getwd()
+  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_events")
+  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
+  setwd(temp_dir)
+  
+  # Restore working directory on exit
+  on.exit({
+    setwd(old_wd)
+    unlink(temp_dir, recursive = TRUE)
+  }, add = TRUE)
+  
+  # Run the plot function with events
+  expect_no_error(rc_visualize_plot(dt, event = event, save_dir = temp_dir))
+  
+  # Check that debug files were created
+  expect_true(file.exists("carbon_pools_linear.png"))
+  expect_true(file.exists("carbon_pools_change.png"))
+  
+  # Check that the files are not empty
+  expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
+  
+  # Clean up
+  file.remove("carbon_pools_linear.png")
+  file.remove("carbon_pools_change.png")
+})
 
+test_that("rc_visualize_plot handles custom save directory", {
+  dt <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20),
+    CBIO = rnorm(10, 300, 30),
+    CHUM = rnorm(10, 400, 40),
+    soc = rnorm(10, 1000, 100)
+  )
+  custom_dir <- file.path(tempdir(), "custom_save_dir")
+  dir.create(custom_dir, showWarnings = FALSE, recursive = TRUE)
+  
+  # Run the plot function with custom save directory
+  expect_no_error(rc_visualize_plot(dt, save_dir = custom_dir))
+  
+  # Check that files were created in the custom directory
+  expect_true(file.exists(file.path(custom_dir, "carbon_pools_linear.png")))
+  expect_true(file.exists(file.path(custom_dir, "carbon_pools_change.png")))
+  
+  # Check that the files are not empty
+  expect_true(file.info(file.path(custom_dir, "carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path(custom_dir, "carbon_pools_change.png"))$size > 0)
+  
+  # Clean up
+  unlink(custom_dir, recursive = TRUE)
+})
+
+test_that("rc_visualize_plot returns expected structure", {
+  dt <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20),
+    CBIO = rnorm(10, 300, 30),
+    CHUM = rnorm(10, 400, 40),
+    soc = rnorm(10, 1000, 100)
+  )
+  
+  # Run the plot function and capture the return value
+  result <- rc_visualize_plot(dt)
+  
+  # Check that the return value is a list with the expected structure
+  expect_type(result, "list")
+  expect_named(result, c("data", "plots"))
+  expect_named(result$data, c("total", "delta"))
+  expect_named(result$plots, c("linear", "change"))
+  
+  # Check that the data tables are not NULL
+  expect_false(is.null(result$data$total))
+  expect_false(is.null(result$data$delta))
+  
+  # Check that the plots are not NULL
+  expect_false(is.null(result$plots$linear))
+  expect_false(is.null(result$plots$change))
+})
+
+test_that("rc_visualize_plot handles missing columns gracefully", {
+  # Create a data.table with missing columns
+  dt_missing <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20)
+    # CBIO and CHUM are missing
+  )
+  
+  # Save current working directory and switch to temp directory
+  old_wd <- getwd()
+  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_missing")
+  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
+  setwd(temp_dir)
+  
+  # Restore working directory on exit
+  on.exit({
+    setwd(old_wd)
+    unlink(temp_dir, recursive = TRUE)
+  }, add = TRUE)
+  
+  # Expect a warning or error, but not a crash
+  expect_warning(rc_visualize_plot(dt_missing, save_dir = temp_dir))
+  
+  # Clean up
+  file.remove("carbon_pools_linear.png")
+  file.remove("carbon_pools_change.png")
 })
