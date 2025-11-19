@@ -903,6 +903,7 @@ if(!is.null(event)){
   
   # Save plots to files
   if (!dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
+  message("saving to: ", save_dir)
   ggplot2::ggsave(file.path(save_dir, "carbon_pools_linear.png"), plot = out_cont, width = 10, height = 6)
   ggplot2::ggsave(file.path(save_dir, "carbon_pools_change.png"), plot = out_change_cont, width = 10, height = 6)
   

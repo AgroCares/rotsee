@@ -1074,7 +1074,8 @@ test_that("rc_visualize_plot handles custom save directory", {
     CBIO = rnorm(10, 300, 30),
     CHUM = rnorm(10, 400, 40),
     soc = rnorm(10, 1000, 100)
-  )
+)
+    
   custom_dir <- file.path(tempdir(), "custom_save_dir")
   dir.create(custom_dir, showWarnings = FALSE, recursive = TRUE)
   
@@ -1103,8 +1104,21 @@ test_that("rc_visualize_plot returns expected structure", {
     soc = rnorm(10, 1000, 100)
   )
   
+  # Save current working directory and switch to temp directory
+  old_wd <- getwd()
+  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_events")
+  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
+  setwd(temp_dir)
+  
+  # Restore working directory on exit
+  on.exit({
+    setwd(old_wd)
+    unlink(temp_dir, recursive = TRUE)
+  }, add = TRUE)
+  
+  
   # Run the plot function and capture the return value
-  result <- rc_visualize_plot(dt)
+  result <- rc_visualize_plot(dt, save_dir = temp_dir)
   
   # Check that the return value is a list with the expected structure
   expect_type(result, "list")
@@ -1119,6 +1133,10 @@ test_that("rc_visualize_plot returns expected structure", {
   # Check that the plots are not NULL
   expect_false(is.null(result$plots$linear))
   expect_false(is.null(result$plots$change))
+  
+  # Clean up
+  file.remove("carbon_pools_linear.png")
+  file.remove("carbon_pools_change.png")
 })
 
 test_that("rc_visualize_plot handles missing columns gracefully", {
