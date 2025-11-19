@@ -14,8 +14,6 @@ test_that("rc_sim correctly checks input validity", {
   B_DEPTH = 0.3
 
   
-  M_TILLAGE_SYSTEM = 'CT'
-  
   rothc_rotation <- data.table(
     B_LU_START = c("2022-04-01", "2023-04-01"),
     B_LU_END = c("2022-10-01", "2023-10-01"),
@@ -60,25 +58,25 @@ test_that("rc_sim correctly checks input validity", {
 
   # All correct
  expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                   B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                   B_DEPTH = B_DEPTH, 
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                    weather = weather, rothc_parms = parms, irrigation = irrigation))
   
   # No amendment table (allowed)
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         B_DEPTH = B_DEPTH, 
                          rothc_rotation = rothc_rotation, rothc_amendment = NULL, 
                          weather = weather, rothc_parms = parms, irrigation = irrigation))
   
     # No crop table (allowed)
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                   B_DEPTH = B_DEPTH,  M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                   B_DEPTH = B_DEPTH,  
                    rothc_rotation = NULL, rothc_amendment = rothc_amendment, 
                    weather = weather, irrigation = irrigation))
   
   # No weather table (allowed)
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         B_DEPTH = B_DEPTH, 
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = NULL, rothc_parms = parms))
 })
@@ -96,8 +94,6 @@ test_that("rc_sim correctly runs with different weather data", {
   
   B_DEPTH = 0.3
   
-  
-  M_TILLAGE_SYSTEM = 'CT'
   
   rothc_rotation <- data.table(
     B_LU_START = c("2022-04-01", "2023-04-01"),
@@ -128,10 +124,7 @@ test_that("rc_sim correctly returns different output formats", {
   A_DEPTH = 0.3
   
   B_DEPTH = 0.3
-  
-  
-  M_TILLAGE_SYSTEM = 'CT'
-  
+ 
   rothc_rotation <- data.table(
     B_LU_START = c("2022-04-01", "2023-04-01"),
     B_LU_END = c("2022-10-01", "2023-10-01"),
@@ -448,7 +441,6 @@ test_that("rc_sim accepts irrigation parameter", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = rothc_amendment,
     weather = weather,
@@ -501,7 +493,6 @@ test_that("rc_sim works without irrigation parameter (backward compatibility)", 
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -556,7 +547,6 @@ test_that("rc_sim handles irrigation with different output units", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -578,7 +568,6 @@ test_that("rc_sim handles irrigation with different output units", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -600,7 +589,6 @@ test_that("rc_sim handles irrigation with different output units", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -653,7 +641,6 @@ test_that("rc_sim handles irrigation timing variations", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -673,7 +660,6 @@ test_that("rc_sim handles irrigation timing variations", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -724,7 +710,6 @@ test_that("rc_sim with irrigation and different W_POT_TO_ACT values", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather_custom,
@@ -777,7 +762,6 @@ test_that("rc_sim handles long-term simulation with irrigation", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -832,7 +816,6 @@ test_that("rc_sim handles irrigation with initialization", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -853,7 +836,6 @@ test_that("rc_sim handles irrigation with initialization", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -904,7 +886,6 @@ test_that("rc_sim handles extreme irrigation scenarios", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -924,7 +905,6 @@ test_that("rc_sim handles extreme irrigation scenarios", {
     soil_properties = soil_properties,
     A_DEPTH = 0.3,
     B_DEPTH = 0.3,
-    M_TILLAGE_SYSTEM = 'CT',
     rothc_rotation = rothc_rotation,
     rothc_amendment = NULL,
     weather = weather,
@@ -954,7 +934,7 @@ test_that("rc_sim handles extreme irrigation scenarios", {
                         W_ET_ACT_MONTH = rep(c(6, 12, 25, 45, 70, 75, 78, 65, 40, 20, 8, 4), 19))
   
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         B_DEPTH = B_DEPTH, 
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = weather_all, rothc_parms = parms))
   
@@ -966,7 +946,7 @@ test_that("rc_sim handles extreme irrigation scenarios", {
                             W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19))
   
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         B_DEPTH = B_DEPTH, 
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = weather_pot, rothc_parms = parms))
   
@@ -978,7 +958,7 @@ test_that("rc_sim handles extreme irrigation scenarios", {
                             W_ET_ACT_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 19))
   
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         B_DEPTH = B_DEPTH, 
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = weather_act, rothc_parms = parms))
   
@@ -989,7 +969,7 @@ test_that("rc_sim handles extreme irrigation scenarios", {
                             W_ET_ACT_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5))
   
   expect_no_error(rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         B_DEPTH = B_DEPTH, 
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = weather_noyr, rothc_parms = parms))
 })
@@ -1008,8 +988,6 @@ test_that("rc_sim provides correct output in years or months", {
   
   B_DEPTH = 0.3
   
-  
-  M_TILLAGE_SYSTEM = 'CT'
   
   rothc_rotation <- data.table(
     B_LU_START = c("2022-04-01", "2023-04-01"),
@@ -1050,7 +1028,7 @@ test_that("rc_sim provides correct output in years or months", {
   
   
   result <- rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                   B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                   B_DEPTH = B_DEPTH, 
                    rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                    weather = weather, rothc_parms = parms)
   
