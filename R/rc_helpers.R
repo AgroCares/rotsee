@@ -524,6 +524,22 @@ return(dt.crop)
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
 #' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
 #' 
+#' @examples
+#' ## examples to extend valid crop dataset
+#' # create valid crop set
+#' crops <- data.table(
+#' B_LU_START = c("2020-01-01", "2020-06-01"),
+#' B_LU_END = c("2020-03-31", "2020-08-31"),
+#' B_LU = c("Crop1", "Crop2"),
+#' B_LU_HC = c(0.5, 0.3),
+#' B_C_OF_INPUT = c(100, 200)
+#' )
+#' 
+#' # using start_date and end_date
+#' rc_extend_crops(crops = crops, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
+#' 
+#' # using start_date and simyears
+#' rc_extend_crops(crops = crops, start_date = as.Date("2020-01-01"), simyears = 3)
 #' 
 #' @export
 #'
@@ -631,6 +647,22 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+#' 
+#' #' @examples
+#' ## examples to extend valid amendment dataset
+#' # create valid amendment set
+#' amendments <- data.table(
+#' P_HC = c(0.5, 0.3),
+#' P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
+#' P_NAME = c("Amend1", "Amend2"),
+#' P_DOSE = c(100, 200)
+#' )
+#' 
+#' # using start_date and end_date
+#' rc_extend_crops(amendments = amendments, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
+#' 
+#' # using start_date and simyears
+#' rc_extend_crops(amendments = amendments, start_date = as.Date("2020-01-01"), simyears = 3)
 #' 
 #' @export
 #'
