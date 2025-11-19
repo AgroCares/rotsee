@@ -394,7 +394,20 @@ rc_check_inputs <- function(soil_properties,
 #' @param dt (data table) Contains the columns A_CLAY_MI (clay content \%) and at least one of A_SOM_LOI (organic matter content, \%) and A_C_OF (organic carbon content, g C/kg)
 #'
 #' @returns
-#' Data table with the dry soil bulk density (g/cm3)
+#' Data table with provided data an the calculated dry soil bulk density (g/cm3)
+#' 
+#' @examples
+#' ## calculate the dry soil bulk density (g/cm3) using organic matter content (\%)
+#' dt_om <- data.table(A_CLAY_MI = 12, # data table with legal soil information
+#' A_SOM_LOI = 3)
+#' 
+#' rc_calculate_bd(dt_om)
+#' 
+#' ## calculate the dry soil bulk density using organic carbon content (g C/kg)
+#' dt_c <- data.table(A_CLAY_MI = 12, # data table with legal soil information
+#' A_C_OF = 80)
+#' 
+#' rc_calculate_bd(dt_c)
 #' 
 #' @export
 rc_calculate_bd <- function(dt){
@@ -427,6 +440,10 @@ rc_calculate_bd <- function(dt){
   
   # clay dependent density
   dt[, A_DENSITY_SA := cf * dens.clay + (1-cf) * dens.sand]
+  
+  # select relevant columns
+  dt <- dt[, .SD, .SDcols =!names(dt) %in% c("dens.sand", "dens.clay", "cf")]
+  
   return(dt)
 }
 
