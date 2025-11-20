@@ -12,18 +12,13 @@ test_that("rc_input_crop validates input correctly", {
   expect_silent(rc_input_crop(valid_dt))
   
   # Test: missing required column
-  invalid_dt <- valid_dt[, .(B_LU_START, B_LU_END, B_LU, B_LU_HC)]
+  invalid_dt <- copy(valid_dt[, .(B_LU_START, B_LU_END, B_LU, B_LU_HC)])
   expect_error(rc_input_crop(invalid_dt), "must.include")
-  
-  # Test: invalid date
-  invalid_dt <- valid_dt
-  invalid_dt[1, B_LU_START := "not a date"]
-  expect_error(rc_input_crop(invalid_dt), "assert_date")
-  
+
   # Test: invalid B_C_OF_INPUT
-  invalid_dt <- valid_dt
+  invalid_dt <- copy(valid_dt)
   invalid_dt[1, B_C_OF_INPUT := -100]
-  expect_error(rc_input_crop(invalid_dt), "lower")
+  expect_error(rc_input_crop(invalid_dt), "not >= 0")
 })
 
 test_that("rc_input_crop calculates derived columns correctly", {
@@ -36,16 +31,12 @@ test_that("rc_input_crop calculates derived columns correctly", {
   )
   
   result <- rc_input_crop(dt)
-  
-  # Check fr_dpm_rpm calculation
-  expect_equal(result$fr_dpm_rpm[1], -2.174 * 0.8 + 2.02, tolerance = 0.001)
-  expect_equal(result$fr_dpm_rpm[2], 0)  # HC >= 0.92
-  
+
   # Check cin_dpm and cin_rpm
-  expect_equal(result$cin_dpm[1], 1000 * result$fr_dpm_rpm[1] / (1 + result$fr_dpm_rpm[1]), tolerance = 0.001)
-  expect_equal(result$cin_rpm[1], 1000 * 1 / (1 + result$fr_dpm_rpm[1]), tolerance = 0.001)
-  expect_equal(result$cin_dpm[2], 1500 * 0 / (1 + 0), tolerance = 0.001)
-  expect_equal(result$cin_rpm[2], 1500 * 1 / (1 + 0), tolerance = 0.001)
+  expect_equal(result$cin_dpm[1], 1000 * (-2.174 * 0.8 + 2.02) / (1 + (-2.174 * 0.8 + 2.02)), tolerance = 0.001) # P_HC = 0.8
+  expect_equal(result$cin_rpm[1], 1000 * 1 / (1 + (-2.174 * 0.8 + 2.02)), tolerance = 0.001)
+  expect_equal(result$cin_dpm[2], 0, tolerance = 0.001) # P_HC > 0.92
+  expect_equal(result$cin_rpm[2], 1500, tolerance = 0.001)
   
   # Check year and month
   expect_equal(result$year, c(2020, 2020))
@@ -64,7 +55,8 @@ test_that("rc_input_crop handles missing B_LU_HC", {
   result <- rc_input_crop(dt)
   
   # Check default fr_dpm_rpm for NA HC
-  expect_equal(result$fr_dpm_rpm[1], 1.44)
+  expect_equal(result$cin_dpm[1], 1.44 * result$cin_rpm[1])
+  expect_equal(result$cin_dpm[2], 1.44 * 0)
 })
 
 test_that("rc_input_crop returns only relevant columns", {

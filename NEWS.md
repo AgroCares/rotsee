@@ -1,3 +1,9 @@
+# rotsee UNRELEASED
+## added
+* examples for the functions `rc_calculate_bd`, `rc_calculate_B_C_OF`, `rc_extend_crops`, `rc_extend_amendment`
+* unit tests for rc_visualize_plot
+
+
 # rotsee v0.1.8 2025-11-12
 ## added
 * option to run `rc_sim` in visualize mode (give input visualize = TRUE), to receive output table and visualization of C flows
