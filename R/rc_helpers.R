@@ -530,7 +530,6 @@ return(dt.crop)
 #' crops <- data.table::data.table(
 #' B_LU_START = c("2020-01-01", "2020-06-01"),
 #' B_LU_END = c("2020-03-31", "2020-08-31"),
-#' B_LU = c("Crop1", "Crop2"),
 #' B_LU_HC = c(0.5, 0.3),
 #' B_C_OF_INPUT = c(100, 200)
 #' )
@@ -642,7 +641,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' Includes the columns:
 #' * P_ID (character), ID of the soil amendment product
 #' * P_NAME (character), name of the soil amendment product, optional
-#' * P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
 #' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
@@ -654,7 +653,6 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' amendments <- data.table::data.table(
 #' P_HC = c(0.5, 0.3),
 #' P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
-#' P_NAME = c("Amend1", "Amend2"),
 #' P_DOSE = c(100, 200),
 #' P_C_OF = c(150,100)
 #' )
