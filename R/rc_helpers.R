@@ -398,13 +398,13 @@ rc_check_inputs <- function(soil_properties,
 #' 
 #' @examples
 #' ## calculate the dry soil bulk density (g/cm3) using organic matter content (\%)
-#' dt_om <- data.table(A_CLAY_MI = 12, # data table with legal soil information
+#' dt_om <- data.table::data.table(A_CLAY_MI = 12, # data table with legal soil information
 #' A_SOM_LOI = 3)
 #' 
 #' rc_calculate_bd(dt_om)
 #' 
 #' ## calculate the dry soil bulk density using organic carbon content (g C/kg)
-#' dt_c <- data.table(A_CLAY_MI = 12, # data table with legal soil information
+#' dt_c <- data.table::data.table(A_CLAY_MI = 12, # data table with legal soil information
 #' A_C_OF = 80)
 #' 
 #' rc_calculate_bd(dt_c)
@@ -465,7 +465,7 @@ rc_calculate_bd <- function(dt){
 #' 
 #' @examples
 #' ## calculate crop C inputs with valid input values
-#' dt_crop <- data.table(B_LU_YIELD = 30000,
+#'  dt_crop <- data.table::data.table(B_LU_YIELD = 30000,
 #'  B_LU_HI = 0.6,
 #'  B_LU_HI_RES = 0.5,
 #'  B_LU_RS_FR = 1,
@@ -527,7 +527,7 @@ return(dt.crop)
 #' @examples
 #' ## examples to extend valid crop dataset
 #' # create valid crop set
-#' crops <- data.table(
+#' crops <- data.table::data.table(
 #' B_LU_START = c("2020-01-01", "2020-06-01"),
 #' B_LU_END = c("2020-03-31", "2020-08-31"),
 #' B_LU = c("Crop1", "Crop2"),
@@ -651,7 +651,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' #' @examples
 #' ## examples to extend valid amendment dataset
 #' # create valid amendment set
-#' amendments <- data.table(
+#' amendments <- data.table::data.table(
 #' P_HC = c(0.5, 0.3),
 #' P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
 #' P_NAME = c("Amend1", "Amend2"),
