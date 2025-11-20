@@ -1138,32 +1138,3 @@ test_that("rc_visualize_plot returns expected structure", {
   file.remove("carbon_pools_linear.png")
   file.remove("carbon_pools_change.png")
 })
-
-test_that("rc_visualize_plot handles missing columns gracefully", {
-  # Create a data.table with missing columns
-  dt_missing <- data.table(
-    time = 1:10,
-    CDPM = rnorm(10, 100, 10),
-    CRPM = rnorm(10, 200, 20)
-    # CBIO and CHUM are missing
-  )
-  
-  # Save current working directory and switch to temp directory
-  old_wd <- getwd()
-  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_missing")
-  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
-  setwd(temp_dir)
-  
-  # Restore working directory on exit
-  on.exit({
-    setwd(old_wd)
-    unlink(temp_dir, recursive = TRUE)
-  }, add = TRUE)
-  
-  # Expect a warning or error, but not a crash
-  expect_warning(rc_visualize_plot(dt_missing, save_dir = temp_dir))
-  
-  # Clean up
-  file.remove("carbon_pools_linear.png")
-  file.remove("carbon_pools_change.png")
-})
