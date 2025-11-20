@@ -34,7 +34,7 @@ Includes the columns:
 \examples{
 ## examples to extend valid crop dataset
 # create valid crop set
-crops <- data.table(
+crops <- data.table::data.table(
 B_LU_START = c("2020-01-01", "2020-06-01"),
 B_LU_END = c("2020-03-31", "2020-08-31"),
 B_LU = c("Crop1", "Crop2"),

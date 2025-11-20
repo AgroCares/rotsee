@@ -26,7 +26,7 @@ Contains the following columns:
 }
 \examples{
 ## calculate crop C inputs with valid input values
-dt_crop <- data.table(B_LU_YIELD = 30000,
+ dt_crop <- data.table::data.table(B_LU_YIELD = 30000,
  B_LU_HI = 0.6,
  B_LU_HI_RES = 0.5,
  B_LU_RS_FR = 1,

@@ -35,7 +35,7 @@ Includes the columns:
 #' @examples
 ## examples to extend valid amendment dataset
 # create valid amendment set
-amendments <- data.table(
+amendments <- data.table::data.table(
 P_HC = c(0.5, 0.3),
 P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
 P_NAME = c("Amend1", "Amend2"),
