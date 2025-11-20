@@ -1016,10 +1016,6 @@ test_that("rc_visualize_plot runs without error", {
   # Check that the files are not empty
   expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
   expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
-
-  # Clean up
-  file.remove("carbon_pools_linear.png")
-  file.remove("carbon_pools_change.png")
 })
 
 test_that("rc_visualize_plot handles events correctly", {
@@ -1060,10 +1056,6 @@ test_that("rc_visualize_plot handles events correctly", {
   # Check that the files are not empty
   expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
   expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
-  
-  # Clean up
-  file.remove("carbon_pools_linear.png")
-  file.remove("carbon_pools_change.png")
 })
 
 test_that("rc_visualize_plot handles custom save directory", {
@@ -1079,6 +1071,9 @@ test_that("rc_visualize_plot handles custom save directory", {
   custom_dir <- file.path(tempdir(), "custom_save_dir")
   dir.create(custom_dir, showWarnings = FALSE, recursive = TRUE)
   
+  # Ensure cleanup on exit
+  on.exit(unlink(custom_dir, recursive = TRUE), add = TRUE)
+  
   # Run the plot function with custom save directory
   expect_no_error(rc_visualize_plot(dt, save_dir = custom_dir))
   
@@ -1089,9 +1084,6 @@ test_that("rc_visualize_plot handles custom save directory", {
   # Check that the files are not empty
   expect_true(file.info(file.path(custom_dir, "carbon_pools_linear.png"))$size > 0)
   expect_true(file.info(file.path(custom_dir, "carbon_pools_change.png"))$size > 0)
-  
-  # Clean up
-  unlink(custom_dir, recursive = TRUE)
 })
 
 test_that("rc_visualize_plot returns expected structure", {
@@ -1133,8 +1125,4 @@ test_that("rc_visualize_plot returns expected structure", {
   # Check that the plots are not NULL
   expect_false(is.null(result$plots$linear))
   expect_false(is.null(result$plots$change))
-  
-  # Clean up
-  file.remove("carbon_pools_linear.png")
-  file.remove("carbon_pools_change.png")
 })
