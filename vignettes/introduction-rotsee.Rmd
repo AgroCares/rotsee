@@ -66,7 +66,7 @@ evapotranspiration  or reference evapotranspiration with a factor to re-calculat
 Weather data can either be provided for each month (in which case it will be extended across
 each year of the simulation period) or for each month and each year in the simulation. If 
 weather data is not provided, Dutch averages will be used.
-TO DO once brance facil-refact is merged add description of facilitating implementation of factor
+TO DO once branch facil-refact is merged add description of facilitating implementation of factor
 
 ### sampling information
 Information of the depth of the cultivation layer and the sampling depth.

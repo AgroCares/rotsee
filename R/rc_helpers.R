@@ -394,7 +394,7 @@ rc_check_inputs <- function(soil_properties,
 #' @param dt (data table) Contains the columns A_CLAY_MI (clay content \%) and at least one of A_SOM_LOI (organic matter content, \%) and A_C_OF (organic carbon content, g C/kg)
 #'
 #' @returns
-#' Data table with provided data an the calculated dry soil bulk density (g/cm3)
+#' Data table with provided data and the calculated dry soil bulk density (g/cm3)
 #' 
 #' @examples
 #' ## calculate the dry soil bulk density (g/cm3) using organic matter content (\%)
@@ -508,8 +508,8 @@ return(dt.crop)
 #'
 #' @param crops (data.table) Input crop table for the RothC model. See details for further information
 #' @param simyears (numeric) number of simulation years of the RothC model
-#' @param start_date (character, formatted YYYY-MM-DD) Date in which simulation starts
-#' @param end_date (character, formatted YYYY-MM-DD) Required if simyears is not supplied
+#' @param start_date (character/date, formatted YYYY-MM-DD) Date in which simulation starts
+#' @param end_date (character/date, formatted YYYY-MM-DD) Required if simyears is not supplied
 #'
 #' @returns
 #' An extended crop input file to be used in the rotsee package
@@ -536,10 +536,10 @@ return(dt.crop)
 #' )
 #' 
 #' # using start_date and end_date
-#' rc_extend_crops(crops = crops, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
+#' rc_extend_crops(crops = crops, start_date = "2020-01-01", end_date = "2022-12-31")
 #' 
 #' # using start_date and simyears
-#' rc_extend_crops(crops = crops, start_date = as.Date("2020-01-01"), simyears = 3)
+#' rc_extend_crops(crops = crops, start_date = "2020-01-01", simyears = 3)
 #' 
 #' @export
 #'
@@ -655,14 +655,15 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' P_HC = c(0.5, 0.3),
 #' P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
 #' P_NAME = c("Amend1", "Amend2"),
-#' P_DOSE = c(100, 200)
+#' P_DOSE = c(100, 200),
+#' P_C_OF = c(150,100)
 #' )
 #' 
 #' # using start_date and end_date
-#' rc_extend_crops(amendments = amendments, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
+#' rc_extend_amendments(amendments = amendments, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
 #' 
 #' # using start_date and simyears
-#' rc_extend_crops(amendments = amendments, start_date = as.Date("2020-01-01"), simyears = 3)
+#' rc_extend_amendments(amendments = amendments, start_date = as.Date("2020-01-01"), simyears = 3)
 #' 
 #' @export
 #'
