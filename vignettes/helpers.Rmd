@@ -1,0 +1,52 @@
+---
+title: "helpers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{helpers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rotsee)
+```
+
+## facilitating input pre-processing
+The rotsee package is built on the mindset that it should be universally applicable.
+Hence, location specific calculations such as bulk density determination via pedotransfer
+functions are omitted from the core calculation code. While this makes package usage more
+flexible, it does put additional requirements on the package user. To facilitate this,
+several helper functions have been added. These functions are outlined below, together with
+a short description of their origin and an example of using the functions.
+
+
+## Dry soil bulk density
+Dry soil bulk density is used to calculate soil carbon (C) content (e.g. g C/kg soil) to a C stock 
+(e.g. kg C/ha) and vice versa. Calculations are always conducted based on C stocks, and hence
+providing an accurate dry bulk density is important particularly when C content is given, or
+when outputs are requested in C content.
+
+In case the dry soil bulk density has not been measured, it can be calculated using 
+\link{rc_calculate_bd}. This function estimates soil bulk density from soil clay-
+and C content based on the pedotransfer functions listed in CBAV, 2023. Provided input is returned
+together with the column A_DENSITY_SA, listing soil bulk density in g/cm^3.
+
+## Calculate crop C inputs
+To remove location specific differences in crop quality, harvest efficiency, etc., rotsee
+requests crop input to directly list the total 
+
+## Evapotranspiration factors
+TO DO once facil-refact has been merged
+
+## Extend crop rotation plan
+
+## Extend amendment input
+
+## references
