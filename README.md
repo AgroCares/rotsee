@@ -36,7 +36,7 @@ example_crop <- data.table(
  B_LU_END = c("2020-03-31", "2020-08-31"),
  B_LU_HC = c(0.5, 0.3),
  B_C_OF_INPUT = c(100, 200)
- ))
+ )
  
  example_amendment <- data.table(
  P_HC = c(0.5, 0.3),
