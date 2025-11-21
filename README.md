@@ -50,10 +50,11 @@ example_crop <- data.table(
  A_DENSITY_SA = c(1.47)
  )
  
- rc_sim(soil_properties = example_soil,
+ example_result <- rc_sim(soil_properties = example_soil,
  rothc_rotation = example_crop,
  rothc_amendment = example_amendment)
  
+ print(example_result)
 
 ```
 
