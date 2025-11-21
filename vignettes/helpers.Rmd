@@ -38,15 +38,32 @@ In case the dry soil bulk density has not been measured, it can be calculated us
 and C content based on the pedotransfer functions listed in CBAV, 2023. Provided input is returned
 together with the column A_DENSITY_SA, listing soil bulk density in g/cm^3.
 
+TO DO: more properly list references. Currently only reference to "handboekbodemenbemesting", but this only shows calculation for sand density. 
+In reposity of pedotransfer functions reference to WUR report, but link is currently broken.
+
 ## Calculate crop C inputs
-To remove location specific differences in crop quality, harvest efficiency, etc., rotsee
-requests crop input to directly list the total 
+Crops, together with amendments, increase the C stocks. The package requests for each crop rotation
+the start and end dates, a humification coefficient, and a total C input into the soil.
+The user can estimate the C input themselves, or they can use \link{rc_calculate_B_C_OF}
+to calculate crop C inputs. If so, C input is calculated based on the harvest index,
+root-to-shoot ratio, and assuming 50% of the crop is C (Pribyl, 2010).
+
 
 ## Evapotranspiration factors
 TO DO once facil-refact has been merged
 
-## Extend crop rotation plan
+## Extend crop rotation and amendment plans
+Rotsee requires the users to provide a simulation start and end, a date of amendment application,
+and a growth period of each crop. In case no simulation start and end are provided, they are 
+defined based on crop rotation and amendment input. Yet in case the rotation and amendment plans
+do not fill the entire simulation period, the user may prefer to have their plans extended.
+This can be done using \link{rc_extend_crops} and \link{rc_extend_amendments}. Using this, the crop
+and/or amendment plans are duplicated until the provided simulation period has been covered.
 
-## Extend amendment input
 
 ## references
+https://www.handboekbodemenbemesting.nl/bemestingsadviezen/volumegewicht-grond/
+
+https://wur.on.worldcat.org/search/detail/1462290642?queryString=Bemestingsadvies%20Commissie%20Bemesting%20Grasland%20en%20Voedergewassen:%20Versie%202024
+
+Pribyl, D. W. (2010). A critical review of the conventional SOC to SOM conversion factor. Geoderma, 156(3-4), 75-83.
