@@ -27,15 +27,15 @@ facilitate this process.
 
 ## 2. basis of the RothC model
 An extensive description of the RothC model can be found in Coleman and Jenkinson, 1996.
-RothC is well-established model to calculate the development of carbon (C) stocks in soils
+RothC is a well-established model to calculate the development of carbon (C) stocks in soils
 based on long-term experimental data from Rothamsted. RothC uses 5 C pools to describe
 carbon turnover. The inert organic matter (IOM) pool is fixed and based on the calculation
 developed by Fallon et al., 1998. Remaining four pools are all active and are in order
-of highest to lowest decomposition rate decomposable plant material (DPM), resistant plant material (RPM),
+of highest to lowest decomposition rate: decomposable plant material (DPM), resistant plant material (RPM),
 microbial biomass (BIO) and humified organic matter (HUM). Their decomposition rates -
 adjusted with rate modifying factors based on temperature, soil moisture, and crop cover -
 are used to calculate C removal from and transfer between the different pools. Together with C
-inputs from crops and amendments, the model changes in C stocks in a monthly resolution.
+inputs from crops and amendments, the model calculates changes in C stocks at a monthly resolution.
 A representation of the overall model functionality is listed in Figure 1.
 
 ```{r Figure 1, echo = FALSE, out.width = '70%'}
@@ -54,12 +54,12 @@ density is unknown, it can be calculated using `rc_calculate_bd`.
 Information on the crop rotation, including start and end of crop growth, crop humification
 coefficient, and carbon input from crops. If the latter is not known, it can be calculated based
 on crop harvest characteristics using `rc_calculate_b_c_of`. Crop rotations can be extended
-to envelop longer simulation periods using `rc_extend_crops`.
+to encompass longer simulation periods using `rc_extend_crops`.
 
 ### 3.3 amendment data (optional)
 Information on the applied amendment, including application date, amendment humification
 coefficient, and carbon input from the amendment. Amendment applications can be extended
-to envelop longer simulation periods using `rc_extend_amendments`.
+to encompass longer simulation periods using `rc_extend_amendments`.
 
 ### 3.4 weather data (optional)
 Monthly weather data, which includes mean temperature, mean precipitation, and actual
@@ -112,8 +112,9 @@ HUM pool.
 
 
 ### 4.3 simulation duration
-SImulation duration can be directly set using start_date and end_date parameters.
+Simulation duration can be directly set using start_date and end_date parameters.
 In case these parameters are not provided, the simulation period is based on earliest 
+and latest crop and/or amendment application
 
 ## 5. model output
 Model calculation provides C stock of the soil as a function of time. Depending on 
@@ -131,7 +132,7 @@ can be adapted with the parameter 'unit', which allows the following options:
 
 ## 6. Helper functions
 To facilitate the user in using the rotsee package, several helper functions have been introduced.
-For this we refer you to the vignette \link{helpers.Rmd}.
+For this we refer you to the [helpers vignette](helpers.html).
 
 ## 7. Example runs
 

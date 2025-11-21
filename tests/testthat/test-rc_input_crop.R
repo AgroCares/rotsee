@@ -74,6 +74,6 @@ test_that("rc_input_crop returns only relevant columns", {
   # Check only expected columns are returned
   expect_equal(
     names(result),
-    c("year", "month", "B_LU_END", "B_LU_START", "B_LU", "cin_dpm", "cin_rpm")
+    c("year", "month", "B_LU_END", "B_LU_START", "cin_dpm", "cin_rpm")
   )
 })
