@@ -18,7 +18,7 @@
 rc_input_crop <- function(dt){
   
   # add visual bindings
-  B_C_OF_INPUT  = B_LU  = B_LU_END  = B_LU_HC = B_LU_START = cin_dpm = NULL
+  B_C_OF_INPUT  = B_LU_END  = B_LU_HC = B_LU_START = cin_dpm = NULL
     cin_rpm = fr_dpm_rpm = NULL
   
   # check crop table

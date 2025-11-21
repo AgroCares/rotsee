@@ -47,7 +47,7 @@ knitr::include_graphics('Rothc_structure.png')
 
 ## 3. required and optional data
 ### 3.1 soil properties
-The clay and organic matter content, together with the dry soil bulk density. If the bulk
+Provide clay and organic matter content, together with the dry soil bulk density. If the bulk
 density is unknown, it can be calculated using `rc_calculate_bd`.
 
 ### 3.2 crop rotation data (optional)
@@ -63,14 +63,14 @@ to encompass longer simulation periods using `rc_extend_amendments`.
 
 ### 3.4 weather data (optional)
 Monthly weather data, which includes mean temperature, mean precipitation, and actual
-evapotranspiration (ET)  or reference ET with a factor to re-calculate to actual ET.
+evapotranspiration (ET) or reference ET with a factor to re-calculate to actual ET.
 Weather data can either be provided for each month (in which case it will be extended across
 each year of the simulation period) or for each month and each year in the simulation. If 
 weather data is not provided, Dutch averages will be used.
 TO DO once branch facil-refact is merged add description of facilitating implementation of factor
 
 ### 3.5 sampling information
-Information of the depth of the cultivation layer and the sampling depth.
+Information on the depth of the cultivation layer and the sampling depth.
 
 ### 3.6 Model parameters (optional)
 Parameters to define model run operation. These include standard RothC parameters 
@@ -83,14 +83,14 @@ of the simulation.
 ## 4. Model operation
 
 ### 4.1 pool initialization
-An important aspect of RothC is the initialization of the C pools. Rotsee implements using
-either pre-defined pools, or using initialization calculations.
+An important aspect of RothC is the initialization of the C pools. Rotsee implements this using
+either pre-defined pools or initialization calculations.
 
 Pre-defined pools are defined via the 'c_fractions' parameter. These can be defined by the user,
 otherwise the RothC defaults are used: fr_IOM = 0.049; fr_DPM = 0.015; fr_RPM = 0.125; fr_BIO = 0.015.
-**note: pre-defined pools are overwritten if initialization calculations are requested**
+**Note: pre-defined pools are overwritten if initialization calculations are requested**
 
-**note: initialization calculations are not yet implemented. The above will be active once ghsolver branch is merged**
+**Note: initialization calculations are not yet implemented. The above will be active once ghsolver branch is merged**
 Initialization calculations can be requested using the parameter initialize. If no initialization
 is wanted, initialize should be set to FALSE. Three initialization options exist, which can be selected
 based on system state. 
@@ -112,13 +112,13 @@ HUM pool.
 
 
 ### 4.3 simulation duration
-Simulation duration can be directly set using start_date and end_date parameters.
-In case these parameters are not provided, the simulation period is based on earliest 
-and latest crop and/or amendment application
+Simulation duration can be set directly using the 'start_date' and 'end_date' parameters.
+If these parameters are not provided, the simulation period is based on the earliest 
+and latest crop and/or amendment application dates.
 
 ## 5. model output
-Model calculation provides C stock of the soil as a function of time. Depending on 
-user provided model parameters (see section 3.6)
+Model calculation provides soil C stock as a function of time. The exact output depends on
+user-provided model parameters (see section 3.6)
 
 Requested model outputs can be altered both with respect to temporal resolution and
 returned units and pool definitions of the C stocks. Output can be requested either on
