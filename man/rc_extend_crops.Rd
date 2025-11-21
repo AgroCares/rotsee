@@ -9,9 +9,9 @@ rc_extend_crops(crops, start_date, end_date = NULL, simyears = NULL)
 \arguments{
 \item{crops}{(data.table) Input crop table for the RothC model. See details for further information}
 
-\item{start_date}{(character, formatted YYYY-MM-DD) Date in which simulation starts}
+\item{start_date}{(character/date, formatted YYYY-MM-DD) Date in which simulation starts}
 
-\item{end_date}{(character, formatted YYYY-MM-DD) Required if simyears is not supplied}
+\item{end_date}{(character/date, formatted YYYY-MM-DD) Required if simyears is not supplied}
 
 \item{simyears}{(numeric) number of simulation years of the RothC model}
 }
@@ -26,7 +26,7 @@ Crops: crop table
 Includes the columns: 
 * B_LU_START (start of crop rotation),
 * B_LU_END (end of crop rotation),
-* B_LU (a crop id), 
+* B_LU (a crop id) optional, 
 * B_LU_NAME (a crop name, optional),
 * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
 * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
@@ -37,15 +37,14 @@ Includes the columns:
 crops <- data.table::data.table(
 B_LU_START = c("2020-01-01", "2020-06-01"),
 B_LU_END = c("2020-03-31", "2020-08-31"),
-B_LU = c("Crop1", "Crop2"),
 B_LU_HC = c(0.5, 0.3),
 B_C_OF_INPUT = c(100, 200)
 )
 
 # using start_date and end_date
-rc_extend_crops(crops = crops, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
+rc_extend_crops(crops = crops, start_date = "2020-01-01", end_date = "2022-12-31")
 
 # using start_date and simyears
-rc_extend_crops(crops = crops, start_date = as.Date("2020-01-01"), simyears = 3)
+rc_extend_crops(crops = crops, start_date = "2020-01-01", simyears = 3)
 
 }

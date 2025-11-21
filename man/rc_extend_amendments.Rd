@@ -26,7 +26,7 @@ amendments: amendment table
 Includes the columns:
 * P_ID (character), ID of the soil amendment product
 * P_NAME (character), name of the soil amendment product, optional
-* P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+* B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
 * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
@@ -38,13 +38,13 @@ Includes the columns:
 amendments <- data.table::data.table(
 P_HC = c(0.5, 0.3),
 P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
-P_NAME = c("Amend1", "Amend2"),
-P_DOSE = c(100, 200)
+P_DOSE = c(100, 200),
+P_C_OF = c(150,100)
 )
 
 # using start_date and end_date
-rc_extend_crops(amendments = amendments, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
+rc_extend_amendments(amendments = amendments, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
 
 # using start_date and simyears
-rc_extend_crops(amendments = amendments, start_date = as.Date("2020-01-01"), simyears = 3)
+rc_extend_amendments(amendments = amendments, start_date = as.Date("2020-01-01"), simyears = 3)
 }

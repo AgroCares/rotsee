@@ -10,7 +10,7 @@ rc_calculate_bd(dt)
 \item{dt}{(data table) Contains the columns A_CLAY_MI (clay content \%) and at least one of A_SOM_LOI (organic matter content, \%) and A_C_OF (organic carbon content, g C/kg)}
 }
 \value{
-Data table with provided data an the calculated dry soil bulk density (g/cm3)
+Data table with provided data and the calculated dry soil bulk density (g/cm3)
 }
 \description{
 Function to calculate the dry soil bulk density based on Dutch pedotransfer functions

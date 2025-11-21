@@ -2,7 +2,7 @@
 ## added
 * examples for the functions `rc_calculate_bd`, `rc_calculate_B_C_OF`, `rc_extend_crops`, `rc_extend_amendments`
 * unit tests for rc_visualize_plot
-* Vignettes to add description of rotsee functionality
+* Vignettes to add overview of rotsee and a description of the helper functions
 
 ## changed
 * removed intermediate columns dens.sand, dens.clay, and cf as output from `rc_calculate_bd`
