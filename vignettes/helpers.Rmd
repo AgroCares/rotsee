@@ -1,0 +1,69 @@
+---
+title: "helpers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{helpers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rotsee)
+```
+
+## facilitating input pre-processing
+The rotsee package is built on the mindset that it should be universally applicable.
+Hence, location specific calculations such as bulk density determination via pedotransfer
+functions are omitted from the core calculation code. While this makes package usage more
+flexible, it does put additional requirements on the package user. To facilitate this,
+several helper functions have been added. These functions are outlined below, together with
+a short description of their origin and an example of using the functions.
+
+
+## Dry soil bulk density
+Dry soil bulk density is used to calculate soil carbon (C) content (e.g. g C/kg soil) to a C stock 
+(e.g. kg C/ha) and vice versa. Calculations are always conducted based on C stocks, and hence
+providing an accurate dry bulk density is important particularly when C content is given, or
+when outputs are requested in C content.
+
+In case the dry soil bulk density has not been measured, it can be calculated using 
+\link{rc_calculate_bd}. This function estimates soil bulk density from soil clay-
+and C content based on the pedotransfer functions listed in CBAV, 2023. Provided input is returned
+together with the column A_DENSITY_SA, listing soil bulk density in g/cm^3.
+
+TO DO: more properly list references. Currently only reference to "handboekbodemenbemesting", but this only shows calculation for sand density. 
+In reposity of pedotransfer functions reference to WUR report, but link is currently broken.
+
+## Calculate crop C inputs
+Crops, together with amendments, increase the C stocks. The package requests for each crop rotation
+the start and end dates, a humification coefficient, and a total C input into the soil.
+The user can estimate the C input themselves, or they can use \link{rc_calculate_B_C_OF}
+to calculate crop C inputs. If so, C input is calculated based on the harvest index,
+root-to-shoot ratio, and assuming 50% of the crop is C (Pribyl, 2010).
+
+
+## Evapotranspiration factors
+TO DO once facil-refact has been merged
+
+## Extend crop rotation and amendment plans
+Rotsee requires the users to provide a simulation start and end, a date of amendment application,
+and a growth period of each crop. In case no simulation start and end are provided, they are 
+defined based on crop rotation and amendment input. Yet in case the rotation and amendment plans
+do not fill the entire simulation period, the user may prefer to have their plans extended.
+This can be done using \link{rc_extend_crops} and \link{rc_extend_amendments}. Using this, the crop
+and/or amendment plans are duplicated until the provided simulation period has been covered.
+
+
+## references
+https://www.handboekbodemenbemesting.nl/bemestingsadviezen/volumegewicht-grond/
+
+https://wur.on.worldcat.org/search/detail/1462290642?queryString=Bemestingsadvies%20Commissie%20Bemesting%20Grasland%20en%20Voedergewassen:%20Versie%202024
+
+Pribyl, D. W. (2010). A critical review of the conventional SOC to SOM conversion factor. Geoderma, 156(3-4), 75-83.
