@@ -9,7 +9,7 @@
 #' To run this function, the dt should contain the following columns:
 #' * B_LU_START (date/character), start of crop growth (formatted YYYY-MM-DD)
 #' * B_LU_END (date/character), end of crop growth (formatted YYYY-MM-DD)
-#' * B_LU (a crop id)
+#' * B_LU (a crop id), optional
 #' * B_LU_NAME (a crop name, optional):
 #' * B_LU_HC (the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used)
 #' * B_C_OF_INPUT (the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF})
@@ -23,7 +23,7 @@ rc_input_crop <- function(dt){
   
   # check crop table
   checkmate::assert_data_table(dt,null.ok = FALSE)
-  req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
+  req <- c("B_LU_START", "B_LU_END", "B_LU_HC","B_C_OF_INPUT")
   checkmate::assert_names(colnames(dt), must.include = req)
   checkmate::assert_date(as.Date(dt$B_LU_START), any.missing = FALSE)
   checkmate::assert_date(as.Date(dt$B_LU_END), any.missing = FALSE)
@@ -51,9 +51,8 @@ rc_input_crop <- function(dt){
     dt.crop[,cin_dpm := B_C_OF_INPUT * fr_dpm_rpm / (1 + fr_dpm_rpm)]
     dt.crop[,cin_rpm := B_C_OF_INPUT * 1 / (1 + fr_dpm_rpm)]
 
-
   # select only relevant columns with C input (kg C/ ha)
-  dt.crop <- dt.crop[,list(year = year, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm)]
+  dt.crop <- dt.crop[,list(year = year, month = month, B_LU_END, B_LU_START, cin_dpm, cin_rpm)]
   
   # return
   return(dt.crop)
