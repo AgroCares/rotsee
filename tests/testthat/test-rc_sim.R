@@ -1035,3 +1035,29 @@ test_that("rc_sim provides correct output in years or months", {
   expect_s3_class(result, "data.table")
   expect_equal(nrow(result), 223)
 })
+
+test_that("rc_sim works with limited data input", {
+  # define soil properties
+  soil <- data.table(
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  # define parms to set simulation period
+  parms <- list(
+    start_date = "2022-01-01",
+    end_date = "2032-01-01"
+  )
+  
+  # Run the model
+  results <- rc_sim(
+    soil_properties = soil,
+    rothc_parms = parms
+  )
+  
+  expect_s3_class(results, "data.table")
+  month_no <- 12*(year(parms$end_date) - year(parms$start_date))+1 #define number of months in simulation period
+  expect_equal(nrow(results), month_no)
+  
+})
