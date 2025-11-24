@@ -38,30 +38,31 @@ are used to calculate C removal from and transfer between the different pools. T
 inputs from crops and amendments, the model calculates changes in C stocks at a monthly resolution.
 A representation of the overall model functionality is listed in Figure 1.
 
+
 ```{r Figure 1, echo = FALSE, out.width = '70%'}
 
 knitr::include_graphics('Rothc_structure.png')
 
 ```
+**Figure 1: workflow of the RothC model**
 
-
-## 3. required and optional data
-### 3.1 soil properties
+## 3. Required and optional data
+### 3.1 Soil properties (required)
 Provide clay and organic matter content, together with the dry soil bulk density. If the bulk
 density is unknown, it can be calculated using `rc_calculate_bd`.
 
-### 3.2 crop rotation data (optional)
+### 3.2 Crop rotation data (optional)
 Information on the crop rotation, including start and end of crop growth, crop humification
 coefficient, and carbon input from crops. If the latter is not known, it can be calculated based
 on crop harvest characteristics using `rc_calculate_b_c_of`. Crop rotations can be extended
 to encompass longer simulation periods using `rc_extend_crops`.
 
-### 3.3 amendment data (optional)
+### 3.3 Amendment data (optional)
 Information on the applied amendment, including application date, amendment humification
 coefficient, and carbon input from the amendment. Amendment applications can be extended
 to encompass longer simulation periods using `rc_extend_amendments`.
 
-### 3.4 weather data (optional)
+### 3.4 Weather data (optional)
 Monthly weather data, which includes mean temperature, mean precipitation, and actual
 evapotranspiration (ET) or reference ET with a factor to re-calculate to actual ET.
 Weather data can either be provided for each month (in which case it will be extended across
@@ -69,8 +70,9 @@ each year of the simulation period) or for each month and each year in the simul
 weather data is not provided, Dutch averages will be used.
 TO DO once branch facil-refact is merged add description of facilitating implementation of factor
 
-### 3.5 sampling information
-Information on the depth of the cultivation layer and the sampling depth.
+### 3.5 Sampling information (optional)
+Information on the depth of the cultivation layer and the sampling depth. If not supplied,
+both are defaulted to 0.3 meters below the surface.
 
 ### 3.6 Model parameters (optional)
 Parameters to define model run operation. These include standard RothC parameters 
@@ -82,7 +84,7 @@ of the simulation.
 
 ## 4. Model operation
 
-### 4.1 pool initialization
+### 4.1 Pool initialization
 An important aspect of RothC is the initialization of the C pools. Rotsee implements this using
 either pre-defined pools or initialization calculations.
 
@@ -111,12 +113,12 @@ C inputs are directly distributed over DPM and RPM; for amendments a default 2% 
 HUM pool.
 
 
-### 4.3 simulation duration
+### 4.3 Simulation duration
 Simulation duration can be set directly using the 'start_date' and 'end_date' parameters.
 If these parameters are not provided, the simulation period is based on the earliest 
 and latest crop and/or amendment application dates.
 
-## 5. model output
+## 5. Model output
 Model calculation provides soil C stock as a function of time. The exact output depends on
 user-provided model parameters (see section 3.6)
 
@@ -124,9 +126,12 @@ Requested model outputs can be altered both with respect to temporal resolution 
 returned units and pool definitions of the C stocks. Output can be requested either on
 a monthly or a yearly basis; this can be adapted with the parameter 'poutput'. Output units
 can be adapted with the parameter 'unit', which allows the following options:
+
 - A_SOM_LOI, providing the organic matter content in \% 
 - psoc, providing the organic carbon content in g C/kg
+
 - psomperfraction, providing the organic matter content of the individual pools in \%
+
 - cstock, providing the carbon stock of each fraction in kg C/ha
 
 
