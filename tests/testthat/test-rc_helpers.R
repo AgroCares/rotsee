@@ -140,7 +140,7 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
   expect_type(result_crop, "list")
   expect_equal(result_crop$dec_rates, c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02))
   expect_equal(result_crop$c_fractions, c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015))
-  expect_true(result_crop$initialize)
+  expect_false(result_crop$initialize)
   expect_equal(result_crop$unit, "A_SOM_LOI")
   expect_equal(result_crop$method, "adams")
   expect_equal(result_crop$poutput, "month")
