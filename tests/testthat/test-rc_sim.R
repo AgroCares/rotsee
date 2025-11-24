@@ -81,36 +81,7 @@ test_that("rc_sim correctly checks input validity", {
                          weather = NULL, rothc_parms = parms))
 })
 
-test_that("rc_sim correctly runs with different weather data", {
-  # Set up correct input data
-  soil_properties <- data.table(
-    A_C_OF = 50,
-    B_C_ST03 = 210,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
-  
-  A_DEPTH = 0.3
-  
-  B_DEPTH = 0.3
-  
-  
-  rothc_rotation <- data.table(
-    B_LU_START = c("2022-04-01", "2023-04-01"),
-    B_LU_END = c("2022-10-01", "2023-10-01"),
-    B_LU = c("nl_308", "nl_308"),
-    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
-    B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
-  )
-  
-  rothc_amendment <- data.table(
-    P_ID = c(1, 1),
-    P_NAME = c('cattle_slurry', 'cattle_slurry'),
-    P_DOSE = c(63300, 63300),
-    P_HC = c(0.7,0.7),
-    P_C_OF = c(35, 35),
-    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+
   
 test_that("rc_sim correctly returns different output formats", {
   # Set correct  input files
@@ -914,6 +885,37 @@ test_that("rc_sim handles extreme irrigation scenarios", {
   
   expect_s3_class(result_max, "data.table")
 })
+
+test_that("rc_sim correctly runs with different weather data", {
+  # Set up correct input data
+  soil_properties <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  A_DEPTH = 0.3
+  
+  B_DEPTH = 0.3
+  
+  
+  rothc_rotation <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
+  rothc_amendment <- data.table(
+    P_ID = c(1, 1),
+    P_NAME = c('cattle_slurry', 'cattle_slurry'),
+    P_DOSE = c(63300, 63300),
+    P_HC = c(0.7,0.7),
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                 c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
