@@ -1059,7 +1059,7 @@ test_that("rc_sim works with limited data input", {
   )
   
   expect_s3_class(results, "data.table")
-  month_no <- 12*(year(parms$end_date) - year(parms$start_date))+1 #define number of months in simulation period
-  expect_equal(nrow(results), month_no)
+  dt.time <- rc_time_period(parms$start_date, parms$end_date)
+  expect_equal(nrow(results), nrow(dt.time))
   
 })
