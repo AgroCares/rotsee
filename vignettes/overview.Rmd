@@ -143,12 +143,15 @@ For this we refer you to the [helpers vignette](helpers.html).
 Here are several examples of how the rotsee package can be applied.
 
 ### 7.1 Simple run
-This first example
+In this first example, the only inputs provided are soil properties and a simulation
+period by providing start- and end date. This is of course a rather boring example, but does show 
+that only limited data is needed to run the model, making it flexible to use.
+In this case there are not carbon inputs, and hence pools are continually decreasing.
 
-```{r example simple, echo = FALSE}
+```{r example simple}
 # define soil properties
 soil <- data.table(
-    B_C_ST03 = 210,
+    B_C_ST03 = 50,
     A_CLAY_MI = 18,
     A_DENSITY_SA = 1.4
   )
@@ -156,7 +159,7 @@ soil <- data.table(
 # define parms to set simulation period
 parms <- list(
   start_date = "2022-01-01",
-  end_date = "2032-01-01"
+  end_date = "2122-01-01"
 )
 
 # Run the model
@@ -173,51 +176,47 @@ ggplot(data = results)+
 
 ```
 
-This is of course a rather boring example, but does show what limited data is needed to
-run the model, and thus provide significant user flexibility. In this case there are not
-carbon inputs, and hence pools are continually decreasing.
+
 
 ### 7.2 Complete run
-This example includes a simulation of 100 years in which extensive inputs are applied
+The 2nd example simulates 100 years of constant C application via crop growth and amendment
+application. Data input is significantly more extensive. Due to the provided inputs,
+in this case a rise in OM content can be observed in the Figure.
 
-```{r example complete, echo=FALSE, fig.width = 6, fig.height=5, eval=FALSE}
+
+```{r example complete}
 
 
 # Set crop rotation plan
 crops <- data.table(
-    B_LU_START = c("2022-04-01", "2023-04-01"),
-    B_LU_END = c("2022-10-01", "2023-10-01"),
-    B_LU = c("nl_308", "nl_308"),
-    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
-    B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
+    B_LU_START = "2022-04-01",
+    B_LU_END = "2022-10-01",
+    B_LU_HC = 0.32,
+    B_C_OF_INPUT = 2500
     )
 
 crops <- rc_extend_crops(crops, start_date = "2022-01-01", simyears = 100)
 
 # set amendment plan
 amendment <- data.table(
-    P_ID = c(1, 1),
-    P_NAME = c('cattle_slurry', 'cattle_slurry'),
-    P_DOSE = c(63300, 63300),
-    P_HC = c(0.7,0.7),
-    P_C_OF = c(35, 35),
-    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+    B_C_OF_INPUT = 3000,
+    P_HC = 0.7,
+    P_DATE_FERTILIZATION = "2022-10-01")
 
 amendment <- rc_extend_amendments(amendment, start_date = "2022-01-01", simyears = 100)
 
 # define weather
-weather <- data.table(year = rep(2022:2040, each = 12),
+weather <- data.table(year = rep(2022:2123, each = 12),
                         month = rep(1:12, 19),
-                        W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 19),
-                        W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),19),
-                        W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 101),
+                        W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),101),
+                        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 101),
                         W_ET_ACT_MONTH = NA_real_,
-                        W_ET_REFACT = rep(0.75, 12))
+                        W_ET_REFACT = 0.75)
 
 # define soil properties
 soil <- data.table(
-    B_C_ST03 = 210,
+    B_C_ST03 = 50,
     A_CLAY_MI = 18,
     A_DENSITY_SA = 1.4
   )
@@ -259,8 +258,7 @@ the calculations. This example shows how such a calculation can be conducted.
 # define soil properties of three fields
 soil <- data.table(
     ID = c('high', 'low', 'mid'),
-    A_C_OF = rep(50,3),
-    B_C_ST03 = rep(210,3),
+    B_C_ST03 = rep(50,3),
     A_CLAY_MI = rep(18,3),
     A_DENSITY_SA = rep(1.4,3)
   )
@@ -323,6 +321,7 @@ weather <- data.table(year = rep(2022:2040, each = 12),
 ```
 
 It should be noted that in the current implementation multicore calculations require significantly more input.
+
 ## 8. references
 Coleman, K., & Jenkinson, D. S. (1996). RothC-26.3-A Model for the turnover of carbon in soil. In Evaluation of soil organic matter models: Using existing long-term datasets (pp. 237-246). Berlin, Heidelberg: Springer Berlin Heidelberg.
 
