@@ -647,7 +647,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #' 
-#' #' @examples
+#' @examples
 #' ## examples to extend valid amendment dataset
 #' # create valid amendment set
 #' amendments <- data.table::data.table(

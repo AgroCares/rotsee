@@ -19,13 +19,13 @@ library(rotsee); library(data.table); library(ggplot2)
 ```
 
 
-## 1. what is rotsee?
+## 1. What is rotsee?
 Rotsee provides a calculation core for performing RothC calculations. Data pre-processing is left
 to the user to make application universal, yet the package provides several functions to
 facilitate this process. 
 
 
-## 2. basis of the RothC model
+## 2. Basis of the RothC model
 An extensive description of the RothC model can be found in Coleman and Jenkinson, 1996.
 RothC is a well-established model to calculate the development of carbon (C) stocks in soils
 based on long-term experimental data from Rothamsted. RothC uses 5 C pools to describe
@@ -46,18 +46,25 @@ knitr::include_graphics('Rothc_structure.png')
 ```
 **Figure 1: workflow of the RothC model**
 
-## 3. Required and optional data
+## 3. Required and optional data for rotsee
 ### 3.1 Soil properties (required)
-Provide clay and organic matter content, together with the dry soil bulk density. If the bulk
-density is unknown, it can be calculated using `rc_calculate_bd`.
+* Clay content (A_CLAY_MI, in \%). 
+* Dry bulk density (A_DENSITY_SA, in g/cm^3). If the bulk density is unknown, it can be calculated using `rc_calculate_bd`.
+* Organic C content (A_C_OF, in g C/kg) OR
+* Organic C stock (B_C_ST03, in Mg C/ha)
 
 ### 3.2 Crop rotation data (optional)
-Information on the crop rotation, including start and end of crop growth, crop humification
-coefficient, and carbon input from crops. If the latter is not known, it can be calculated based
-on crop harvest characteristics using `rc_calculate_b_c_of`. Crop rotations can be extended
-to encompass longer simulation periods using `rc_extend_crops`.
+Information is required on **individual** crop growth seasons. Following inputs are required:
+* Start date of crop growth (B_LU_START, formatted as YYYY-MM-DD)
+* End date of crop growth (B_LU_END, formatted as YYYY-MM-DD)
+* Crop humification coefficient (B_LU_HC, unitless), representing amount of C remaining after 1 year of decomposition.
+* Crop C inputs (B_C_OF_INPUT, kg C/ha). If this is not known, it can be calculated with known crop harvest characteristics using `rc_calculate_b_c_of`.
+
+Crop rotations can be extended to encompass longer simulation periods using `rc_extend_crops`.
+
 
 ### 3.3 Amendment data (optional)
+Information is required on **unique** amendment application events. Following inputs are required:
 Information on the applied amendment, including application date, amendment humification
 coefficient, and carbon input from the amendment. Amendment applications can be extended
 to encompass longer simulation periods using `rc_extend_amendments`.
@@ -171,7 +178,8 @@ results <- rc_sim(
 # plot results
 ggplot(data = results)+
   geom_line(aes(x = time, y =A_SOM_LOI))+
-  labs(x = "year", y = "OM [%]")
+  labs(x = "year", y = "OM [%]") +
+  theme_bw()
 
 
 ```
@@ -207,10 +215,10 @@ amendment <- rc_extend_amendments(amendment, start_date = "2022-01-01", simyears
 
 # define weather
 weather <- data.table(year = rep(2022:2123, each = 12),
-                        month = rep(1:12, 19),
-                        W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 101),
-                        W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),101),
-                        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 101),
+                        month = rep(1:12, 102),
+                        W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 102),
+                        W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),102),
+                        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 102),
                         W_ET_ACT_MONTH = NA_real_,
                         W_ET_REFACT = 0.75)
 
@@ -243,7 +251,8 @@ results <- rc_sim(
 # plot results
 ggplot(data = results)+
   geom_line(aes(x = time, y =A_SOM_LOI))+
-  labs(x = "year", y = "OM [%]")
+  labs(x = "year", y = "OM [%]") +
+  theme_bw()
 
 ```
   
@@ -316,7 +325,8 @@ weather <- data.table(year = rep(2022:2040, each = 12),
   # plot result
   ggplot(data = result)+
   geom_line(aes(x = time, y =A_SOM_LOI, colour = ID))+
-  labs(x = "year", y = "OM [%]")
+  labs(x = "year", y = "OM [%]") +
+    theme_bw()
   
 ```
 
