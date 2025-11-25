@@ -12,6 +12,9 @@
 #' @param irrigation (data.table) Table with irrigation data. See details below.
 #' @param visualize (boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation. 
 #'
+#'
+#' @returns Table with development of C pools in the field over the given simulation period
+#' 
 #' @details
 #' This function simulates the fate of SOC given the impact of soil properties, weather and management.
 #' The soil_properties table is required. 
@@ -94,8 +97,7 @@
 #' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'
 #' @import deSolve
-#' 
-#' @returns Table with development of C pools in the field over the given simulation period
+#'
 #'
 #' @export
 rc_sim <- function(soil_properties,
