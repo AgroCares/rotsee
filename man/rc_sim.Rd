@@ -41,12 +41,8 @@ Table with development of C pools in the field over the given simulation period
 \description{
 This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
 }
-\details{
-This function simulates the fate of SOC given the impact of soil properties, weather and management.
-The soil_properties table is required. 
+\section{soil_properties}{
 
-
-soil_properties: soil properties table, including the columns:
 
 * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
 
@@ -55,9 +51,10 @@ soil_properties: soil properties table, including the columns:
 * A_CLAY_MI (numeric), clay fraction (\%)
 
 * A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
+}
 
+\section{rothc_amendment}{
 
-rothc_amendment: amendment table, which can be extended to encompass the entire simulation period using \link{rc_extend_amendments}. Includes the columns:
 
 * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 
@@ -69,8 +66,11 @@ rothc_amendment: amendment table, which can be extended to encompass the entire 
 
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
+Can be extended to encompass the entire simulation period using \link{rc_extend_amendments}. Includes the columns:
+}
 
-rothc_rotation: crop table, which can be extended to encompass the entire simulation period using \link{rc_extend_crops}. Includes the columns: 
+\section{rothc_rotation}{
+  
 
 * B_LU_START (start of crop rotation),
 
@@ -80,8 +80,11 @@ rothc_rotation: crop table, which can be extended to encompass the entire simula
 
 * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
 
+can be extended to encompass the entire simulation period using \link{rc_extend_crops}
+}
 
-rothc_parms (optional): parameters to adapt RothC calculations, including the following columns:
+\section{rothc_parms}{
+ 
 
 * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is TRUE
 
@@ -98,9 +101,10 @@ rothc_parms (optional): parameters to adapt RothC calculations, including the fo
 * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
 
 * end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
+}
 
-
-weather: weather table. If not provided uses standard Dutch conditions
+\section{weather}{
+ 
 
 * year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
 
@@ -115,10 +119,13 @@ weather: weather table. If not provided uses standard Dutch conditions
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 
 * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
+}
 
-irrigation: table with irrigation information
+\section{irrigation}{
+
 
 * B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
 
 * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 }
+
