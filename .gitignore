@@ -50,3 +50,6 @@ po/*~
 rsconnect/
 docs
 inst/doc
+
+# Files generated when run in visualize mode
+rothc_flows_vis.csv
