@@ -279,7 +279,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   
   
   # add checks on initialization_method
-  initialization_method <- 'spinup_analytical_bodemcoolstof'
+  initialization_method <- 'none'
   
   if(!is.null(parms$initialization_method)){
     # check type

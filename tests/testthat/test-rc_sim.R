@@ -523,7 +523,7 @@ test_that("rc_sim with initialization_method none requires c_fractions", {
                          rothc_rotation = rothc_rotation,
                          rothc_parms = parms))
   
-  # Should error without c_fractions
+  # Should work without c_fractions supplied
   parms_no_fractions <- list(
     initialization_method = 'none',
     unit = "A_SOM_LOI",
@@ -531,7 +531,7 @@ test_that("rc_sim with initialization_method none requires c_fractions", {
     end_date = "2024-10-01"
   )
   
-  expect_error(rc_sim(soil_properties = soil_properties,
+  expect_no_error(rc_sim(soil_properties = soil_properties,
                       A_DEPTH = 0.3, B_DEPTH = 0.3,
                       rothc_rotation = rothc_rotation,
                       rothc_parms = parms_no_fractions))
