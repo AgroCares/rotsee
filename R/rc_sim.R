@@ -208,7 +208,7 @@ rc_sim <- function(soil_properties,
                                         soil_properties = soil_properties,
                                         rothc.event = rothc.event,
                                         start_date = start_date,
-                                        dt.weather = dt.weather,
+                                        dt.weather = weather,
                                         rothc.parms = rothc.parms,
                                         initialization_method = initialization_method))
     
