@@ -16,13 +16,14 @@ Data table with provided input together with calculated C input from crops
 Function to calculate the C input of your crop
 }
 \details{
-Crop data table
-Contains the following columns:
-* B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
-* B_LU_HI (numeric), the harvest index of the crop
-* B_LU_HI_RES (numeric), fraction of biomass that is residue
-* B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
-* M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
+Crop data table contains the following columns:
+\itemize{
+\item B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
+\item B_LU_HI (numeric), the harvest index of the crop
+\item B_LU_HI_RES (numeric), fraction of biomass that is residue
+\item B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
+\item M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
+}
 }
 \examples{
 ## calculate crop C inputs with valid input values
@@ -33,6 +34,8 @@ Contains the following columns:
  M_CROPRESIDUE = TRUE
  )
  
- rc_calculate_B_C_OF(dt_crop)
+ result <- rc_calculate_B_C_OF(dt_crop)
+ 
+ print(result)
  
 }

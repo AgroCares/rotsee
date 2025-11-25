@@ -17,7 +17,7 @@ This function calculates the timing of carbon inputs (kg C per ha) based on type
 \details{
 This function increases temporal detail for time series of C inputs of organic amendments.
 The inputs for organic amendments are organised in the data.table amendment, where the carbon inputs has the unit kg C / ha.
-dt. time Must contain integerish columns \code{year} (>= 0) and \code{month} (1..12), numeric column \code{time}, 
+dt. time Must contain integerish columns \code{year} (>= 0) and \code{month} (1..12), numeric column \code{time},
 and unique \code{(year, month)} pairs over the simulation window.
 
 The output is an EVENT object.

@@ -22,15 +22,14 @@ An extended amendment input file to be used in the rotsee package
 Function to extend the user amendments input file to cover the full range of simulation years
 }
 \details{
-amendments: amendment table
-Includes the columns:
-* P_ID (character), ID of the soil amendment product
-* P_NAME (character), name of the soil amendment product, optional
-* B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
-* P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
-* P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+Amendment table includes the columns:
+\itemize{
+\item B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+\item P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
+\item P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+\item P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
+\item P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+}
 }
 \examples{
 ## examples to extend valid amendment dataset

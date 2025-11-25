@@ -22,14 +22,15 @@ An extended crop input file to be used in the rotsee package
 Function to extend the user crop input file to cover the full range of simulation years
 }
 \details{
-Crops: crop table
-Includes the columns: 
-* B_LU_START (start of crop rotation),
-* B_LU_END (end of crop rotation),
-* B_LU (a crop id) optional, 
-* B_LU_NAME (a crop name, optional),
-* B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-* B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+Crop table includes the columns:
+\itemize{
+\item B_LU_START (start of crop rotation),
+\item B_LU_END (end of crop rotation),
+\item B_LU (a crop id) optional,
+\item B_LU_NAME (a crop name, optional),
+\item B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
+\item B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+}
 }
 \examples{
 ## examples to extend valid crop dataset

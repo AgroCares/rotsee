@@ -32,21 +32,27 @@ This function prepares the rate modifying factors for RothC given crop cover
 \details{
 dt: crop rotation table
 contains at least the following columns:
-* B_LU_START (date), start of crop growth
-* B_LU_END (DATE), end of crop growth
+\itemize{
+\item B_LU_START (date), start of crop growth
+\item B_LU_END (DATE), end of crop growth
+}
 
 dt.weather: weather table
 contains the following columns:
-* year 
-* month
-* W_TEMP_MEAN_MONTH
-* W_PREC_SUM_MONTH
-* W_ET_REF_MONTH
-* W_ET_ACT_MONTH (optional), calculated from W_ET_REF_MONTH when not supplied
-* W_ET_REFACT
+\itemize{
+\item year
+\item month
+\item W_TEMP_MEAN_MONTH
+\item W_PREC_SUM_MONTH
+\item W_ET_REF_MONTH
+\item W_ET_ACT_MONTH (optional), calculated from W_ET_REF_MONTH when not supplied
+\item W_ET_REFACT
+}
 
 dt.irrigation: irrigation table
 contains the following columns:
-* B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
-* B_IRR_AMOUNT (numeric) Irrigation amount (mm)
+\itemize{
+\item B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
+\item B_IRR_AMOUNT (numeric) Irrigation amount (mm)
+}
 }

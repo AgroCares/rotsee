@@ -16,7 +16,7 @@ Data table with provided data and the calculated dry soil bulk density (g/cm3)
 Function to calculate the dry soil bulk density based on Dutch pedotransfer functions
 }
 \examples{
-## calculate the dry soil bulk density (g/cm3) using organic matter content (\\%)
+## calculate the dry soil bulk density (g/cm3) using organic matter content (\%)
 dt_om <- data.table::data.table(A_CLAY_MI = 12, # data table with legal soil information
 A_SOM_LOI = 3)
 
