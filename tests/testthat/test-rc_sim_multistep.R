@@ -17,8 +17,6 @@ test_that("rc_sim_multistep handles correct inputs", {
     xs = rep(c(1,2,3),2),
     B_LU_START = rep(c("2022-04-01", "2023-04-01"),each=3),
     B_LU_END = rep(c("2022-10-01", "2023-10-01"),each=3),
-    B_LU = rep(c("nl_308", "nl_308"),each = 3),
-    B_LU_NAME = rep(c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),each=3),
     B_LU_HC = rep(0.32, 6),
     B_C_OF_INPUT = rep(1500, 6)
   )
