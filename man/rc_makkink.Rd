@@ -5,7 +5,7 @@
 \alias{rc_makkink}
 \title{Makkink correction factor table}
 \format{
-A data.table with 12 rows and 4 columns:
+A data.table with 13 rows and 4 columns:
 \describe{
 \item{crop_makkink}{Makkink crop category}
 \item{1}{Evapotranspiration correction factors for January}

@@ -40,7 +40,7 @@
 #'
 #' @section rothc_parms: 
 #' List with simulation parameters controlling the RothC model calculations
-#' * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is TRUE.
+#' * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE.
 #' * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 #' * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 #' * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)

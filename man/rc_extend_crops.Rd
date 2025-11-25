@@ -26,8 +26,6 @@ Crop table includes the columns:
 \itemize{
 \item B_LU_START (start of crop rotation),
 \item B_LU_END (end of crop rotation),
-\item B_LU (a crop id) optional,
-\item B_LU_NAME (a crop name, optional),
 \item B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
 \item B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
 }
