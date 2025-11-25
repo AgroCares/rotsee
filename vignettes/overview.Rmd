@@ -44,49 +44,74 @@ A representation of the overall model functionality is listed in Figure 1.
 knitr::include_graphics('Rothc_structure.png')
 
 ```
+
 **Figure 1: workflow of the RothC model**
 
 ## 3. Required and optional data for rotsee
-### 3.1 Soil properties (required)
+Below is an overview of all the optional and required data for the rotsee package. In essence,
+the only required data is soil properties data and a given simulation period.
+
+### 3.1 Soil properties (required, data.table)
 * Clay content (A_CLAY_MI, in \%). 
 * Dry bulk density (A_DENSITY_SA, in g/cm^3). If the bulk density is unknown, it can be calculated using `rc_calculate_bd`.
 * Organic C content (A_C_OF, in g C/kg) OR
 * Organic C stock (B_C_ST03, in Mg C/ha)
 
-### 3.2 Crop rotation data (optional)
-Information is required on **individual** crop growth seasons. Following inputs are required:
+### 3.2 Crop rotation data (optional, data.table)
+Information is required on **individual** crop growth seasons. Following inputs are required when crop data is provided:
+
 * Start date of crop growth (B_LU_START, formatted as YYYY-MM-DD)
 * End date of crop growth (B_LU_END, formatted as YYYY-MM-DD)
-* Crop humification coefficient (B_LU_HC, unitless), representing amount of C remaining after 1 year of decomposition.
+* Crop humification coefficient (B_LU_HC, unitless), representing amount of crop C remaining after 1 year of decomposition.
 * Crop C inputs (B_C_OF_INPUT, kg C/ha). If this is not known, it can be calculated with known crop harvest characteristics using `rc_calculate_b_c_of`.
 
 Crop rotations can be extended to encompass longer simulation periods using `rc_extend_crops`.
 
 
-### 3.3 Amendment data (optional)
+### 3.3 Amendment data (optional, data.table)
 Information is required on **unique** amendment application events. Following inputs are required:
-Information on the applied amendment, including application date, amendment humification
-coefficient, and carbon input from the amendment. Amendment applications can be extended
-to encompass longer simulation periods using `rc_extend_amendments`.
 
-### 3.4 Weather data (optional)
-Monthly weather data, which includes mean temperature, mean precipitation, and actual
-evapotranspiration (ET) or reference ET with a factor to re-calculate to actual ET.
-Weather data can either be provided for each month (in which case it will be extended across
-each year of the simulation period) or for each month and each year in the simulation. If 
-weather data is not provided, Dutch averages will be used.
+* Amendment application date (P_DATE_FERTILIZATION, formatted as YYYY-MM-DD)
+* Amendment humification coefficient (P_HC, unitless), representing amount of amendment C remaining after 1 year of decomposition.
+* Amendment C input (B_C_OF_INPUT, kg C/ha) 
+                  OR
+* Amendment application dose (P_DOSE, kg/ha)
+* Amendment C content(P_C_OF, g C/kg)
+
+Amendment applications can be extended to encompass longer simulation periods using `rc_extend_amendments`.
+
+### 3.4 Weather data (optional, data.table)
+* Year (year, optional to define yearly weather variation)
+* Month (month, should be provided as 1 (being January) to 12 (being December))
+* Mean temperature (W_TEMP_MONTH_MEAN, °C)
+* Mean precipitation (W_PREC_MONTH_SUM, mm)
+* Actual evapotranspiration (W_ET_ACT_MONTH, mmm)
+                  OR
+* Reference evapotranspiration (W_ET_REF_MONTH, mm)
+* factor to recalculate reference to actual evapotranspiration (W_ET_REFACT, unitless). Defaults to 0.75 when not provided.
+
+If weather data is not provided, Dutch weather averages will be used.
+
 TO DO once branch facil-refact is merged add description of facilitating implementation of factor
 
-### 3.5 Sampling information (optional)
-Information on the depth of the cultivation layer and the sampling depth. If not supplied,
-both are defaulted to 0.3 meters below the surface.
+### 3.5 Sampling information (optional, numeric values)
+Given as direct input parameters in `rc_sim`:
 
-### 3.6 Model parameters (optional)
-Parameters to define model run operation. These include standard RothC parameters 
-(initial pool distribution, pool-dependent decomposition rates), together with parameters
-steering the calculation: type of pool initialization, output unit, method of solving 
-linear differential equations, resolution of data output, and the start and end date
-of the simulation.
+* Depth of the cultivation layer (A_DEPTH,, m - below surface)
+* Sampling depth (B_depth, m - below surface)
+
+Both are defaulted to 0.3 when not supplied.
+
+### 3.6 Model parameters (optional, list)
+* Initial pool distribution (c_fractions, list). List with fr_IOM, fr_DPM, fr_RPM, and fr_BIO, all as numeric values. Default RothC values used when not supplied
+* Pool decomposition rates (dec_rates, list). List with k1, k2, k3, and k4 representing decomposition rates of the DPM, RPM, BIO, and HUM pools respectively. Default RothC values used when not supplied
+* Pool initialization (initialize, character). If not set to 'false', method of initializing the pool distribution and **overwriting user-provided pool distribution**
+* Output unit (unit), options are 'A_SOM_LOI' (OM content in \%), 'psoc' (g C/kg), 'psomperfraction' (\% OM of each fraction), and 'cstock' (kg C/ha of each fraction).
+* Output resolution (poutput), options are 'month' or 'year'
+* Method of solving linear differential equations (method), default is 'adams'.
+* Start date of RothC simulation (start_date, formatted as YYYY-MM-DD). If not supplied, set to earliest crop growth or amendment application.
+* End date of RothC simulation (end_date, formatted as YYYY-MM-DD). If not supplied, set to latest crop removal or amendment application.
+
 
 
 ## 4. Model operation
