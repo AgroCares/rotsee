@@ -177,10 +177,10 @@ Here are several examples of how the rotsee package can be applied.
 ### 7.1 Simple run
 In this first example, the only inputs provided are soil properties and a simulation
 period by providing start- and end date. This is of course a rather boring example, but does show 
-that only limited data is needed to run the model, making it flexible to use.
-In this case there are not carbon inputs, and hence pools are continually decreasing.
+that only limited data is needed to run the model, making it flexible to use. As there are 
+no C inputs the OM content decreases within 100 years from 2.4% to 0.5%.
 
-```{r example simple}
+```{r example simple, out.width = '70%'}
 # define soil properties
 soil <- data.table(
     B_C_ST03 = 50,
@@ -217,7 +217,7 @@ application. Data input is significantly more extensive. Due to the provided inp
 in this case a rise in OM content can be observed in the Figure.
 
 
-```{r example complete}
+```{r example complete, out.width = '70%'}
 
 
 # Set crop rotation plan
