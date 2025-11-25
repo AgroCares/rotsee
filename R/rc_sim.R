@@ -17,79 +17,50 @@
 #' 
 #' 
 #' @section soil_properties:
-#' 
+#' Data table with soil properties information.
 #' * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
-#' 
 #' * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
-#' 
 #' * A_CLAY_MI (numeric), clay fraction (\%)
-#' 
 #' * A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
-#' 
 #' 
 #' @section rothc_amendment:
 #' Table with amendment application details. Can be extended to encompass the entire simulation period using \link{rc_extend_amendments}
-#' 
 #' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-#' 
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-#' 
 #' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
-#' 
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction). Can be NA if unknown.
-#' 
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #'  
 #' @section rothc_rotation:  
 #' Table with crop rotation details and management actions. Can be extended to encompass the entire simulation period using \link{rc_extend_crops}.
-#' 
-#' * B_LU_START (start of crop rotation),
-#' 
-#' * B_LU_END (end of crop rotation),
-#' 
+#' * B_LU_START (start of crop rotation)
+#' * B_LU_END (end of crop rotation)
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-#' 
 #' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
 #'
 #' @section rothc_parms: 
-#' 
-#' * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is TRUE
-#' 
+#' List with simulation parameters controlling the RothC model calculations
+#' * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is TRUE.
 #' * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
-#' 
 #' * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
-#' 
 #' * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
-#' 
-#' * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
-#' 
-#' * poutput (character) Resolution of data ouptut. Options: 'year', 'month'
-#' 
+#' * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. Default is 'adams'.
 #' * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
-#' 
 #' * end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
 #' 
-#' 
 #' @section weather: 
-#' 
+#' Data table with weather information
 #' * year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
-#' 
 #' * month
-#' 
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
-#' 
 #' * W_PREC_SUM_MONTH (precipitation in mm)
-#' 
 #' * W_ET_REF_MONTH (reference evapotranspiration in mm)
-#' 
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
-#' 
 #' * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
 #' 
 #' @section irrigation:
-#' 
+#' Data table with irrigation information
 #' * B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
-#' 
 #' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'
 #' @import deSolve
