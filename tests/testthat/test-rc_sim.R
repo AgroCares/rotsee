@@ -152,7 +152,7 @@ test_that("rc_sim correctly returns different output formats", {
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                 c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-                initialize = TRUE,
+                initialization_method = 'spinup_simulation',
                 method = "adams",
                 poutput = "year",
                 start_date = "2022-04-01",
@@ -243,7 +243,7 @@ test_that("rc_sim correctly returns different output formats", {
     rothc_amendment = rothc_amendment,
     weather = weather,
     rothc_parms = parms_invalid
-  ), "additional elements")
+  ), "Must be element of set")
 }
 )
 
@@ -284,7 +284,7 @@ test_that("rc_sim returns yearly output when poutput is 'year'", {
   parms <- list(
     dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
     c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-    initialize = TRUE,
+    initialization_method = 'spinup_simulation',
     unit = "A_SOM_LOI",
     method = "adams",
     poutput = "year",
@@ -342,7 +342,7 @@ test_that("rc_sim runs in visualize mode and produces visualize output", {
   parms <- list(
     dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
     c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-    initialize = TRUE,
+    initialization_method = 'spinup_simulation',
     unit = "A_SOM_LOI",
     method = "adams",
     poutput = "year",
