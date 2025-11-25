@@ -48,6 +48,7 @@ When no weather inputs are given, these are estimated from long-term average wea
 
 soil_properties: soil properties table.
 Includes the columns:
+
 * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
 * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
 * A_CLAY_MI (numeric), clay fraction (\%)
@@ -55,6 +56,7 @@ Includes the columns:
 
 rothc_amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
 Includes the columns:
+
 * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
 * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
@@ -63,6 +65,7 @@ Includes the columns:
 
 rothc_rotation: crop table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_crops}
 Includes the columns: 
+
 * B_LU_START (start of crop rotation),
 * B_LU_END (end of crop rotation),
 * B_LU (a crop id), 
@@ -72,6 +75,7 @@ Includes the columns:
 
 rothc_parms: parameters to adapt calculations (optional)
 May include the following columns:
+
 * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is TRUE
 * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
@@ -83,6 +87,7 @@ May include the following columns:
 
 weather: Weather table. If no table is given, average Dutch conditions are used
 Includes the columns:
+
 * year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
 * month
 * W_TEMP_MEAN_MONTH (temperature in °C)
@@ -93,6 +98,7 @@ Includes the columns:
 
 Irrigation: Irrigation table, optional.
 Includes the columns:
+
 * B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
 * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 }

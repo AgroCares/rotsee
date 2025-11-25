@@ -31,8 +31,8 @@ Includes the columns:
 * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
-
-#' @examples
+}
+\examples{
 ## examples to extend valid amendment dataset
 # create valid amendment set
 amendments <- data.table::data.table(
@@ -43,8 +43,9 @@ P_C_OF = c(150,100)
 )
 
 # using start_date and end_date
-rc_extend_amendments(amendments = amendments, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
+rc_extend_amendments(amendments = amendments, start_date = "2020-01-01", end_date = "2022-12-31")
 
 # using start_date and simyears
-rc_extend_amendments(amendments = amendments, start_date = as.Date("2020-01-01"), simyears = 3)
+rc_extend_amendments(amendments = amendments, start_date = "2020-01-01", simyears = 3)
+
 }
