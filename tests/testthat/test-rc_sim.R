@@ -496,7 +496,7 @@ test_that("rc_sim works with different initialization methods", {
 })
 
 
-test_that("rc_sim with initialization_method none requires c_fractions", {
+test_that("rc_sim with initialization_method none correctly uses c_fractions", {
   soil_properties <- data.table(
     A_C_OF = 50, B_C_ST03 = 210, A_CLAY_MI = 18, A_DENSITY_SA = 1.4
   )
