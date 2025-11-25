@@ -186,7 +186,6 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   # Checks names parms
   if(!is.null(parms)){
     checkmate::assert_list(parms)
-    checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "initialize", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
   }else{
     parms <- list()
   }
@@ -658,10 +657,10 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' )
 #' 
 #' # using start_date and end_date
-#' rc_extend_amendments(amendments = amendments, start_date = as.Date("2020-01-01"), end_date = as.Date("2022-12-31"))
+#' rc_extend_amendments(amendments = amendments, start_date = "2020-01-01", end_date = "2022-12-31")
 #' 
 #' # using start_date and simyears
-#' rc_extend_amendments(amendments = amendments, start_date = as.Date("2020-01-01"), simyears = 3)
+#' rc_extend_amendments(amendments = amendments, start_date = "2020-01-01", simyears = 3)
 #' 
 #' @export
 #'
