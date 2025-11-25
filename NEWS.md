@@ -6,6 +6,7 @@
 
 ## changed
 * removed intermediate columns dens.sand, dens.clay, and cf as output from `rc_calculate_bd`
+* set default initialization option to false
 
 # rotsee v0.1.8 2025-11-12
 ## added
