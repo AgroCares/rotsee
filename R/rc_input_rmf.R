@@ -4,7 +4,7 @@
 #'
 #' @param dt (data.table) Table with crop rotation and related crop properties for Carbon input.
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
-#' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
+#' @param A_CLAY_MI (numeric) The clay content of the soil (%)
 #' @param dt.weather (data.table) Data table of monthly weather
 #' @param dt.time (data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}
 #' @param dt.irrigation (data.table) Data table of irrigation events

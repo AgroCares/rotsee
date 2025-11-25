@@ -1,7 +1,7 @@
 #' Function for initializing the RothC model
 #'
 #' @param B_LU_BRP (numeric) value of the BRP crop code
-#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
+#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #'
 #' @import data.table
 #'

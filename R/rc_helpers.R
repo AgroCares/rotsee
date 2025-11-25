@@ -21,12 +21,12 @@ cf_ind_importance <- function(x) {
 #'
 #' @param dt (data.table) Monthly weather table with the following columns:
 #' * year (optional; if absent, weather is replicated across the simulation period)
-#' *month (1 - 12)
-#' *W_TEMP_MEAN_MONTH (°C)
-#' *W_PREC_SUM_MONTH (mm)
-#' *W_ET_REF_MONTH (mm)
-#' *W_ET_ACT_MONTH (mm; optional, can be NA)
-#' *W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
+#' * month (1 - 12)
+#' * W_TEMP_MEAN_MONTH (°C)
+#' * W_PREC_SUM_MONTH (mm)
+#' * W_ET_REF_MONTH (mm)
+#' * W_ET_ACT_MONTH (mm; optional, can be NA)
+#' * W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' @param dt.time Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}
 #' 
@@ -329,7 +329,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 
 #' Function to check input tables of soil, crop, and amendment data
 #'
-#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
+#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_INPUT, and P_HC.
 #'
@@ -390,13 +390,13 @@ rc_check_inputs <- function(soil_properties,
 
 #' Function to calculate the dry soil bulk density based on Dutch pedotransfer functions
 #'
-#' @param dt (data table) Contains the columns A_CLAY_MI (clay content \%) and at least one of A_SOM_LOI (organic matter content, \%) and A_C_OF (organic carbon content, g C/kg)
+#' @param dt (data table) Contains the columns A_CLAY_MI (clay content %) and at least one of A_SOM_LOI (organic matter content, %) and A_C_OF (organic carbon content, g C/kg)
 #'
 #' @returns
 #' Data table with provided data and the calculated dry soil bulk density (g/cm3)
 #' 
 #' @examples
-#' ## calculate the dry soil bulk density (g/cm3) using organic matter content (\%)
+#' ## calculate the dry soil bulk density (g/cm3) using organic matter content (%)
 #' dt_om <- data.table::data.table(A_CLAY_MI = 12, # data table with legal soil information
 #' A_SOM_LOI = 3)
 #' 
@@ -454,8 +454,7 @@ rc_calculate_bd <- function(dt){
 #' Data table with provided input together with calculated C input from crops
 #' 
 #' @details
-#' Crop data table
-#' Contains the following columns:
+#' Crop data table contains the following columns:
 #' * B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
 #' * B_LU_HI (numeric), the harvest index of the crop
 #' * B_LU_HI_RES (numeric), fraction of biomass that is residue
@@ -471,7 +470,9 @@ rc_calculate_bd <- function(dt){
 #'  M_CROPRESIDUE = TRUE
 #'  )
 #'  
-#'  rc_calculate_B_C_OF(dt_crop)
+#'  result <- rc_calculate_B_C_OF(dt_crop)
+#'  
+#'  print(result)
 #'  
 #' @export
 
@@ -514,8 +515,7 @@ return(dt.crop)
 #' An extended crop input file to be used in the rotsee package
 #' 
 #' @details
-#' Crops: crop table
-#' Includes the columns: 
+#' Crop table includes the columns: 
 #' * B_LU_START (start of crop rotation),
 #' * B_LU_END (end of crop rotation),
 #' * B_LU (a crop id) optional, 
@@ -636,10 +636,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' An extended amendment input file to be used in the rotsee package
 #' 
 #' @details
-#' amendments: amendment table
-#' Includes the columns:
-#' * P_ID (character), ID of the soil amendment product
-#' * P_NAME (character), name of the soil amendment product, optional
+#' Amendment table includes the columns:
 #' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
 #' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
