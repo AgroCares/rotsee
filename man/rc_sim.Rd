@@ -72,7 +72,7 @@ Includes the columns:
 
 rothc_parms: parameters to adapt calculations (optional)
 May include the following columns:
-* initialization_method (character) scenario to initialize the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'spinup_analytical_bodemcoolstof'
+* initialization_method (character) scenario to initialize the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'none'
 * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
