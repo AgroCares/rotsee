@@ -397,13 +397,13 @@ rc_check_inputs <- function(soil_properties,
 #' 
 #' @examples
 #' ## calculate the dry soil bulk density (g/cm3) using organic matter content (%)
-#' dt_om <- data.table::data.table(A_CLAY_MI = 12, # data table with legal soil information
+#' dt_om <- data.table::data.table(A_CLAY_MI = 12, 
 #' A_SOM_LOI = 3)
 #' 
 #' rc_calculate_bd(dt_om)
 #' 
 #' ## calculate the dry soil bulk density using organic carbon content (g C/kg)
-#' dt_c <- data.table::data.table(A_CLAY_MI = 12, # data table with legal soil information
+#' dt_c <- data.table::data.table(A_CLAY_MI = 12, 
 #' A_C_OF = 80)
 #' 
 #' rc_calculate_bd(dt_c)
