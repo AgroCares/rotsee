@@ -1090,6 +1090,6 @@ test_that("rc_sim handles start_date falling within a growing season", {
                    rothc_rotation = rothc_rotation,
                    rothc_parms = parms)
   
-  expect_s3_class(results, "data.table")
-  expect_gt(results[month == 11, A_SOM_LOI], results[month == 10, A_SOM_LOI])
+  expect_s3_class(result, "data.table")
+  expect_gt(result[month == 11 & year == 2022, A_SOM_LOI], result[month == 10 & year == 2022, A_SOM_LOI])
 })
