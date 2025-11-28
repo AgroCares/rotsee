@@ -577,6 +577,8 @@ test_that("rc_sim handles depth corrections correctly", {
   # Results should differ due to depth correction
   expect_s3_class(result_shallow, "data.table")
   expect_s3_class(result_standard, "data.table")
+  expect_false(isTRUE(all.equal(result_shallow$A_SOM_LOI[nrow(result_shallow)], 
+                                result_standard$A_SOM_LOI[nrow(result_standard)])))
 })
 
 

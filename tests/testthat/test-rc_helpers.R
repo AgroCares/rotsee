@@ -197,7 +197,7 @@ test_that("rc_update_parms accepts and validates c_fractions", {
   expect_error(rc_update_parms(list(c_fractions = c(fr_X = 0.1)), crops = crops), "has additional elements")
 })
 
-test_that("rc_update_parms accepts and validates initialize", {
+test_that("rc_update_parms accepts and validates initialization_method", {
   # Set default crop table
   crops <- data.table(crop = c(1, 2),
                       B_LU_START = c("2022-01-01", "2023-01-01"),
@@ -285,7 +285,7 @@ test_that("rc_update_parms accepts and validates poutput", {
   expect_equal(result$poutput, "year")
   
   # Test invalid poutput
-  expect_error(rc_update_parms(list(poutput = "invalid"), crops = crops), "has additional elements")
+  expect_error(rc_update_parms(list(poutput = "invalid"), crops = crops), "element of set")
 })
 
 
@@ -1130,12 +1130,5 @@ test_that("rc_visualize_plot runs without error", {
   # Check that the files are not empty
   expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
   expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
-
-  # Clean up
-  file.remove("carbon_pools_linear.png")
-  file.remove("carbon_pools_change.png")
-
-  
- 
 
 })
