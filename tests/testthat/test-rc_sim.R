@@ -1083,10 +1083,12 @@ test_that("rc_sim handles start_date falling within a growing season", {
   
   # define start_date
   parms <- list(
-    start_date = "2022-07-01" # within the growing season
+    start_date = "2022-07-01", # within the growing season
+    unit = "A_SOM_LOI",
+    poutput = "month"
   )
   
-  result <- rc_sim(soil = soil,
+  result <- rc_sim(soil_properties = soil,
                    rothc_rotation = rothc_rotation,
                    rothc_parms = parms)
   
