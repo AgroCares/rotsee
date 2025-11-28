@@ -1063,3 +1063,33 @@ test_that("rc_sim works with limited data input", {
   expect_equal(nrow(results), nrow(dt.time))
   
 })
+
+test_that("rc_sim handles start_date falling within a growing season", {
+  
+  # define soil properties
+  soil <- data.table(
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  # define crop rotation
+  rothc_rotation <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
+  # define start_date
+  parms <- list(
+    start_date = "2022-07-01" # within the growing season
+  )
+  
+  result <- rc_sim(soil = soil,
+                   rothc_rotation = rothc_rotation,
+                   rothc_parms = parms)
+  
+  expect_s3_class(results, "data.table")
+  expect_gt(results[month == 11, A_SOM_LOI], results[month == 10, A_SOM_LOI])
+})
