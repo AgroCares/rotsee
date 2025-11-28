@@ -44,7 +44,7 @@ In reposity of pedotransfer functions reference to WUR report, but link is curre
 ## Calculate crop C inputs
 Crops, together with amendments, increase the C stocks. The package requests for each crop rotation
 the start and end dates, a humification coefficient, and a total C input into the soil.
-The user can estimate the C input themselves, or they can use \link{rc_calculate_B_C_OF}
+The user can estimate the C input themselves, or they can use \link{rc_calculate_bcof}
 to calculate crop C inputs. If so, C input is calculated based on the harvest index,
 root-to-shoot ratio, and assuming 50% of the crop is C (Pribyl, 2010).
 

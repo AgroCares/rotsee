@@ -10,7 +10,7 @@
 #' * B_LU_START (date/character), start of crop growth (formatted YYYY-MM-DD)
 #' * B_LU_END (date/character), end of crop growth (formatted YYYY-MM-DD)
 #' * B_LU_HC (the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used)
-#' * B_C_OF_INPUT (the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF})
+#' * B_C_OF_INPUT (the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof})
 #'
 #' @export
 rc_input_crop <- function(dt){

@@ -71,7 +71,7 @@ Table with crop rotation details and management actions. Can be extended to enco
 \item B_LU_START (start of crop rotation)
 \item B_LU_END (end of crop rotation)
 \item B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-\item B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
+\item B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
 }
 }
 

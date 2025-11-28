@@ -470,13 +470,13 @@ rc_calculate_bd <- function(dt){
 #'  M_CROPRESIDUE = TRUE
 #'  )
 #'  
-#'  result <- rc_calculate_B_C_OF(dt_crop)
+#'  result <- rc_calculate_bcof(dt_crop)
 #'  
 #'  print(result)
 #'  
 #' @export
 
-rc_calculate_B_C_OF <- function(dt){
+rc_calculate_bcof <- function(dt){
   # Add visible bindings
   cin_aboveground = B_LU_YIELD = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
   cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_INPUT = NULL

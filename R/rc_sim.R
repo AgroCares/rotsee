@@ -36,7 +36,7 @@
 #' * B_LU_START (start of crop rotation)
 #' * B_LU_END (end of crop rotation)
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
+#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
 #'
 #' @section rothc_parms: 
 #' List with simulation parameters controlling the RothC model calculations

@@ -63,7 +63,7 @@ Information is required on **individual** crop growth seasons. Following inputs 
 * Start date of crop growth (B_LU_START, formatted as YYYY-MM-DD)
 * End date of crop growth (B_LU_END, formatted as YYYY-MM-DD)
 * Crop humification coefficient (B_LU_HC, unitless), representing amount of crop C remaining after 1 year of decomposition.
-* Crop C inputs (B_C_OF_INPUT, kg C/ha). If this is not known, it can be calculated with known crop harvest characteristics using `rc_calculate_b_c_of`.
+* Crop C inputs (B_C_OF_INPUT, kg C/ha). If this is not known, it can be calculated with known crop harvest characteristics using `rc_calculate_bcof`.
 
 Crop rotations can be extended to encompass longer simulation periods using `rc_extend_crops`.
 
@@ -83,8 +83,8 @@ Amendment applications can be extended to encompass longer simulation periods us
 ### 3.4 Weather data (optional, data.table)
 * Year (year, optional to define yearly weather variation)
 * Month (month, should be provided as 1 (being January) to 12 (being December))
-* Mean temperature (W_TEMP_MONTH_MEAN, °C)
-* Mean precipitation (W_PREC_MONTH_SUM, mm)
+* Mean temperature (W_TEMP_MEAN_MONTH, °C)
+* Mean precipitation (W_PREC_SUM_MONTH, mm)
 * Actual evapotranspiration (W_ET_ACT_MONTH, mmm)
                   OR
 * Reference evapotranspiration (W_ET_REF_MONTH, mm)
