@@ -124,15 +124,15 @@ Pre-defined pools are defined via the 'c_fractions' parameter. These can be defi
 otherwise the RothC defaults are used: fr_IOM = 0.049; fr_DPM = 0.015; fr_RPM = 0.125; fr_BIO = 0.015.
 **Note: pre-defined pools are overwritten if initialization calculations are requested**
 
-**Note: initialization calculations are not yet implemented. The above will be active once ghsolver branch is merged**
-Initialization calculations can be requested using the parameter initialize. If no initialization
+**Note: initialization calculations are not yet implemented. The below will be active once ghsolver branch is merged**
+Initialization calculations can be requested using the parameter `initialize`. If no initialization
 is wanted, initialize should be set to FALSE. Three initialization options exist, which can be selected
 based on system state. 
 If C stocks are developing and the pool size is expected to be in equilibrium, initialize should be
-set either to 'spinup_analytical' or to 'spinup_analytical_bodemcoolstof'. 'spinup_analytical'
+set either to 'spinup_simulation' or to 'spinup_analytical_bodemcoolstof'. 'spinup_simulation'
 conducts the rotsee calculation for 150 years to establish equilibrium pools, 'spinup_analytical_bodemcoolstof'
 calculates the pools based on the initialization of Bodemcoolstof (Hendriks et al., 2021).
-If C stocks are in equilibrium, initialize should be set to 'spinup_heuvelink'
+If C stocks are in equilibrium, initialize should be set using 'spinup_analytical_heuvelink'.
 
 
 ### 4.2 C inputs
