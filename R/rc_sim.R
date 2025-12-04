@@ -101,10 +101,7 @@ rc_sim <- function(soil_properties,
   k2 <- rothc_parms$dec_rates[["k2"]]
   k3 <- rothc_parms$dec_rates[["k3"]]
   k4 <- rothc_parms$dec_rates[["k4"]]
-  
-  # Define C fractions
-  c_fractions <- as.list(rothc_parms$c_fractions)
-  
+
   # Define unit of output
   unit <- rothc_parms$unit
   
@@ -211,7 +208,10 @@ rc_sim <- function(soil_properties,
                                         initialization_method = initialization_method))
     
   
-  } 
+  }else{
+    # Define C fractions
+    c_fractions <- as.list(rothc_parms$c_fractions)
+  }
 
 # calculate initial pool sizes based on initialized or supplied fraction distribution (kg C / ha)
 dt.soc[,CIOM0 := c_fractions$fr_IOM * toc]
