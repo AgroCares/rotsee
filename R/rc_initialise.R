@@ -1,4 +1,4 @@
-#' Function for initializing the RothC model
+#' Function to initialize the RothC model for a single field
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
 #' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.
@@ -173,6 +173,7 @@ rc_initialise <- function(crops = NULL,
       
       # set average DPM-RPM ratio of crops to 0
       DR_crop <- 0
+      
     }else{
     # Average total C input (kg C/ha/yr)
     c_input_crop <- crops[,sum(B_C_OF_INPUT)/isimyears]
