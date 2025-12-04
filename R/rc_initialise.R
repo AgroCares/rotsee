@@ -139,9 +139,9 @@ rc_initialise <- function(crops = NULL,
     
     # Set model parameters
     parms <- list(unit = 'psomperfraction',
-                  initialization_method = 'none')
+                  initialization_method = 'none',
+                  dec_rates = c(k1 = k1, k2 = k2, k3 = k3, k4 = k4))
     
-    # Set newly required inputs
   
     # Run initialization run for 150 years
     this.result <- rc_sim(rothc_rotation = crop_extend,
