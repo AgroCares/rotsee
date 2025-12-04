@@ -362,10 +362,10 @@ rc_initialise <- function(crops = NULL,
  
     # define fractions
     fractions <- dt.soc[,.(
-      fr_IOM = fifelse(toc >0, ciom.ini / toc, 0),
-      fr_DPM = fifelse(toc >0, cdpm.ini / toc, 0),
-      fr_RPM = fifelse(toc >0, crpm.ini / toc, 0),
-      fr_BIO = fifelse(toc >0, cbio.ini / toc, 0))]
+      fr_IOM = ciom.ini / toc,
+      fr_DPM = cdpm.ini / toc,
+      fr_RPM = crpm.ini / toc,
+      fr_BIO = cbio.ini / toc)]
     
   }
   
