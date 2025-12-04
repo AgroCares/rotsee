@@ -164,25 +164,63 @@ rc_initialise <- function(crops = NULL,
   ## calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
   if(initialization_method == 'spinup_analytical_heuvelink'){
 
-    # establish simyear based on time data table
+    # establish simyears based on time data table
     isimyears <- max(dt.time$year) - min(dt.time$year) + 1
     
-    # averaged total C input (kg C/ha/year) from crops and amendments
+    # Estimate crop input dose and properties if supplied
     if (is.null(crops) || nrow(crops) == 0) {
       c_input_crop <- 0
+      
+      # set average DPM-RPM ratio of crops to 0
+      DR_crop <- 0
     }else{
+    # Average total C input (kg C/ha/yr)
     c_input_crop <- crops[,sum(B_C_OF_INPUT)/isimyears]
+    
+    # estimate DPM-RPM ratio of crop inputs
+    crops[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
+    
+    # calculate average DPM-RPM ratio
+    DR_crop <- crops[, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+    
+    if (!is.finite(DR_crop)) DR_crop <- 0
     }
     
+    
+    # Estimate amendment input dose and properties
     if (is.null(amendment) || nrow(amendment) == 0) {
+      # set amendment input to 0 if none supplied
        c_input_man <- 0
-    } else if (!is.null(amendment$B_C_OF_INPUT) && any(!is.na(amendment$B_C_OF_INPUT))) {
-        c_input_man <- amendment[, sum(B_C_OF_INPUT)/isimyears]
+       
+       # set average DPM-RPM ratio of amendment to 0
+       DR_amendment <- 0  
+       
+    } else if (!is.null(amendment$B_C_OF_INPUT)) {
+      # set amendment C input [kg C/ha]
+        c_input_man <- amendment[, sum(B_C_OF_INPUT, na.rm = TRUE)/isimyears]
+        
+      # Estimate DPM-RPM ratio of amendment inputs
+        amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
+        
+        # Calculate average DPM-RPM ratio of amendment inputs
+        DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+        
     } else {
+          # calculate amendment inputs [kg C/ha]
           c_input_man <- amendment[, sum(P_DOSE * P_C_OF, na.rm = TRUE)/isimyears]
+          
+          # Estimate DPM-RPM ratio of amendment inputs
+          amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
+          
+          # Calculate average DPM-RPM ratio of amendment inputs
+          DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = (P_DOSE * P_C_OF), na.rm = TRUE)]
+          
     }
-  
-
+    
+  # Set average DPM-RPM ratio of amendment to 0 if not finite
+    if (!is.finite(DR_amendment) || length(DR_amendment) == 0) DR_amendment <- 0
+    
+    
     # calculate C input ratio of crop and amendments
     c_input_tot <- c_input_crop+c_input_man
     
@@ -194,35 +232,7 @@ rc_initialise <- function(crops = NULL,
     CR_proportion <- c_input_crop / (c_input_tot)
     M_proportion <- c_input_man / (c_input_tot)
     }
-    
-    # estimate DPM-RPM ratio of the inputs from crop and amendments
-    if (!is.null(crops) && nrow(crops) > 0) {
-    crops[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
-    }
-    
-    if (!is.null(amendment) && nrow(amendment) > 0) {
-    amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
-    }
-    
-    # calculate average dpm_rpm ratio of C inputs from crops and amendments
-    if (is.null(crops) || nrow(crops) == 0) {
-      DR_crop <- 0
-    } else {
-      DR_crop <- crops[, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
-      if (!is.finite(DR_crop)) DR_crop <- 0
-    }
-    
-    
-    if (is.null(amendment) || nrow(amendment) == 0) {
-      DR_amendment <- 0  
-    } else if (!is.null(amendment$B_C_OF_INPUT) && any(!is.na(amendment$B_C_OF_INPUT))) {
-      DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
-    } else {
-      DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = (P_DOSE * P_C_OF), na.rm = TRUE)]
-    }
-    if (!is.finite(DR_amendment) || length(DR_amendment) == 0) DR_amendment <- 0
 
-    
     # Define ratio CO2 / (BIO+HUM)
     x <- 1.67 * (1.85 + 1.60 * exp(-0.0786 * dt.soc$A_CLAY_MI))
     
