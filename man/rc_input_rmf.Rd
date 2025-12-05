@@ -21,8 +21,9 @@ rc_input_rmf(
 
 \item{A_CLAY_MI}{(numeric) The clay content of the soil (\%)}
 
-\item{dt.weather}{(data.table) Data table of monthly weather
-@param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.}
+\item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.}
+
+\item{dt.weather}{(data.table) Data table of monthly weather}
 
 \item{dt.time}{(data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}}
 

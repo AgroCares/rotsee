@@ -9,7 +9,7 @@
 #' @param start_date (character, formatted YYYY-MM-DD) start date of the simulation, required if type is set to spinup_simulation
 #' @param soil_properties (list) list of relevant soil properties, required if type is set to spinup_simulation
 #' @param dt.weather (data.table) average weather conditions for the location of interested, recommended if type is set to spinup_simulation
-#' @param initialisation_method (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
+#' @param initialisation_method (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink, none)
 #'
 #'
 #'
@@ -48,7 +48,7 @@
 #' * k2 (numeric) decomposition rate of the RPM pool
 #' * k3 (numeric) decomposition rate of the BIO pool
 #' * k4 (numeric) decomposition rate of the hum pool
-#' * abc (function) function to calculate rate modifying factors as function of time
+#' * abcd (function) function to calculate rate modifying factors as function of time
 #' * R1 (numeric) Correction factor for soil structure
 #' * time (list) list of the entire simulation period
 #' 
@@ -92,7 +92,7 @@ rc_initialise <- function(crops = NULL,
   # add visual bindings
   . = CIOM = CDPM = CRPM = CBIO = B_LU_EOM = M_CROPRESIDUE = B_LU_HC = chum.ini = NULL
   P_DOSE = P_OM = M_GREEN_TIMING = fr_dpm_rpm = P_HC = B_LU_EOM_RESIDUE = NULL
-  abc = bd = time = toc = var = cf_abc = ciom.ini = biohum.ini = cbio.ini = NULL
+  abcd = bd = time = toc = var = cf_abcd = ciom.ini = biohum.ini = cbio.ini = NULL
   A_SOM_LOI = B_C_OF_INPUT = P_C_OF = NULL
 
   # Input validation by type

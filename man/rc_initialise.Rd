@@ -36,7 +36,7 @@ rc_initialise(
 
 \item{dt.weather}{(data.table) average weather conditions for the location of interested, recommended if type is set to spinup_simulation}
 
-\item{initialisation_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
+\item{initialisation_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink, none)}
 }
 \description{
 Function to initialise the RothC model for a single field
@@ -73,7 +73,7 @@ Contains the following columns:
 * k2 (numeric) decomposition rate of the RPM pool
 * k3 (numeric) decomposition rate of the BIO pool
 * k4 (numeric) decomposition rate of the hum pool
-* abc (function) function to calculate rate modifying factors as function of time
+* abcd (function) function to calculate rate modifying factors as function of time
 * R1 (numeric) Correction factor for soil structure
 * time (list) list of the entire simulation period
 

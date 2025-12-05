@@ -4,6 +4,7 @@
 ## added
 * Added multiple initialisation options to `rc_initialise`, called under "initialisation_method"
 * linked `rc_sim` and `rc_initialise`
+* Additional rate modification factor based on tillage, steered by input paramater `M_TILLAGE_SYSTEM`. Can be adapted by others based on their findings
 
 ## changed
 * Input checks on multiple functions

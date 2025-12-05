@@ -5,8 +5,8 @@
 #' @param dt (data.table) Table with crop rotation and related crop properties for Carbon input.
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
-#' @param dt.weather (data.table) Data table of monthly weather
 #' @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.
+#' @param dt.weather (data.table) Data table of monthly weather
 #' @param dt.time (data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}
 #' @param dt.irrigation (data.table) Data table of irrigation events
 #'
@@ -38,7 +38,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI, M_TILLAGE_SYSTEM =
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
   tsmdmax = tsmdmax_cor = W_ET_ACT_MONTH = W_ET_REF_MONTH = smd = acc_smd = NULL
   W_PREC_SUM_MONTH = cf_moist = cf_soilcover = cf_combi = id = yr_rep = NULL
-  B_DATE_IRRIGATION = B_IRR_AMOUNT = W_ET_REFACT = . = NULL
+  B_DATE_IRRIGATION = B_IRR_AMOUNT = W_ET_REFACT = cf_tillage = . = NULL
  
   # Check input tables
   # crop table
