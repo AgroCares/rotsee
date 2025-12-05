@@ -216,7 +216,6 @@ test_that("rc_update_parms accepts and validates initialisation_method", {
   # Test invalid initialisation_method errors
   expect_error(rc_update_parms(list(initialisation_method = "TRUE"), crops = crops), "element of set")
   
-  # test
 })
 
 test_that("rc_update_parms accepts and validates start_date and end_date", {

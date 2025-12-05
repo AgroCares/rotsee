@@ -1,3 +1,13 @@
+
+# rotsee UNRELEASED 2025-10-08
+
+## added
+* Added multiple initialisation options to `rc_initialise`, called under "initialisation_method"
+* linked `rc_sim` and `rc_initialise`
+
+## changed
+* Input checks on multiple functions
+
 # rotsee v0.1.8 2025-11-12
 ## added
 * option to run `rc_sim` in visualize mode (give input visualize = TRUE), to receive output table and visualization of C flows
@@ -62,14 +72,6 @@
 ## changed
 * Loosened checks for `rc_calculate_B_C_OF` and `rc_update_weather` to allow additional input columns
 
-# rotsee v0.1.1 2025-10-08
-
-## added
-* Added multiple initialisation options to `rc_initialise`, called under "type"
-* linked `rc_sim` and `rc_initialise`
-
-## changed
-* Input checks on multiple functions
 
 # rotsee v0.1.0 2025-09-24
 ## added

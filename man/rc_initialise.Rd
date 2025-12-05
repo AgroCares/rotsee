@@ -2,7 +2,7 @@
 % Please edit documentation in R/rc_initialise.R
 \name{rc_initialise}
 \alias{rc_initialise}
-\title{Function to initialize the RothC model for a single field}
+\title{Function to initialise the RothC model for a single field}
 \usage{
 rc_initialise(
   crops = NULL,
@@ -14,7 +14,7 @@ rc_initialise(
   start_date = NULL,
   soil_properties = NULL,
   dt.weather = NULL,
-  initialization_method = "spinup_analytical_bodemcoolstof"
+  initialisation_method = "spinup_analytical_bodemcoolstof"
 )
 }
 \arguments{
@@ -36,10 +36,10 @@ rc_initialise(
 
 \item{dt.weather}{(data.table) average weather conditions for the location of interested, recommended if type is set to spinup_simulation}
 
-\item{initialization_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
+\item{initialisation_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
 }
 \description{
-Function to initialize the RothC model for a single field
+Function to initialise the RothC model for a single field
 }
 \details{
 soil_properties: soil properties table
