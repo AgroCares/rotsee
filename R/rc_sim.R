@@ -175,7 +175,7 @@ rc_sim <- function(soil_properties,
   }
  
   # combine RothC input parameters
-  rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+  rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # estimate default crop rotation plan, the building block
   event.crop <- rc_input_event_crop(crops = dt.crop, dt.time = dt.time)
@@ -201,10 +201,10 @@ rc_sim <- function(soil_properties,
   }
 
   # initialise the RothC pools if requested 
-  if(initialisation_method != 'none'){ 
+  if(initialisation_method != 'none'){
     
     # derive the initial distribution of C pools (original data.tables are used as input)
-    c_fractions = as.list(rc_initialise(crops = rothc_rotation, 
+    cpools = as.list(rc_initialise(crops = rothc_rotation, 
                                         amendment = rothc_amendment,
                                         dt.time = dt.time,
                                         dt.soc = dt.soc,
@@ -214,20 +214,24 @@ rc_sim <- function(soil_properties,
                                         dt.weather = weather,
                                         rothc.parms = rothc.parms,
                                         initialisation_method = initialisation_method))
-    
+    # set initial cpools
+    dt.soc[,CIOM0 := cpools$CIOM0]
+    dt.soc[,CDPM0 := cpools$CDPM0]
+    dt.soc[,CRPM0 := cpools$CRPM0]
+    dt.soc[,CBIO0 := cpools$CBIO0]
+    dt.soc[,CHUM0 := pmax(0, toc-CIOM0-CDPM0-CRPM0-CBIO0)]
   
   }else{
-    # Define C fractions
+    # Define C pools from user supplied fractions
     c_fractions <- as.list(rothc_parms$c_fractions)
+    
+    # calculate initial pool sizes based on supplied fraction distribution (kg C / ha)
+    dt.soc[,CIOM0 := c_fractions$fr_IOM * toc^1.139]
+    dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
+    dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
+    dt.soc[,CBIO0 := c_fractions$fr_BIO * (toc-CIOM0)]
+    dt.soc[,CHUM0 := pmax(0, toc-CIOM0-CDPM0-CRPM0-CBIO0)]
   }
-
-# calculate initial pool sizes based on initialised or supplied fraction distribution (kg C / ha)
-dt.soc[,CIOM0 := c_fractions$fr_IOM * toc]
-dt.soc[,CDPM0 := c_fractions$fr_DPM * toc]
-dt.soc[,CRPM0 := c_fractions$fr_RPM * toc]
-dt.soc[,CBIO0 := c_fractions$fr_BIO * toc]
-dt.soc[,CHUM0 := pmax(0, toc-CIOM0-CDPM0-CRPM0-CBIO0)]
- 
 
   # extract relevant columns
   rothc.ini <- dt.soc[,list(CIOM0,CDPM0,CRPM0,CBIO0,CHUM0)]

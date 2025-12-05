@@ -154,10 +154,10 @@ rc_initialise <- function(crops = NULL,
     this.result.fin <- this.result[year > max(year)-2*nrow(crops),lapply(.SD,mean)]
   
   
-    fractions <- this.result.fin[,.(fr_IOM = CIOM / A_SOM_LOI,
-                                    fr_DPM = CDPM / A_SOM_LOI,
-                                    fr_RPM = CRPM / A_SOM_LOI,
-                                    fr_BIO = CBIO / A_SOM_LOI)]
+    cpools <- this.result.fin[,.(CIOM0 = CIOM,
+                                 CDPM0 = CDPM,
+                                 CRPM0 = CRPM,
+                                 CBIO0 = CBIO)]
     
   }
   
@@ -304,14 +304,11 @@ rc_initialise <- function(crops = NULL,
     Q <- input_vector * I # Determine C input for each pool
     C <- -(1 / xi) * A4inv %*% Q # Establish C content for each pool at equilibrium
   
-    # calculate carbon pool at equilibrium state
-    Cpools <- c(C, FallIOM)
-    Ctotal <- sum(Cpools)
-    
-    fractions <- list(fr_IOM = Cpools[5] / Ctotal,
-                      fr_DPM = Cpools[1] / Ctotal,
-                      fr_RPM = Cpools[2] / Ctotal,
-                      fr_BIO = Cpools[3] / Ctotal)
+    # read out C pools under equilibrium state
+    cpools <- list(CIOM0 = FallIOM,
+                      CDPM0 = C[1],
+                      CRPM0 = C[2],
+                      CBIO0 = C[3])
   }
   
   ## calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
@@ -362,18 +359,18 @@ rc_initialise <- function(crops = NULL,
     dt.soc[,chum.ini := biohum.ini / (1 + k4 / k3)]
  
     # define fractions
-    fractions <- dt.soc[,.(
-      fr_IOM = ciom.ini / toc,
-      fr_DPM = cdpm.ini / toc,
-      fr_RPM = crpm.ini / toc,
-      fr_BIO = cbio.ini / toc)]
+    cpools <- dt.soc[,.(
+      CIOM0 = ciom.ini,
+      CDPM0 = cdpm.ini,
+      CRPM0 = crpm.ini,
+      CBIO0 = cbio.ini)]
     
   }
   
   # unlist fractions
-  fractions <- unlist(fractions)
+  cpools <- unlist(cpools)
   
   # Return output
-  return(fractions)
+  return(cpools)
   
 }
