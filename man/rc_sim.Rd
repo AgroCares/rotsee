@@ -12,6 +12,7 @@ rc_sim(
   rothc_amendment = NULL,
   rothc_parms = NULL,
   weather = NULL,
+  M_TILLAGE_SYSTEM = NULL,
   irrigation = NULL,
   visualize = FALSE
 )
@@ -30,6 +31,8 @@ rc_sim(
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
 \item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.}
+
+\item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.}
 
 \item{irrigation}{(data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.}
 
