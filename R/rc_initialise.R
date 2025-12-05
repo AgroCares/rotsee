@@ -116,7 +116,7 @@ rc_initialise <- function(crops = NULL,
   k3 <- rothc.parms$k3
   k4 <- rothc.parms$k4
   
-  abc <- rothc.parms$abc
+  abcd <- rothc.parms$abcd
   
   # initialise options
   
@@ -250,7 +250,7 @@ rc_initialise <- function(crops = NULL,
     A[4, ] = A[4, ] + H * ks
 
     # Define average rate modifying factor over the crop rotation 
-    xi <- mean(abc(1:(12*isimyears)/12))
+    xi <- mean(abcd(1:(12*isimyears)/12))
     
     # Establish fraction of plant material ending in the DPM pool
     rho <- DR_crop / (1 + DR_crop)
@@ -326,8 +326,8 @@ rc_initialise <- function(crops = NULL,
     # CDPM pool (ton C / ha)
     cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]
     if(nrow(cdpm.ini) >0){
-    cdpm.ini[,cf_abc := abc(time)]
-    cdpm.ini <- cdpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k1]
+    cdpm.ini[,cf_abcd := abcd(time)]
+    cdpm.ini <- cdpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abcd)/timecor))/k1]
     dt.soc[, cdpm.ini := mean(cdpm.ini)]
     }else{
       dt.soc[,cdpm.ini := 0]
@@ -336,8 +336,8 @@ rc_initialise <- function(crops = NULL,
     # CRPM pool (ton C / ha)
     crpm.ini = rothc.event[var == 'CRPM',list(time,value)]
     if(nrow(crpm.ini) > 0) {
-    crpm.ini[,cf_abc := abc(time)]
-    crpm.ini <- crpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k2]
+    crpm.ini[,cf_abcd := abcd(time)]
+    crpm.ini <- crpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abcd)/timecor))/k2]
     dt.soc[, crpm.ini := mean(crpm.ini)]
     }else{
       dt.soc[,crpm.ini := 0]

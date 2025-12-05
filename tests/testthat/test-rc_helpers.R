@@ -810,23 +810,23 @@ test_that("rc_update_parms validates c_fractions sum does not exceed 1", {
                       B_LU_END = c("2022-09-01", "2023-09-01"))
   
   # Test fractions that sum to exactly 1
-  parms <- list(c_fractions = c(fr_IOM = 0.25, fr_DPM = 0.25, fr_RPM = 0.25, fr_BIO = 0.25))
+  parms <- list(c_fractions = c(fr_IOM = 0.25, fr_DPM = 0.25, fr_RPM = 0.25, fr_BIO = 0.5))
   expect_no_error(rc_update_parms(parms, crops = crops))
   
   # Test fractions that sum to less than 1
-  parms <- list(c_fractions = c(fr_IOM = 0.2, fr_DPM = 0.2, fr_RPM = 0.2, fr_BIO = 0.2))
+  parms <- list(c_fractions = c(fr_IOM = 0.2, fr_DPM = 0.3, fr_RPM = 0.2, fr_BIO = 0.2))
   expect_no_error(rc_update_parms(parms, crops = crops))
   
   # Test fractions that sum to more than 1 (should fail)
-  parms <- list(c_fractions = c(fr_IOM = 0.3, fr_DPM = 0.3, fr_RPM = 0.3, fr_BIO = 0.3))
+  parms <- list(c_fractions = c(fr_IOM = 0.3, fr_DPM = 0.8, fr_RPM = 0.3, fr_BIO = 0.3))
   expect_error(rc_update_parms(parms, crops = crops), "Sum of c_fractions.*exceeds 1")
   
   # Test fractions that barely exceed 1 (should fail)
-  parms <- list(c_fractions = c(fr_IOM = 0.26, fr_DPM = 0.25, fr_RPM = 0.25, fr_BIO = 0.25))
+  parms <- list(c_fractions = c(fr_IOM = 0.26, fr_DPM = 0.25, fr_RPM = 0.25, fr_BIO = 0.51))
   expect_error(rc_update_parms(parms, crops = crops), "Sum of c_fractions.*exceeds 1")
   
   # Test partial fractions where sum exceeds 1
-  parms <- list(c_fractions = c(fr_IOM = 0.6, fr_DPM = 0.5))
+  parms <- list(c_fractions = c(fr_IOM = 0.6, fr_DPM = 0.5, fr_RPM = 0.6))
   expect_error(rc_update_parms(parms, crops = crops), "Sum of c_fractions.*exceeds 1")
 })
 

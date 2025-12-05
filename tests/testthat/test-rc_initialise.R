@@ -62,7 +62,7 @@ rothc.parms <- list(k1 = 10,
                     k3=0.66,
                     k4=0.02,
                     R1 = dt.rmf$R1,
-                    abc = dt.rmf$abc,
+                    abcd = dt.rmf$abcd,
                     time = dt.rmf$time)
 
 
@@ -117,7 +117,7 @@ test_that("rc_initialise validates required inputs for spinup_simulation", {
                          dt.weather = dt.weather, dt.time = dt.time)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
-                      R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+                      R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # Missing start_date for spinup_simulation
   expect_error(
@@ -180,7 +180,7 @@ test_that("rc_initialise validates required inputs for analytical methods", {
                          dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
-                      R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+                      R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # Missing dt.time for analytical methods
   expect_error(
@@ -250,7 +250,7 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
                          dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
-                      R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+                      R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # Test with NULL crops for analytical_heuvelink
   result <- rc_initialise(crops = NULL, amendment = NULL, dt.soc = dt.soc,
@@ -260,9 +260,9 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
   
 
   expect_type(result, "double")
-  expect_named(result, c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"))
+  expect_named(result, c("CIOM0", "CDPM0", "CRPM0", "CBIO0"))
   expect_true(all(result >= 0))
-  expect_true(all(result <= 1))
+  expect_true(all(result <= dt.soc[,toc/1000]))
 })
 
 test_that("rc_initialise returns valid fraction structure", {
@@ -312,7 +312,7 @@ test_that("rc_initialise returns valid fraction structure", {
                          dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
-                      R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+                      R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # Test all three methods return valid structure
   methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink', 'spinup_simulation')
@@ -325,15 +325,15 @@ test_that("rc_initialise returns valid fraction structure", {
     
     # Check structure
     expect_type(result, "double")
-    expect_named(result, c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"))
+    expect_named(result, c("CIOM0", "CDPM0", "CRPM0", "CBIO0"))
     
     # Check values are valid fractions
     expect_true(all(result >= 0))
-    expect_true(all(result <= 1))
+    expect_true(all(result <= dt.soc[,toc/1000]))
     expect_true(all(is.finite(result)))
     
-    # Check sum is less than or equal to 1
-    expect_lte(sum(result), 1)
+    # Check sum is less than or equal to total C stock
+    expect_lte(sum(result), dt.soc[,toc/1000])
   }
 })
 
@@ -368,7 +368,7 @@ test_that("rc_initialise handles edge case with zero C inputs", {
                          dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
-                      R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+                      R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # Should handle zero inputs gracefully
   result <- rc_initialise(crops = crops, amendment = NULL, dt.soc = dt.soc,
@@ -414,7 +414,7 @@ test_that("rc_initialise spinup_analytical_heuvelink handles singular matrix", {
   
   # Create rothc.parms with all decomposition rates set to 0 (singular matrix)
   rothc.parms <- list(k1 = 0, k2 = 0, k3 = 0, k4 = 0,
-                      R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+                      R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # Should error with informative message
   expect_error(
@@ -459,7 +459,7 @@ test_that("rc_initialise bodemcoolstof handles negative biohum", {
                          dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
-                      R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+                      R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # Should handle this by using defaults
   result <- rc_initialise(crops = crops, dt.soc = dt.soc, rothc.parms = rothc.parms,
@@ -504,7 +504,7 @@ test_that("rc_initialise handles amendments with B_C_OF_CULT vs P_DOSE*P_C_OF", 
                          dt.time = dt.time, dt.weather = dt.weather)
   
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
-                      R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+                      R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # Amendment with B_C_OF_INPUT
   amendment1 <- data.table(
