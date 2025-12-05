@@ -6,7 +6,7 @@
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param dt.weather (data.table) Data table of monthly weather
-#'  @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.
+#' @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.
 #' @param dt.time (data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}
 #' @param dt.irrigation (data.table) Data table of irrigation events
 #'
@@ -194,7 +194,7 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI, M_TILLAGE_SYSTEM =
   dt[,cf_soilcover := fifelse(crop_cover==1,0.6,1)]
   
   # add rate modifying factor for tillage system (defaults 1, can be updated based on information collected by others)
-    dt[, cf_tillage := fifelse(M_TILLAGE_SYSTEM = 'CT', 1, 1)]
+    dt[, cf_tillage := ifelse(M_TILLAGE_SYSTEM == 'CT', 1, 1)]
   
  
   # add combined rate modifying factor
