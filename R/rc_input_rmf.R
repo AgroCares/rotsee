@@ -6,6 +6,7 @@
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
 #' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
 #' @param dt.weather (data.table) Data table of monthly weather
+#'  @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.
 #' @param dt.time (data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}
 #' @param dt.irrigation (data.table) Data table of irrigation events
 #'
@@ -31,7 +32,7 @@
 #' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'
 #' @export
-rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.time, dt.irrigation = NULL){
+rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI, M_TILLAGE_SYSTEM = 'CT',  dt.weather, dt.time, dt.irrigation = NULL){
   
   # add visual bindings
   B_LU_START = B_LU_END = crop_cover = time = cf_temp = W_TEMP_MEAN_MONTH = NULL
@@ -191,23 +192,27 @@ rc_input_rmf <- function(dt = NULL, B_DEPTH = 0.3, A_CLAY_MI,  dt.weather, dt.ti
  
   # add rate modifying factor for soil cover
   dt[,cf_soilcover := fifelse(crop_cover==1,0.6,1)]
+  
+  # add rate modifying factor for tillage system (defaults 1, can be updated based on information collected by others)
+    dt[, cf_tillage := fifelse(M_TILLAGE_SYSTEM = 'CT', 1, 1)]
+  
  
   # add combined rate modifying factor
-  dt[,cf_combi := cf_temp * cf_moist * cf_soilcover]
+  dt[,cf_combi := cf_temp * cf_moist * cf_soilcover * cf_tillage]
  
   
   # select only relevant variables for rate modifying factors
-  rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, abc = cf_combi)]
+  rothc.mf <- dt[,list(time = time,a = cf_temp, b = cf_moist, c = cf_soilcover, d = cf_tillage, abcd = cf_combi)]
 
   # derive rate modifying factor for full simulation period
   # calculate interpolation for correction factors
-  abc <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$abc, method = "linear",rule=2)
+  abcd <- stats::approxfun(x = rothc.mf$time,y = rothc.mf$abcd, method = "linear",rule=2)
   
   # calculate correction factor for soil structure (CO2/(BIO + HUM) ratio)
   R1 <- 1/((1.67*(1.85+1.6*exp(-0.0786*A_CLAY_MI)))+1)
  
   # combine RothC input parameters
-  rothc.parms <- list(R1 = R1, abc = abc, time = rothc.mf$time)
+  rothc.parms <- list(R1 = R1, abcd = abcd, time = rothc.mf$time)
   
   # return output
   return(rothc.parms)

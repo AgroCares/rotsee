@@ -258,6 +258,7 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
                           dt.time = dt.time,
                           initialisation_method = 'spinup_analytical_heuvelink')
   
+
   expect_type(result, "double")
   expect_named(result, c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"))
   expect_true(all(result >= 0))
