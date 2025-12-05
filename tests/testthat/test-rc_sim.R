@@ -42,7 +42,7 @@ test_that("rc_sim correctly checks input validity", {
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                       c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-                      initialization_method = 'spinup_analytical_bodemcoolstof',
+                      initialisation_method = 'spinup_analytical_bodemcoolstof',
                       unit = "A_SOM_LOI",
                       method = "adams",
                       poutput = "year",
@@ -206,7 +206,7 @@ test_that("rc_sim correctly returns different output formats", {
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                 c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-                initialization_method = 'spinup_simulation',
+                initialisation_method = 'spinup_simulation',
                 method = "adams",
                 poutput = "year",
                 start_date = "2022-04-01",
@@ -338,7 +338,7 @@ test_that("rc_sim returns yearly output when poutput is 'year'", {
   parms <- list(
     dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
     c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-    initialization_method = 'spinup_simulation',
+    initialisation_method = 'spinup_simulation',
     unit = "A_SOM_LOI",
     method = "adams",
     poutput = "year",
@@ -396,7 +396,7 @@ test_that("rc_sim runs in visualize mode and produces visualize output", {
   parms <- list(
     dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
     c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-    initialization_method = 'spinup_simulation',
+    initialisation_method = 'spinup_simulation',
     unit = "A_SOM_LOI",
     method = "adams",
     poutput = "year",
@@ -440,7 +440,7 @@ test_that("rc_sim runs in visualize mode and produces visualize output", {
 
 })
 
-test_that("rc_sim works with different initialization methods", {
+test_that("rc_sim works with different initialisation methods", {
   soil_properties <- data.table(
     A_C_OF = 50, B_C_ST03 = 210, A_CLAY_MI = 18, A_DENSITY_SA = 1.4
   )
@@ -475,7 +475,7 @@ test_that("rc_sim works with different initialization methods", {
   
   for (method in init_methods) {
     parms <- list(
-      initialization_method = method,
+      initialisation_method = method,
       unit = "A_SOM_LOI",
       method = "adams",
       poutput = "year",
@@ -496,7 +496,7 @@ test_that("rc_sim works with different initialization methods", {
 })
 
 
-test_that("rc_sim with initialization_method none correctly uses c_fractions", {
+test_that("rc_sim with initialisation_method none correctly uses c_fractions", {
   soil_properties <- data.table(
     A_C_OF = 50, B_C_ST03 = 210, A_CLAY_MI = 18, A_DENSITY_SA = 1.4
   )
@@ -510,7 +510,7 @@ test_that("rc_sim with initialization_method none correctly uses c_fractions", {
   )
   
   parms <- list(
-    initialization_method = 'none',
+    initialisation_method = 'none',
     c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
     unit = "A_SOM_LOI",
     start_date = "2022-04-01",
@@ -525,7 +525,7 @@ test_that("rc_sim with initialization_method none correctly uses c_fractions", {
   
   # Should work without c_fractions supplied
   parms_no_fractions <- list(
-    initialization_method = 'none',
+    initialisation_method = 'none',
     unit = "A_SOM_LOI",
     start_date = "2022-04-01",
     end_date = "2024-10-01"
@@ -555,7 +555,7 @@ test_that("rc_sim handles depth corrections correctly", {
   )
   
   parms <- list(
-    initialization_method = 'none',
+    initialisation_method = 'none',
     c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
     unit = "A_SOM_LOI",
     start_date = "2022-04-01",
@@ -920,7 +920,7 @@ test_that("rc_sim handles long-term simulation with irrigation", {
   expect_true(max(result$year) - min(result$year) >= 4)
 })
 
-test_that("rc_sim handles irrigation with initialization", {
+test_that("rc_sim handles irrigation with initialisation", {
   soil_properties <- data.table(
     A_C_OF = 50,
     B_C_ST03 = 210,
@@ -950,9 +950,9 @@ test_that("rc_sim handles irrigation with initialization", {
     B_IRR_AMOUNT = c(30)
   )
   
-  # Test with initialization = 'spinup_analytical_bodemcoolstof'
+  # Test with initialisation = 'spinup_analytical_bodemcoolstof'
   parms_init_bc <- list(
-    initialization_method = 'spinup_analytical_bodemcoolstof',
+    initialisation_method = 'spinup_analytical_bodemcoolstof',
     start_date = "2022-04-01",
     end_date = "2023-10-01"
   )
@@ -970,9 +970,9 @@ test_that("rc_sim handles irrigation with initialization", {
   
   expect_s3_class(result_init_bc, "data.table")
   
-  # Test with initialization = 'spinup_analytical_heuvelink'
+  # Test with initialisation = 'spinup_analytical_heuvelink'
   parms_init_heuv <- list(
-    initialization_method = 'spinup_analytical_heuvelink',
+    initialisation_method = 'spinup_analytical_heuvelink',
     start_date = "2022-04-01",
     end_date = "2023-10-01"
   )

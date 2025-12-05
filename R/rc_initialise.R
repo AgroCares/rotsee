@@ -1,4 +1,4 @@
-#' Function to initialize the RothC model for a single field
+#' Function to initialise the RothC model for a single field
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
 #' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.
@@ -9,7 +9,7 @@
 #' @param start_date (character, formatted YYYY-MM-DD) start date of the simulation, required if type is set to spinup_simulation
 #' @param soil_properties (list) list of relevant soil properties, required if type is set to spinup_simulation
 #' @param dt.weather (data.table) average weather conditions for the location of interested, recommended if type is set to spinup_simulation
-#' @param initialization_method (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
+#' @param initialisation_method (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #'
 #'
@@ -87,7 +87,7 @@ rc_initialise <- function(crops = NULL,
                           start_date = NULL,
                           soil_properties = NULL,
                           dt.weather = NULL,
-                          initialization_method ='spinup_analytical_bodemcoolstof'){
+                          initialisation_method ='spinup_analytical_bodemcoolstof'){
   
   # add visual bindings
   . = CIOM = CDPM = CRPM = CBIO = B_LU_EOM = M_CROPRESIDUE = B_LU_HC = chum.ini = NULL
@@ -96,13 +96,13 @@ rc_initialise <- function(crops = NULL,
   A_SOM_LOI = B_C_OF_INPUT = P_C_OF = NULL
 
   # Input validation by type
-  if (initialization_method == 'spinup_simulation') {
+  if (initialisation_method == 'spinup_simulation') {
     if (is.null(start_date)) stop("start_date is required for spinup_simulation")
     if (is.null(crops)) stop("crops is required for spinup_simulation")
     if (is.null(soil_properties)) stop("soil_properties is required for spinup_simulation")
   }
   
-  if (initialization_method %in% c('spinup_analytical_heuvelink','spinup_analytical_bodemcoolstof')) {
+  if (initialisation_method %in% c('spinup_analytical_heuvelink','spinup_analytical_bodemcoolstof')) {
     if (missing(dt.time) || is.null(dt.time)) stop("dt.time is required for analytical spin-up types")
     if (missing(dt.soc) || is.null(dt.soc)) stop("dt.soc is required for analytical spin-up types")
     if (is.null(dt.soc$A_CLAY_MI)) stop("dt.soc must contain A_CLAY_MI column")
@@ -121,7 +121,7 @@ rc_initialise <- function(crops = NULL,
   # initialise options
   
   ## do a simulation for 150 years to estimate the C fractions assuming system is in equilibrium
-  if(initialization_method =='spinup_simulation'){
+  if(initialisation_method =='spinup_simulation'){
    
    # Extend crop and amendment files to include entire 150 year simulation
     crop_extend <- if(!is.null(crops)){
@@ -139,11 +139,11 @@ rc_initialise <- function(crops = NULL,
     
     # Set model parameters
     parms <- list(unit = 'psomperfraction',
-                  initialization_method = 'none',
+                  initialisation_method = 'none',
                   dec_rates = c(k1 = k1, k2 = k2, k3 = k3, k4 = k4))
     
   
-    # Run initialization run for 150 years
+    # Run initialisation run for 150 years
     this.result <- rc_sim(rothc_rotation = crop_extend,
                           rothc_amendment = amendment_extend,
                           soil_properties = soil_properties,
@@ -162,7 +162,7 @@ rc_initialise <- function(crops = NULL,
   }
   
   ## calculate initial carbon pools assuming equilibrium in C pools, using analytical solution (Heuvelink)
-  if(initialization_method == 'spinup_analytical_heuvelink'){
+  if(initialisation_method == 'spinup_analytical_heuvelink'){
 
     # establish simyears based on time data table
     isimyears <- max(dt.time$year) - min(dt.time$year) + 1
@@ -315,7 +315,7 @@ rc_initialise <- function(crops = NULL,
   }
   
   ## calculate initial C pools assuming equilibrium in C stocks, using analytical solution (as implemented in BodemCoolstof tool)
-  if(initialization_method == 'spinup_analytical_bodemcoolstof'){
+  if(initialisation_method == 'spinup_analytical_bodemcoolstof'){
 
     # create local copy
     dt.soc <- copy(dt.soc)

@@ -140,7 +140,7 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
   expect_type(result_crop, "list")
   expect_equal(result_crop$dec_rates, c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02))
   expect_equal(result_crop$c_fractions, c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015))
-  expect_equal(result_crop$initialization_method, "none")
+  expect_equal(result_crop$initialisation_method, "none")
   expect_equal(result_crop$unit, "A_SOM_LOI")
   expect_equal(result_crop$method, "adams")
   expect_equal(result_crop$poutput, "month")
@@ -849,7 +849,7 @@ test_that("rc_update_parms validates c_fractions length", {
   expect_error(rc_update_parms(parms, crops = crops), "Must have length >= 1")
 })
 
-test_that("rc_update_parms validates initialization_method choices", {
+test_that("rc_update_parms validates initialisation_method choices", {
   crops <- data.table(crop = c(1, 2),
                       B_LU_START = c("2022-01-01", "2023-01-01"),
                       B_LU_END = c("2022-09-01", "2023-09-01"))
@@ -859,21 +859,21 @@ test_that("rc_update_parms validates initialization_method choices", {
                      'spinup_simulation', 'none')
   
   for (method in valid_methods) {
-    parms <- list(initialization_method = method)
+    parms <- list(initialisation_method = method)
     result <- rc_update_parms(parms, crops = crops)
-    expect_equal(result$initialization_method, method)
+    expect_equal(result$initialisation_method, method)
   }
   
   # Test invalid choice
-  parms <- list(initialization_method = 'invalid_method')
+  parms <- list(initialisation_method = 'invalid_method')
   expect_error(rc_update_parms(parms, crops = crops), "element of set")
   
   # Test non-character type
-  parms <- list(initialization_method = TRUE)
+  parms <- list(initialisation_method = TRUE)
   expect_error(rc_update_parms(parms, crops = crops), "Must be of type 'character'")
   
   # Test multiple values
-  parms <- list(initialization_method = c('none', 'spinup_simulation'))
+  parms <- list(initialisation_method = c('none', 'spinup_simulation'))
   expect_error(rc_update_parms(parms, crops = crops), "Must have length 1")
 })
 
@@ -904,19 +904,19 @@ test_that("rc_update_parms validates unit parameter choices", {
   expect_error(rc_update_parms(parms, crops = crops), "Must have length 1")
 })
 
-test_that("rc_update_parms returns default initialization_method", {
+test_that("rc_update_parms returns default initialisation_method", {
   crops <- data.table(crop = c(1, 2),
                       B_LU_START = c("2022-01-01", "2023-01-01"),
                       B_LU_END = c("2022-09-01", "2023-09-01"))
   
   # Test default when no parms supplied
   result <- rc_update_parms(crops = crops)
-  expect_equal(result$initialization_method, 'none')
+  expect_equal(result$initialisation_method, 'none')
   
-  # Test default when parms supplied but no initialization_method
+  # Test default when parms supplied but no initialisation_method
   parms <- list(unit = 'psoc')
   result <- rc_update_parms(parms, crops = crops)
-  expect_equal(result$initialization_method, 'none')
+  expect_equal(result$initialisation_method, 'none')
 })
 test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
   # Test with W_ET_REFACT supplied

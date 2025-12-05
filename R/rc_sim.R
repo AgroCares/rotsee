@@ -41,8 +41,8 @@
 #'
 #' rothc_parms: parameters to adapt calculations (optional)
 #' May include the following columns:
-#' * initialization_method (character) scenario to initialize the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'none'
-#' * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
+#' * initialisation_method (character) scenario to initialise the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'none'
+#' * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialisation, default RothC distribution is used
 #' * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 #' * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
 #' * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
@@ -117,8 +117,8 @@ rc_sim <- function(soil_properties,
   # Define wanted output
   poutput <- rothc_parms$poutput
   
-  # Define initialize
-  initialization_method <- rothc_parms$initialization_method
+  # Define initialise
+  initialisation_method <- rothc_parms$initialisation_method
   
   # Define dates of complete simulation period
   dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
@@ -192,8 +192,8 @@ rc_sim <- function(soil_properties,
     dt.soc[,toc := A_C_OF / 1000 * A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100]
   }
 
-  # initialize the RothC pools if requested 
-  if(initialization_method != 'none'){ 
+  # initialise the RothC pools if requested 
+  if(initialisation_method != 'none'){ 
     
     # derive the initial distribution of C pools (original data.tables are used as input)
     c_fractions = as.list(rc_initialise(crops = rothc_rotation, 
@@ -205,7 +205,7 @@ rc_sim <- function(soil_properties,
                                         start_date = start_date,
                                         dt.weather = weather,
                                         rothc.parms = rothc.parms,
-                                        initialization_method = initialization_method))
+                                        initialisation_method = initialisation_method))
     
   
   }else{
@@ -213,7 +213,7 @@ rc_sim <- function(soil_properties,
     c_fractions <- as.list(rothc_parms$c_fractions)
   }
 
-# calculate initial pool sizes based on initialized or supplied fraction distribution (kg C / ha)
+# calculate initial pool sizes based on initialised or supplied fraction distribution (kg C / ha)
 dt.soc[,CIOM0 := c_fractions$fr_IOM * toc]
 dt.soc[,CDPM0 := c_fractions$fr_DPM * toc]
 dt.soc[,CRPM0 := c_fractions$fr_RPM * toc]

@@ -75,7 +75,7 @@ methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink', '
 for (method in methods) {
   expect_no_error(rc_initialise(crops = crops, amendment = amendment, dt.soc = dt.soc,
                           rothc.parms = rothc.parms, rothc.event = rothc.event,
-                          dt.time = dt.time, initialization_method = method,
+                          dt.time = dt.time, initialisation_method = method,
                           start_date = "2022-05-01", soil_properties = soil_properties))
 }
 })
@@ -124,7 +124,7 @@ test_that("rc_initialise validates required inputs for spinup_simulation", {
     rc_initialise(crops = crops, dt.soc = dt.soc, rothc.parms = rothc.parms,
                   rothc.event = rothc.event, dt.time = dt.time,
                   soil_properties = soil_properties, dt.weather = dt.weather,
-                  initialization_method = 'spinup_simulation'),
+                  initialisation_method = 'spinup_simulation'),
     "start_date is required for spinup_simulation"
   )
   
@@ -133,7 +133,7 @@ test_that("rc_initialise validates required inputs for spinup_simulation", {
     rc_initialise(crops = NULL, dt.soc = dt.soc, rothc.parms = rothc.parms,
                   rothc.event = rothc.event, start_date = "2022-04-01",
                   dt.time = dt.time, soil_properties = soil_properties,
-                  dt.weather = dt.weather, initialization_method = 'spinup_simulation'),
+                  dt.weather = dt.weather, initialisation_method = 'spinup_simulation'),
     "crops is required for spinup_simulation"
   )
   
@@ -142,7 +142,7 @@ test_that("rc_initialise validates required inputs for spinup_simulation", {
     rc_initialise(crops = crops, dt.soc = dt.soc, rothc.parms = rothc.parms,
                   rothc.event = rothc.event, start_date = "2022-04-01",
                   dt.time = dt.time, dt.weather = dt.weather,
-                  initialization_method = 'spinup_simulation'),
+                  initialisation_method = 'spinup_simulation'),
     "soil_properties is required for spinup_simulation"
   )
 })
@@ -186,7 +186,7 @@ test_that("rc_initialise validates required inputs for analytical methods", {
   expect_error(
     rc_initialise(crops = crops, dt.soc = dt.soc, rothc.parms = rothc.parms,
                   rothc.event = rothc.event,
-                  initialization_method = 'spinup_analytical_heuvelink'),
+                  initialisation_method = 'spinup_analytical_heuvelink'),
     "dt.time is required for analytical spin-up types"
   )
   
@@ -194,7 +194,7 @@ test_that("rc_initialise validates required inputs for analytical methods", {
   expect_error(
     rc_initialise(crops = crops, rothc.parms = rothc.parms,
                   rothc.event = rothc.event, dt.time = dt.time,
-                  initialization_method = 'spinup_analytical_bodemcoolstof'),
+                  initialisation_method = 'spinup_analytical_bodemcoolstof'),
     "dt.soc is required for analytical spin-up types"
   )
   
@@ -203,7 +203,7 @@ test_that("rc_initialise validates required inputs for analytical methods", {
   expect_error(
     rc_initialise(crops = crops, dt.soc = dt.soc_bad, rothc.parms = rothc.parms,
                   rothc.event = rothc.event, dt.time = dt.time,
-                  initialization_method = 'spinup_analytical_heuvelink'),
+                  initialisation_method = 'spinup_analytical_heuvelink'),
     "dt.soc must contain A_CLAY_MI column"
   )
   
@@ -212,7 +212,7 @@ test_that("rc_initialise validates required inputs for analytical methods", {
   expect_error(
     rc_initialise(crops = crops, dt.soc = dt.soc_bad, rothc.parms = rothc.parms,
                   rothc.event = rothc.event, dt.time = dt.time,
-                  initialization_method = 'spinup_analytical_bodemcoolstof'),
+                  initialisation_method = 'spinup_analytical_bodemcoolstof'),
     "dt.soc must contain toc column"
   )
 })
@@ -256,7 +256,7 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
   result <- rc_initialise(crops = NULL, amendment = NULL, dt.soc = dt.soc,
                           rothc.parms = rothc.parms, rothc.event = rothc.event,
                           dt.time = dt.time,
-                          initialization_method = 'spinup_analytical_heuvelink')
+                          initialisation_method = 'spinup_analytical_heuvelink')
   
   expect_type(result, "double")
   expect_named(result, c("fr_IOM", "fr_DPM", "fr_RPM", "fr_BIO"))
@@ -319,7 +319,7 @@ test_that("rc_initialise returns valid fraction structure", {
   for (method in methods) {
     result <- rc_initialise(crops = crops, amendment = amendment, dt.soc = dt.soc,
                             rothc.parms = rothc.parms, rothc.event = rothc.event,
-                            dt.time = dt.time, initialization_method = method,
+                            dt.time = dt.time, initialisation_method = method,
                             start_date = "2022-05-01", soil_properties = soil_properties)
     
     # Check structure
@@ -373,7 +373,7 @@ test_that("rc_initialise handles edge case with zero C inputs", {
   result <- rc_initialise(crops = crops, amendment = NULL, dt.soc = dt.soc,
                           rothc.parms = rothc.parms, rothc.event = rothc.event,
                           dt.time = dt.time,
-                          initialization_method = 'spinup_analytical_heuvelink')
+                          initialisation_method = 'spinup_analytical_heuvelink')
   
   expect_type(result, "double")
   expect_true(all(is.finite(result)))
@@ -419,7 +419,7 @@ test_that("rc_initialise spinup_analytical_heuvelink handles singular matrix", {
   expect_error(
     rc_initialise(crops = crops, dt.soc = dt.soc, rothc.parms = rothc.parms,
                   rothc.event = rothc.event, dt.time = dt.time,
-                  initialization_method = 'spinup_analytical_heuvelink'),
+                  initialisation_method = 'spinup_analytical_heuvelink'),
     "Matrix A4 is singular"
   )
 })
@@ -463,7 +463,7 @@ test_that("rc_initialise bodemcoolstof handles negative biohum", {
   # Should handle this by using defaults
   result <- rc_initialise(crops = crops, dt.soc = dt.soc, rothc.parms = rothc.parms,
                           rothc.event = rothc.event, dt.time = dt.time,
-                          initialization_method = 'spinup_analytical_bodemcoolstof')
+                          initialisation_method = 'spinup_analytical_bodemcoolstof')
   
   expect_type(result, "double")
   expect_true(all(result >= 0))
@@ -515,7 +515,7 @@ test_that("rc_initialise handles amendments with B_C_OF_CULT vs P_DOSE*P_C_OF", 
   result1 <- rc_initialise(crops = crops, amendment = amendment1, dt.soc = dt.soc,
                            rothc.parms = rothc.parms, rothc.event = rothc.event,
                            dt.time = dt.time,
-                           initialization_method = 'spinup_analytical_heuvelink')
+                           initialisation_method = 'spinup_analytical_heuvelink')
   
   # Amendment with P_DOSE and P_C_OF
   amendment2 <- data.table(
@@ -528,7 +528,7 @@ test_that("rc_initialise handles amendments with B_C_OF_CULT vs P_DOSE*P_C_OF", 
   result2 <- rc_initialise(crops = crops, amendment = amendment2, dt.soc = dt.soc,
                            rothc.parms = rothc.parms, rothc.event = rothc.event,
                            dt.time = dt.time,
-                           initialization_method = 'spinup_analytical_heuvelink')
+                           initialisation_method = 'spinup_analytical_heuvelink')
   
   # Both should return valid results
   expect_type(result1, "double")
