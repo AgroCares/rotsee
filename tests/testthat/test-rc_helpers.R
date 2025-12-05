@@ -197,18 +197,26 @@ test_that("rc_update_parms accepts and validates c_fractions", {
   expect_error(rc_update_parms(list(c_fractions = c(fr_X = 0.1)), crops = crops), "has additional elements")
 })
 
-test_that("rc_update_parms accepts and validates initialization_method", {
+test_that("rc_update_parms accepts and validates initialisation_method", {
   # Set default crop table
   crops <- data.table(crop = c(1, 2),
                       B_LU_START = c("2022-01-01", "2023-01-01"),
                       B_LU_END = c("2022-09-01", "2023-09-01"))
   
-  parms <- list(initialization_method = 'none')
-  result <- rc_update_parms(parms, crops = crops)
-  expect_equal(result$initialization_method, 'none')
   
-  # Test invalid initialize
-  expect_error(rc_update_parms(list(initialization_method = "TRUE"), crops = crops), "element of set")
+  # Test all four initialisation methods do not error
+  methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink', 'spinup_simulation', 'none')
+  
+  for (method in methods) {
+    result <- rc_update_parms(parms =list(initialisation_method = method), crops = crops)
+    
+    expect_equal(result$initialisation_method, method)
+  }
+
+  # Test invalid initialisation_method errors
+  expect_error(rc_update_parms(list(initialisation_method = "TRUE"), crops = crops), "element of set")
+  
+  # test
 })
 
 test_that("rc_update_parms accepts and validates start_date and end_date", {
