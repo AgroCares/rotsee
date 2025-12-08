@@ -36,7 +36,7 @@ rc_initialise(
 
 \item{dt.weather}{(data.table) average weather conditions for the location of interested, recommended if initialisation_method is set to spinup_simulation}
 
-\item{initialisation_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink, none)}
+\item{initialisation_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
 }
 \description{
 Function to initialise the RothC model for a single field

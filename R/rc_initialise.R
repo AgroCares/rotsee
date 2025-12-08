@@ -9,7 +9,7 @@
 #' @param start_date (character, formatted YYYY-MM-DD) start date of the simulation, required if initialisation_method is set to spinup_simulation
 #' @param soil_properties (list) list of relevant soil properties, required if initialisation_method is set to spinup_simulation
 #' @param dt.weather (data.table) average weather conditions for the location of interested, recommended if initialisation_method is set to spinup_simulation
-#' @param initialisation_method (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink, none)
+#' @param initialisation_method (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)
 #'
 #'
 #'
@@ -175,7 +175,7 @@ rc_initialise <- function(crops = NULL,
       
     }else{
     # Average total C input (kg C/ha/yr)
-    c_input_crop <- crops[,sum(B_C_OF_INPUT)/isimyears]
+    c_input_crop <- crops[,sum(B_C_OF_INPUT, na.rm = TRUE)/isimyears]
     
     # estimate DPM-RPM ratio of crop inputs
     crops[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
