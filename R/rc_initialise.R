@@ -99,6 +99,7 @@ rc_initialise <- function(crops = NULL,
   if (initialisation_method == 'spinup_simulation') {
     if (is.null(start_date)) stop("start_date is required for spinup_simulation")
     if (is.null(crops)) stop("crops is required for spinup_simulation")
+    if (nrow(crops) == 0) stop("crops must contain at least one row for spinup_simulation")
     if (is.null(soil_properties)) stop("soil_properties is required for spinup_simulation")
   }
   
@@ -355,7 +356,6 @@ rc_initialise <- function(crops = NULL,
     
     # CBIO and CHUM pool
     dt.soc[,cbio.ini := biohum.ini / (1 + k3 / k4)]
-    dt.soc[,chum.ini := biohum.ini / (1 + k4 / k3)]
  
     # define fractions
     cpools <- dt.soc[,.(
