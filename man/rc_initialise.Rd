@@ -20,7 +20,7 @@ rc_initialise(
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.}
 
-\item{amendment}{(data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.}
+\item{amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_INPUT or both P_DOSE and P_HC.}
 
 \item{dt.soc}{(data.table) Data table containing information on soil properties. See details for information.}
 
@@ -30,11 +30,11 @@ rc_initialise(
 
 \item{dt.time}{(data.table) Combination of months and years of the entire simulation period.}
 
-\item{start_date}{(character, formatted YYYY-MM-DD) start date of the simulation, required if type is set to spinup_simulation}
+\item{start_date}{(character, formatted YYYY-MM-DD) start date of the simulation, required if initialisation_method is set to spinup_simulation}
 
-\item{soil_properties}{(list) list of relevant soil properties, required if type is set to spinup_simulation}
+\item{soil_properties}{(list) list of relevant soil properties, required if initialisation_method is set to spinup_simulation}
 
-\item{dt.weather}{(data.table) average weather conditions for the location of interested, recommended if type is set to spinup_simulation}
+\item{dt.weather}{(data.table) average weather conditions for the location of interested, recommended if initialisation_method is set to spinup_simulation}
 
 \item{initialisation_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink, none)}
 }
@@ -94,7 +94,7 @@ Includes the columns:
 * month
 * W_TEMP_MEAN_MONTH (temperature in °C)
 * W_PREC_SUM_MONTH (precipitation in mm)
-* W_ET_POT_MONTH (potential evapotranspiration in mm)
+* W_ET_REF_MONTH (potential evapotranspiration in mm)
 * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 
 Choice of initialisation method depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 

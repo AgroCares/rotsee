@@ -75,6 +75,7 @@ methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink', '
 for (method in methods) {
   expect_no_error(rc_initialise(crops = crops, amendment = amendment, dt.soc = dt.soc,
                           rothc.parms = rothc.parms, rothc.event = rothc.event,
+                          dt.weather = dt.weather,
                           dt.time = dt.time, initialisation_method = method,
                           start_date = "2022-05-01", soil_properties = soil_properties))
 }

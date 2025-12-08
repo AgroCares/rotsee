@@ -1,14 +1,14 @@
 #' Function to initialise the RothC model for a single field
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: year, month, cin_tot, cin_hum, cin_dpm, cin_rpm and the fraction eoc over p (fr_eoc_p). Month is optional.
+#' @param amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_INPUT or both P_DOSE and P_HC.
 #' @param dt.soc (data.table) Data table containing information on soil properties. See details for information.
 #' @param dt.time (data.table) Combination of months and years of the entire simulation period. 
 #' @param rothc.parms (list) List with relevant RothC parameters. See details for more information
 #' @param rothc.event (data.table) List with events of C inputs. See details for more information
-#' @param start_date (character, formatted YYYY-MM-DD) start date of the simulation, required if type is set to spinup_simulation
-#' @param soil_properties (list) list of relevant soil properties, required if type is set to spinup_simulation
-#' @param dt.weather (data.table) average weather conditions for the location of interested, recommended if type is set to spinup_simulation
+#' @param start_date (character, formatted YYYY-MM-DD) start date of the simulation, required if initialisation_method is set to spinup_simulation
+#' @param soil_properties (list) list of relevant soil properties, required if initialisation_method is set to spinup_simulation
+#' @param dt.weather (data.table) average weather conditions for the location of interested, recommended if initialisation_method is set to spinup_simulation
 #' @param initialisation_method (character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink, none)
 #'
 #'
@@ -69,7 +69,7 @@
 #' * month
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
 #' * W_PREC_SUM_MONTH (precipitation in mm)
-#' * W_ET_POT_MONTH (potential evapotranspiration in mm)
+#' * W_ET_REF_MONTH (potential evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 #' 
 #' Choice of initialisation method depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
@@ -108,8 +108,7 @@ rc_initialise <- function(crops = NULL,
     if (is.null(dt.soc$A_CLAY_MI)) stop("dt.soc must contain A_CLAY_MI column")
     if (is.null(dt.soc$toc)) stop("dt.soc must contain toc column")
     }
-  
-  
+
   # Define rothc parameters
   k1 <- rothc.parms$k1
   k2 <- rothc.parms$k2
@@ -204,7 +203,7 @@ rc_initialise <- function(crops = NULL,
         amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
         
         # Calculate average DPM-RPM ratio of amendment inputs
-        DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+        DR_amendment <- amendment[B_C_OF_INPUT > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
         
     } else {
           # calculate amendment inputs [kg C/ha]
