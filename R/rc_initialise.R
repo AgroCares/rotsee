@@ -95,6 +95,13 @@ rc_initialise <- function(crops = NULL,
   abcd = bd = time = toc = var = cf_abcd = ciom.ini = biohum.ini = cbio.ini = NULL
   A_SOM_LOI = B_C_OF_INPUT = P_C_OF = NULL
 
+  # check if a correct initialization method is supplied
+  checkmate::assert_choice(initialisation_method, choices = c(
+    'spinup_analytical_bodemcoolstof',
+    'spinup_analytical_heuvelink',
+    'spinup_simulation',
+    'none'))
+  
   # Input validation by type
   if (initialisation_method == 'spinup_simulation') {
     if (is.null(start_date)) stop("start_date is required for spinup_simulation")
