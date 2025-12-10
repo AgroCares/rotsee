@@ -1475,15 +1475,8 @@ test_that("rc_update_parms returns default initialisation_method", {
   result <- rc_update_parms(parms, crops = crops)
   expect_equal(result$initialisation_method, 'none')
 })
-test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
-  # Test with W_ET_REFACT supplied
-  weather_with_correction <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = rep(NA_real_, 12),
-    W_ET_REFACT = rep(0.8, 12)
+
+
 
 test_that("rc_set_refact correctly assigns W_ET_REFACT", {
   
