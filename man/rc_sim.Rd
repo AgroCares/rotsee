@@ -8,11 +8,11 @@ rc_sim(
   soil_properties,
   A_DEPTH = 0.3,
   B_DEPTH = 0.3,
-  M_TILLAGE_SYSTEM = "CT",
   rothc_rotation = NULL,
   rothc_amendment = NULL,
   rothc_parms = NULL,
   weather = NULL,
+  M_TILLAGE_SYSTEM = NULL,
   irrigation = NULL,
   visualize = FALSE
 )
@@ -24,8 +24,6 @@ rc_sim(
 
 \item{B_DEPTH}{(numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.}
 
-\item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till).}
-
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.}
 
 \item{rothc_amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_INPUT and/or P_DOSE and P_C_OF. See details for desired format.}
@@ -33,6 +31,8 @@ rc_sim(
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.}
 
 \item{weather}{(data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.}
+
+\item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.}
 
 \item{irrigation}{(data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.}
 
@@ -51,8 +51,8 @@ When no weather inputs are given, these are estimated from long-term average wea
 
 soil_properties: soil properties table.
 Includes the columns:
-* A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
-* B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
+* A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m.
+* B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied. If both are supplied, B_C_ST03 will be used to set soil organic carbon stocks.
 * A_CLAY_MI (numeric), clay fraction (\%)
 * A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
 
@@ -68,19 +68,17 @@ rothc_rotation: crop table. Input can be duplicated to cover the entire simulati
 Includes the columns: 
 * B_LU_START (start of crop rotation),
 * B_LU_END (end of crop rotation),
-* B_LU (a crop id), 
-* B_LU_NAME (a crop name, optional),
 * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
 * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
 
 rothc_parms: parameters to adapt calculations (optional)
 May include the following columns:
-* initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is TRUE
-* c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
+* initialisation_method (character) scenario to initialise the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'none'
+* c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialisation, default RothC distribution is used
 * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
 * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
-* poutput (character) Resolution of data ouptut. Options: 'year', 'month'
+* poutput (character) Resolution of data output. Options: 'year', 'month'
 * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
 * end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
 
