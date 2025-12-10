@@ -9,6 +9,7 @@
 #' @param rothc_amendment (data.table) A table with amendment application details. See details below.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. See details below.
 #' @param weather (data.table) Table with weather data. See details below.
+#' @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.
 #' @param irrigation (data.table) Table with irrigation data. See details below.
 #' @param visualize (boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation. 
 #'
@@ -40,11 +41,12 @@
 #'
 #' @section rothc_parms: 
 #' List with simulation parameters controlling the RothC model calculations
-#' * initialize (boolean) scenario to initialize the carbon pools. Options TRUE or FALSE, default is FALSE.
+#' * initialisation_method (character) scenario to initialise the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'none'
 #' * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 #' * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 #' * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
 #' * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. Default is 'adams'.
+#' * poutput (character) Resolution of data output. Options: 'year', 'month'
 #' * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
 #' * end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
 #' 
@@ -74,6 +76,7 @@ rc_sim <- function(soil_properties,
                    rothc_amendment = NULL,
                    rothc_parms = NULL,
                    weather = NULL,
+                   M_TILLAGE_SYSTEM = NULL,
                    irrigation = NULL,
                    visualize = FALSE){
   
@@ -98,10 +101,7 @@ rc_sim <- function(soil_properties,
   k2 <- rothc_parms$dec_rates[["k2"]]
   k3 <- rothc_parms$dec_rates[["k3"]]
   k4 <- rothc_parms$dec_rates[["k4"]]
-  
-  # Define C fractions
-  c_fractions <- as.list(rothc_parms$c_fractions)
-  
+
   # Define unit of output
   unit <- rothc_parms$unit
   
@@ -117,8 +117,8 @@ rc_sim <- function(soil_properties,
   # Define wanted output
   poutput <- rothc_parms$poutput
   
-  # Define initialize
-  initialize <- rothc_parms$initialize
+  # Define initialise
+  initialisation_method <- rothc_parms$initialisation_method
   
   # Define dates of complete simulation period
   dt.time <- rc_time_period(start_date = start_date, end_date = end_date)
@@ -130,6 +130,11 @@ rc_sim <- function(soil_properties,
   checkmate::assert_numeric(A_DEPTH, lower = rc_minval("A_DEPTH"), upper = rc_maxval("A_DEPTH"), any.missing = FALSE, len = 1)
   checkmate::assert_numeric(B_DEPTH, lower = rc_minval("B_DEPTH"), upper = rc_maxval("B_DEPTH"), any.missing = FALSE, len = 1)
   checkmate::assert_logical(visualize, any.missing = FALSE, len = 1)
+  if(!is.null(M_TILLAGE_SYSTEM)){
+  checkmate::assert_character(M_TILLAGE_SYSTEM)
+  }else{
+    M_TILLAGE_SYSTEM <- 'CT'
+  }
 
   # rothC model parameters
 
@@ -148,12 +153,12 @@ rc_sim <- function(soil_properties,
     dt.org <- NULL
   }
 
-
   # make rate modifying factors input database
   if(!is.null(dt.crop)){
   dt.rmf <- rc_input_rmf(dt = dt.crop,
                          A_CLAY_MI = soil_properties$A_CLAY_MI,
                          B_DEPTH = B_DEPTH,
+                         M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          dt.time = dt.time,
                          dt.weather = dt.weather,
                          dt.irrigation = irrigation)
@@ -166,8 +171,9 @@ rc_sim <- function(soil_properties,
                            dt.irrigation = irrigation)
     
   }
+ 
   # combine RothC input parameters
-  rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abc = dt.rmf$abc, time = dt.rmf$time)
+  rothc.parms <- list(k1 = k1,k2 = k2, k3=k3, k4=k4, R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
   # estimate default crop rotation plan, the building block
   event.crop <- rc_input_event_crop(crops = dt.crop, dt.time = dt.time)
@@ -178,77 +184,53 @@ rc_sim <- function(soil_properties,
   # prepare EVENT database with all C inputs over time 
   rothc.event <- rc_input_events(crops = event.crop,amendment = event.man)
   
-  # initialize the RothC pools (kg C / ha)
-  
   # make internal data.table 
   dt.soc <- data.table(A_C_OF = soil_properties$A_C_OF,B_C_ST03 = soil_properties$B_C_ST03, A_CLAY_MI = soil_properties$A_CLAY_MI,a_depth = A_DEPTH,b_depth = B_DEPTH, A_DENSITY_SA = soil_properties$A_DENSITY_SA)
-  
-  # Correct A_C_OF for sampling depth 
-  dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_C_OF := A_C_OF * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
-  dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_C_OF := A_C_OF * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
-  
+ 
   # calculate total organic carbon (kg C / ha)
   if(length(dt.soc$B_C_ST03) != 0) {
     dt.soc[,toc := B_C_ST03 * 1000]
   }else{
+    # Correct A_C_OF for sampling depth 
+    dt.soc[a_depth < 0.3 & A_CLAY_MI <= 10, A_C_OF := A_C_OF * (1 - 0.19 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
+    dt.soc[a_depth < 0.3 & A_CLAY_MI > 10, A_C_OF := A_C_OF * (1 - 0.33 * ((0.20 - (pmax(0.10, a_depth) - 0.10))/ 0.20))]
+    
     dt.soc[,toc := A_C_OF / 1000 * A_DENSITY_SA * 1000 * B_DEPTH * 100 * 100]
   }
- 
-  # set the default initialisation to the one used in BodemCoolstof
-  if(initialize == TRUE){
+
+  # initialise the RothC pools if requested 
+  if(initialisation_method != 'none'){
     
-    # set TOC to ton C / ha
-    dt.soc[, toc := toc * 0.001]
+    # derive the initial distribution of C pools (original data.tables are used as input)
+    cpools = as.list(rc_initialise(crops = rothc_rotation, 
+                                        amendment = rothc_amendment,
+                                        dt.time = dt.time,
+                                        dt.soc = dt.soc,
+                                        soil_properties = soil_properties,
+                                        rothc.event = rothc.event,
+                                        start_date = start_date,
+                                        dt.weather = weather,
+                                        rothc.parms = rothc.parms,
+                                        initialisation_method = initialisation_method))
+    # set initial cpools
+    dt.soc[,CIOM0 := cpools$CIOM0]
+    dt.soc[,CDPM0 := cpools$CDPM0]
+    dt.soc[,CRPM0 := cpools$CRPM0]
+    dt.soc[,CBIO0 := cpools$CBIO0]
+    dt.soc[,CHUM0 := pmax(0, toc-CIOM0-CDPM0-CRPM0-CBIO0)]
+  
+  }else{
+    # Define C pools from user supplied fractions
+    c_fractions <- as.list(rothc_parms$c_fractions)
     
-    # time correction (is 12 in documentation Chantals' study, not clear why, probably due to fixed time step calculation)
-    timecor = 1
-    
-    # set rate modifying parameters
-    abc <- rothc.parms$abc
-    
-    # CDPM pool (ton C / ha)
-    cdpm.ini <- rothc.event[var == 'CDPM',list(time,value)]
-    cdpm.ini[,cf_abc := abc(time)]
-    cdpm.ini <- cdpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k1]
-    dt.soc[, cdpm.ini := mean(cdpm.ini)]
-    
-    # CRPM pool (ton C / ha)
-    crpm.ini = rothc.event[var == 'CRPM',list(time,value)]
-    crpm.ini[,cf_abc := abc(time)]
-    crpm.ini <- crpm.ini[,((sum(value) * 0.001 / max(time)) / (mean(cf_abc)/timecor))/k2]
-    dt.soc[, crpm.ini := mean(crpm.ini)]
-    
-    # CIOM pool (ton C / ha)
-    dt.soc[, ciom.ini := 0.049 * toc^1.139]
-    
-    # CBIOHUM pool (ton C /ha)
-    dt.soc[,biohum.ini := toc - ciom.ini - crpm.ini - cdpm.ini]
-    
-    # set to defaults when RPM and DPM inputs exceeds 70% / 50% of total C to avoid negative values for initial C pools
-    dt.soc[biohum.ini <0, cdpm.ini := 0.015 * (toc-ciom.ini)]
-    dt.soc[biohum.ini <0, crpm.ini := 0.125 * (toc-ciom.ini)]
-    dt.soc[, biohum.ini := toc-ciom.ini - crpm.ini - cdpm.ini]
-    
-    # CBIO and CHUM pool
-    dt.soc[,cbio.ini := biohum.ini / (1 + k3 / k4)]
-    dt.soc[,chum.ini := biohum.ini / (1 + k4 / k3)]
-    
-    # Set the intial C pools (kg C / ha)
-    dt.soc[,CIOM0 := ciom.ini * 1000]
-    dt.soc[,CDPM0 := cdpm.ini * 1000]
-    dt.soc[,CRPM0 := crpm.ini * 1000]
-    dt.soc[,CBIO0 := cbio.ini * 1000]
-    dt.soc[,CHUM0 := chum.ini * 1000]
-  } else {
-    # Calculate carbon pools based on provided or default distribution (kg C / ha)
-    dt.soc[,CIOM0 := c_fractions$fr_IOM * ((toc*0.001)^1.139) * 1000]
+    # calculate initial pool sizes based on supplied fraction distribution (kg C / ha)
+    dt.soc[,CIOM0 := c_fractions$fr_IOM * toc^1.139]
     dt.soc[,CDPM0 := c_fractions$fr_DPM * (toc-CIOM0)]
     dt.soc[,CRPM0 := c_fractions$fr_RPM * (toc-CIOM0)]
     dt.soc[,CBIO0 := c_fractions$fr_BIO * (toc-CIOM0)]
-    dt.soc[,CHUM0 := toc-CIOM0-CDPM0-CRPM0-CBIO0]
-    
+    dt.soc[,CHUM0 := pmax(0, toc-CIOM0-CDPM0-CRPM0-CBIO0)]
   }
-  
+
   # extract relevant columns
   rothc.ini <- dt.soc[,list(CIOM0,CDPM0,CRPM0,CBIO0,CHUM0)]
   

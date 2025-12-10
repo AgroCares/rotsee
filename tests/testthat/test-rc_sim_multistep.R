@@ -40,7 +40,7 @@ test_that("rc_sim_multistep handles correct inputs", {
   
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                 c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-                initialize = TRUE,
+                initialisation_method = 'spinup_analytical_bodemcoolstof',
                 unit = "A_SOM_LOI",
                 method = "adams",
                 poutput = "year",

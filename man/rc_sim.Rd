@@ -12,6 +12,7 @@ rc_sim(
   rothc_amendment = NULL,
   rothc_parms = NULL,
   weather = NULL,
+  M_TILLAGE_SYSTEM = NULL,
   irrigation = NULL,
   visualize = FALSE
 )
@@ -25,13 +26,15 @@ rc_sim(
 
 \item{rothc_rotation}{(data.table) Table with crop rotation details and crop management actions that have been taken. See details below.}
 
-\item{rothc_amendment}{(data.table) A table with amendment application details. See details below.}
-
 \item{rothc_parms}{(list) A list with simulation parameters controlling the dynamics of RothC Model. See details below.}
 
 \item{weather}{(data.table) Table with weather data. See details below.}
 
 \item{irrigation}{(data.table) Table with irrigation data. See details below.}
+
+\item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.}
+
+\item{irrigation}{(data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.}
 
 \item{visualize}{(boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation.}
 }
