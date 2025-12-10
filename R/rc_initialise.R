@@ -182,13 +182,13 @@ rc_initialise <- function(crops = NULL,
       
     }else{
     # Average total C input (kg C/ha/yr)
-    c_input_crop <- crops[,sum(B_C_OF_INPUT, na.rm = TRUE)/isimyears]
+    c_input_crop <- crops[,sum(B_C_OF_CULT, na.rm = TRUE)/isimyears]
     
     # estimate DPM-RPM ratio of crop inputs
     crops[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
     
     # calculate average DPM-RPM ratio
-    DR_crop <- crops[, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+    DR_crop <- crops[, weighted.mean(fr_dpm_rpm, w = B_C_OF_CULT, na.rm = TRUE)]
     
     if (!is.finite(DR_crop)) DR_crop <- 0
     }
@@ -202,15 +202,15 @@ rc_initialise <- function(crops = NULL,
        # set average DPM-RPM ratio of amendment to 0
        DR_amendment <- 0  
        
-    } else if (!is.null(amendment$B_C_OF_INPUT)) {
+    } else if (!is.null(amendment$B_C_OF_AMENDMENT)) {
       # set amendment C input [kg C/ha]
-        c_input_man <- amendment[, sum(B_C_OF_INPUT, na.rm = TRUE)/isimyears]
+        c_input_man <- amendment[, sum(B_C_OF_AMENDMENT, na.rm = TRUE)/isimyears]
         
       # Estimate DPM-RPM ratio of amendment inputs
         amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
         
         # Calculate average DPM-RPM ratio of amendment inputs
-        DR_amendment <- amendment[B_C_OF_INPUT > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+        DR_amendment <- amendment[B_C_OF_AMENDMENT > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_AMENDMENT, na.rm = TRUE)]
         
     } else {
           # calculate amendment inputs [kg C/ha]
