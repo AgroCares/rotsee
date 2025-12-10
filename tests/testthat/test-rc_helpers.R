@@ -138,7 +138,7 @@ test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
     W_ET_REFACT = rep(0.8, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_with_correction, dt.time = dt.time)
   
@@ -157,7 +157,7 @@ test_that("rc_update_weather handles partials NAs in W_ET_REFACT", {
     W_ET_REFACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_partial_na, dt.time)
   expect_equal(result$W_ET_REFACT, c(0.8, 0.75, 0.7, 0.75, rep(0.75, 8)))
@@ -172,7 +172,7 @@ test_that("rc_update_weather runs without W_ET_REFACT column", {
     W_ET_REF_MONTH = rep(50, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_no_correction, dt.time)
   expect_true("W_ET_REFACT" %in% names(result))
@@ -189,7 +189,7 @@ test_that("rc_update_weather validates W_ET_REFACT ranges", {
     W_ET_REFACT = rep(2.5, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   expect_error(rc_update_weather(invalid_high, dt.time), "W_ET_REFACT")
   
@@ -215,7 +215,7 @@ test_that("rc_update_weather boundary values for W_ET_REFACT", {
     W_ET_REFACT = rep(0.3, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   expect_no_error(rc_update_weather(weather_lower, dt.time))
   
@@ -228,7 +228,7 @@ test_that("rc_update_weather boundary values for W_ET_REFACT", {
     W_ET_REFACT = rep(2, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result_upper <- rc_update_weather(weather_upper, dt.time)
   expect_equal(result_upper$W_ET_REFACT, rep(2, 12))
@@ -242,7 +242,7 @@ test_that("rc_update_weather boundary values for W_ET_REFACT", {
     W_ET_REFACT = seq(0.3, 2, length.out = 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result_mixed <- rc_update_weather(weather_mixed, dt.time)
   expect_equal(result_mixed$W_ET_REFACT, seq(0.3, 2, length.out = 12), tolerance = 1e-10)
@@ -250,7 +250,7 @@ test_that("rc_update_weather boundary values for W_ET_REFACT", {
 
 test_that("rc_update_weather default weather includes W_ET_REFACT", {
   # When no weather data is provided, default should include W_ET_REFACT
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   default_weather <- rc_update_weather(NULL, dt.time)
   
@@ -270,7 +270,7 @@ test_that("rc_update_weather with only actual ET and W_ET_REFACT", {
     W_ET_REFACT = rep(0.85, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_actual_only, dt.time)
   expect_true("W_ET_REFACT" %in% names(result))
@@ -288,7 +288,7 @@ test_that("rc_update_weather edge case with both ET types and W_ET_REFACT", {
     W_ET_REFACT = rep(0.8, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_both, dt.time)
   expect_equal(result$W_ET_REFACT, rep(0.8, 12))
@@ -304,7 +304,7 @@ test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
     W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_original, dt.time)
   
@@ -677,14 +677,14 @@ test_that("rc_check_inputs correctly validates amendment data", {
   
   # run without dose
   amendment_no_dose <- copy(valid_amendment)[, P_DOSE := NULL]
-  rc_check_inputs(rothc_rotation = valid_crop,
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
                   rothc_amendment = amendment_no_dose,
-                  soil_properties = valid_soil)
+                  soil_properties = valid_soil))
   
   amendment_no_pc <- copy(valid_amendment)[, P_C_OF := NULL]
-  rc_check_inputs(rothc_rotation = valid_crop,
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
                   rothc_amendment = amendment_no_pc,
-                  soil_properties = valid_soil)
+                  soil_properties = valid_soil))
   
   amendment_no_date <- copy(valid_amendment)[, P_DATE_FERTILIZATION := NULL]
   expect_error(rc_check_inputs(rothc_rotation = valid_crop,
@@ -1361,7 +1361,7 @@ test_that("rc_time_period handles edge cases", {
 
 
 
-test_that("rc_update_parms validates c_fractions sum does not exceed 1", {
+test_that("rc_update_parms validates c_fractions sum (minus IOM) does not exceed 1", {
   # Set default crop table
   crops <- data.table(crop = c(1, 2),
                       B_LU_START = c("2022-01-01", "2023-01-01"),
@@ -1675,7 +1675,7 @@ test_that("rc_set_refact returns correct structure and values", {
             # Should error when Makkink columns are missing
             expect_error(
                 rc_set_refact(weather = weather, crop = crop_incomplete, dt.time = dt.time),
-                " Must be of type 'numeric'"
+                "Must be of type 'numeric'"
               )
         })
 
@@ -1733,7 +1733,7 @@ test_that("rc_set_refact returns correct structure and values", {
           W_ET_REF_MONTH = rep(50, 12)
         )
       
-        # Overlapping crops (should use last one for overlapping periods)
+        # Overlapping crops (should use highest value for overlapping periods)
         crop <- data.table(
             B_LU_START = c("2022-04-01", "2022-07-01"),
             B_LU_END = c("2022-09-01", "2022-10-01"),
