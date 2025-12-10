@@ -1,4 +1,4 @@
-# rotsee v0.2.0 2025-10-29
+# rotsee UNRELEASED
 ## added
 * test helper factories to aid with unit test creation
 
@@ -9,7 +9,7 @@
 
 
 
-# rotsee UNRELEASED 2025-10-08
+# rotsee v0.2.0 2025-12-10
 
 ## added
 * Added multiple initialisation options to `rc_initialise`, called under "initialisation_method"
