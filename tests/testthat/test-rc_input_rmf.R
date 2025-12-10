@@ -1,4 +1,4 @@
-testthat::source_file("helper-testdata.R")
+source("helper-testdata.R")
 
 test_that("rc_input_rmf runs correctly", {
   # Set crop table
@@ -15,7 +15,6 @@ test_that("rc_input_rmf runs correctly", {
   
   # Set irrigation moments
   irrigation <- create_irrigation()
-  
   
   # Set time table 
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2030-01-01")
@@ -44,7 +43,7 @@ test_that("rc_input_rmf runs correctly", {
                dt.irrigation = irrigation)
   
   expect_type(result, "list")
-  expect_true(all(c("R1", "abc", "time") %in% names(result)))
+  expect_true(all(c("R1", "abcd", "time") %in% names(result)))
   
   # Check that model runs when no irrigation is supplied
   result_no_irri <- rc_input_rmf(dt = rothc_rotation,
@@ -54,29 +53,9 @@ test_that("rc_input_rmf runs correctly", {
                                dt.time = dt.time)
   
   expect_type(result_no_irri, "list")
-  expect_true(all(c("R1", "abc", "time") %in% names(result_no_irri)))
+  expect_true(all(c("R1", "abcd", "time") %in% names(result_no_irri)))
   
-  
-  
-  irrigation <- data.table(
-    B_DATE_IRRIGATION = c("2022-07-01", "2023-07-01"),
-    B_IRR_AMOUNT = c(25, 30)
-  )
-  
-  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2024-01-01")
-  
-  result <- rc_input_rmf(
-    dt = rothc_rotation,
-    B_DEPTH = 0.3,
-    A_CLAY_MI = 18,
-    dt.weather = weather,
-    dt.time = dt.time,
-    dt.irrigation = irrigation
-  )
-  
-  # Check result structure
-  expect_type(result, "list")
-  expect_true(all(c("R1", "abcd", "time") %in% names(result)))
+
 })
 
 

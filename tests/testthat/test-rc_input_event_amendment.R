@@ -1,9 +1,7 @@
 # Test file for rc_input_event_amendment function
 # Testing framework: testthat
 
-library(testthat)
-library(data.table)
-testthat::source_file("helper-testdata.R")
+source("helper-testdata.R")
 
 
 # Test basic functionality with valid inputs

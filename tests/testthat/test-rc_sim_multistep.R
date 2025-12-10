@@ -1,4 +1,4 @@
-testthat::source_file("helper-testdata.R")
+source("helper-testdata.R")
 
 test_that("rc_sim_multistep handles correct inputs", {
   this.xs <- 1

@@ -1,6 +1,5 @@
-testthat::source_file("helper-testdata.R")
+source("helper-testdata.R")
 
-library(data.table)
 
 test_that("rc_update_weather returns default weather data when input is NULL", {
  
@@ -781,9 +780,7 @@ test_that("rc_time_period handles edge cases", {
 
 test_that("rc_update_parms validates c_fractions sum does not exceed 1", {
   # Set default crop table
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   # Test fractions that sum to exactly 1
   parms <- list(c_fractions = c(fr_IOM = 0.25, fr_DPM = 0.25, fr_RPM = 0.25, fr_BIO = 0.5))
@@ -807,9 +804,7 @@ test_that("rc_update_parms validates c_fractions sum does not exceed 1", {
 })
 
 test_that("rc_update_parms validates c_fractions length", {
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   # Test with 1 fraction (min allowed)
   parms <- list(c_fractions = c(fr_IOM = 0.05))
@@ -825,9 +820,7 @@ test_that("rc_update_parms validates c_fractions length", {
 })
 
 test_that("rc_update_parms validates initialisation_method choices", {
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   # Test valid choices
   valid_methods <- c('spinup_analytical_bodemcoolstof', 'spinup_analytical_heuvelink', 
@@ -853,9 +846,7 @@ test_that("rc_update_parms validates initialisation_method choices", {
 })
 
 test_that("rc_update_parms validates unit parameter choices", {
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   # Test valid unit choices
   valid_units <- c('A_SOM_LOI', 'psoc', 'cstock', 'psomperfraction')
@@ -880,9 +871,7 @@ test_that("rc_update_parms validates unit parameter choices", {
 })
 
 test_that("rc_update_parms returns default initialisation_method", {
-  crops <- data.table(crop = c(1, 2),
-                      B_LU_START = c("2022-01-01", "2023-01-01"),
-                      B_LU_END = c("2022-09-01", "2023-09-01"))
+  crops <- create_rotation()
   
   # Test default when no parms supplied
   result <- rc_update_parms(crops = crops)
@@ -1080,6 +1069,7 @@ test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
   expect_equal(result$W_PREC_SUM_MONTH, weather_original$W_PREC_SUM_MONTH)
   expect_equal(result$W_ET_REF_MONTH, weather_original$W_ET_REF_MONTH)
 })
+
 test_that("rc_visualize_plot runs without error", {
   # Use a small subset of your debug output
   dt <- data.table(
