@@ -26,7 +26,7 @@ cf_ind_importance <- function(x) {
 #' *W_PREC_SUM_MONTH (mm)
 #' *W_ET_REF_MONTH (mm)
 #' *W_ET_ACT_MONTH (mm; optional, can be NA)
-#' *W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
+#' *W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA and W_ET_REF_MONTH is supplied)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' @param dt.time Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}
 #' 
@@ -353,7 +353,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 #'
 #' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_AMENDMENT, and P_HC.
+#' @param rothc_amendment (data.table) A table with amendment data. Includes at least the columns P_DATE_FERTILIZATION and P_HC, and optionally P_DOSE, P_C_OF and/or B_C_OF_AMENDMENT.
 #'
 #' @returns
 #' Error messages indicating if input data is not in order

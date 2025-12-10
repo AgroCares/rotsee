@@ -362,7 +362,7 @@ test_that("rc_initialise bodemcoolstof handles negative biohum", {
   expect_true(all(is.finite(result)))
 })
 
-test_that("rc_initialise handles amendments with B_C_OF_CULT vs P_DOSE*P_C_OF", {
+test_that("rc_initialise handles amendments with B_C_OF_AMENDMENT vs P_DOSE*P_C_OF", {
   set.seed(123)
   
   rothc.event <- data.table(
@@ -415,4 +415,5 @@ test_that("rc_initialise handles amendments with B_C_OF_CULT vs P_DOSE*P_C_OF", 
   expect_type(result2, "double")
   expect_true(all(is.finite(result1)))
   expect_true(all(is.finite(result2)))
+  expect_equal(result1, result2, tolerance = 1e-6)
 })
