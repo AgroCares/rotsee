@@ -99,8 +99,7 @@ rc_initialise <- function(crops = NULL,
   checkmate::assert_choice(initialisation_method, choices = c(
     'spinup_analytical_bodemcoolstof',
     'spinup_analytical_heuvelink',
-    'spinup_simulation',
-    'none'))
+    'spinup_simulation'))
   
   # Input validation by type
   if (initialisation_method == 'spinup_simulation') {
