@@ -39,7 +39,7 @@
 #' * B_LU (a crop id), 
 #' * B_LU_NAME (a crop name, optional),
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
+#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
 #'
 #' 
 #' rothc.parms: list with RothC parameters.
@@ -93,7 +93,7 @@ rc_initialise <- function(crops = NULL,
   . = CIOM = CDPM = CRPM = CBIO = B_LU_EOM = M_CROPRESIDUE = B_LU_HC = chum.ini = NULL
   P_DOSE = P_OM = M_GREEN_TIMING = fr_dpm_rpm = P_HC = B_LU_EOM_RESIDUE = NULL
   abcd = bd = time = toc = var = cf_abcd = ciom.ini = biohum.ini = cbio.ini = NULL
-  A_SOM_LOI = B_C_OF_INPUT = P_C_OF = NULL
+  A_SOM_LOI = B_C_OF_CULT = B_C_OF_AMENDMENT = P_C_OF = NULL
 
   # check if a correct initialization method is supplied
   checkmate::assert_choice(initialisation_method, choices = c(

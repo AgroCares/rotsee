@@ -468,7 +468,7 @@ rc_calculate_bd <- function(dt){
 #' * M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
 #' @export
-rc_calculate_B_C_OF_CULT <- function(dt){
+rc_calculate_bcof <- function(dt){
   # Add visible bindings
   cin_aboveground = B_LU_YIELD = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
   cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_CULT = NULL

@@ -290,16 +290,16 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
 
 
 
-test_that("rc_calculate_B_C_OF_CULT correctly validates input", {
+test_that("rc_calculate_bcof correctly validates input", {
   # Missing required column
   expect_error(
-    rc_calculate_B_C_OF_CULT(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
+    rc_calculate_bcof(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
     "must include"
   )
   
   # B_LU_YIELD out of bounds
   expect_error(
-    rc_calculate_B_C_OF_CULT(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = -1,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -311,7 +311,7 @@ test_that("rc_calculate_B_C_OF_CULT correctly validates input", {
   
   # B_LU_HI out of bounds
   expect_error(
-    rc_calculate_B_C_OF_CULT(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0,
       B_LU_HI_RES = 0.5,
@@ -323,7 +323,7 @@ test_that("rc_calculate_B_C_OF_CULT correctly validates input", {
   
   # B_LU_HI_RES out of bounds
   expect_error(
-    rc_calculate_B_C_OF_CULT(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 1.1,
@@ -335,7 +335,7 @@ test_that("rc_calculate_B_C_OF_CULT correctly validates input", {
   
   # B_LU_RS_FR out of bounds
   expect_error(
-    rc_calculate_B_C_OF_CULT(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -347,7 +347,7 @@ test_that("rc_calculate_B_C_OF_CULT correctly validates input", {
   
   # M_CROPRESIDUE not logical
   expect_error(
-    rc_calculate_B_C_OF_CULT(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -358,7 +358,7 @@ test_that("rc_calculate_B_C_OF_CULT correctly validates input", {
   )
 })
 
-test_that("rc_calculate_B_C_OF_CULT correctly calculates C inputs", {
+test_that("rc_calculate_bcof correctly calculates C inputs", {
   # Set correct input data
   valid_dt <- data.table(
     B_LU_YIELD = 30000,
@@ -369,7 +369,7 @@ test_that("rc_calculate_B_C_OF_CULT correctly calculates C inputs", {
   )
   
   # Run function with valid DT
-  valid <- rc_calculate_B_C_OF_CULT(valid_dt)
+  valid <- rc_calculate_bcof(valid_dt)
   
   # Check if everything went correctly
   expect_s3_class(valid, "data.table")
@@ -379,7 +379,7 @@ test_that("rc_calculate_B_C_OF_CULT correctly calculates C inputs", {
   expect_equal(valid$B_C_OF_CULT, valid$cin_roots + valid$cin_residue, tolerance = 0.001)
 })
 
-test_that("rc_calculate_B_C_OF_CULT handles edge cases", {
+test_that("rc_calculate_bcof handles edge cases", {
   # Zero yield
   zero_yield_dt <- data.table(
     B_LU_YIELD = 0,
@@ -388,7 +388,7 @@ test_that("rc_calculate_B_C_OF_CULT handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = TRUE
   )
-  zero_yield <- rc_calculate_B_C_OF_CULT(zero_yield_dt)
+  zero_yield <- rc_calculate_bcof(zero_yield_dt)
   expect_equal(zero_yield$cin_aboveground, 0)
   expect_equal(zero_yield$cin_roots, 0)
   expect_equal(zero_yield$cin_residue, 0)
@@ -402,7 +402,7 @@ test_that("rc_calculate_B_C_OF_CULT handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = FALSE
   )
-  no_residue <- rc_calculate_B_C_OF_CULT(no_residue_dt)
+  no_residue <- rc_calculate_bcof(no_residue_dt)
   expect_equal(no_residue$cin_residue, 0)
   expect_equal(no_residue$B_C_OF_CULT, no_residue$cin_roots)
   
@@ -414,7 +414,7 @@ test_that("rc_calculate_B_C_OF_CULT handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = TRUE
   )
-  max_result <- rc_calculate_B_C_OF_CULT(max_dt)
+  max_result <- rc_calculate_bcof(max_dt)
   expect_equal(max_result$cin_aboveground, 150000 / 1 * 0.5, tolerance = 0.001)
   expect_equal(max_result$cin_roots, max_result$cin_aboveground, tolerance = 0.001)
   expect_equal(max_result$cin_residue, max_result$cin_aboveground * 1, tolerance = 0.001)
