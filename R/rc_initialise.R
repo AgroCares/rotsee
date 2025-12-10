@@ -214,13 +214,13 @@ rc_initialise <- function(crops = NULL,
         
     } else {
           # calculate amendment inputs [kg C/ha]
-          c_input_man <- amendment[, sum(P_DOSE * P_C_OF, na.rm = TRUE)/isimyears]
+          c_input_man <- amendment[, sum(P_DOSE * P_C_OF/1000, na.rm = TRUE)/isimyears]
           
           # Estimate DPM-RPM ratio of amendment inputs
           amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
           
           # Calculate average DPM-RPM ratio of amendment inputs
-          DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = (P_DOSE * P_C_OF), na.rm = TRUE)]
+          DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = (P_DOSE * P_C_OF / 1000), na.rm = TRUE)]
           
     }
     
