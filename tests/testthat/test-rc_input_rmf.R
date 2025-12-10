@@ -58,6 +58,25 @@ test_that("rc_input_rmf runs correctly", {
   
   
   
+  irrigation <- data.table(
+    B_DATE_IRRIGATION = c("2022-07-01", "2023-07-01"),
+    B_IRR_AMOUNT = c(25, 30)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2024-01-01")
+  
+  result <- rc_input_rmf(
+    dt = rothc_rotation,
+    B_DEPTH = 0.3,
+    A_CLAY_MI = 18,
+    dt.weather = weather,
+    dt.time = dt.time,
+    dt.irrigation = irrigation
+  )
+  
+  # Check result structure
+  expect_type(result, "list")
+  expect_true(all(c("R1", "abcd", "time") %in% names(result)))
 })
 
 
@@ -221,7 +240,7 @@ test_that("rc_input_rmf handles multiple irrigation events", {
   )
   
   expect_type(result, "list")
-  expect_true(all(c("R1", "abc", "time") %in% names(result)))
+  expect_true(all(c("R1", "abcd", "time") %in% names(result)))
 })
 
 test_that("rc_input_rmf handles irrigation dates correctly", {

@@ -4,14 +4,21 @@
 #' 
 #' @param B_LU_BRP (numeric) value of the BRP crop code
 #' @param scen (character) possible scenarios. Include BAU, CLT, BAUIMPR and ALL
-#'
+#' @param cf_yield (numeric) A yield correction factor (fraction) if yield is higher than regional average
+#' 
 #' @export
-rc_input_scenario <- function(B_LU_BRP, scen){
+rc_input_scenario <- function(B_LU_BRP, scen, cf_yield = 1){
   
   # add visual bindings
   . = B_LU_NAME = B_LU_EOM = B_LU_EOM_RESIDUE = B_LU_HC = B_LU_WATERSTRESS_OBIC = NULL
   B_LU = gld = cereal = nat = bld = M_GREEN_TIMING = M_CROPRESIDUE = man_name = NULL
   P_OM = P_HC = P_p2o5 = P_DOSE = P_NAME = p_p2o5 = crop_code = crop_name = NULL
+  M_IRRIGATION = NULL
+  
+  # check inputs
+  checkmate::assert_numeric(cf_yield,lower = 0.1, upper = 2.0, any.missing = FALSE,len = 1)
+  checkmate::assert_integerish(B_LU_BRP, any.missing = FALSE, null.ok = TRUE, min.len = 1)
+  checkmate::assert_subset(B_LU_BRP, choices = unique(rotsee::rc_crops$crop_code), empty.ok = TRUE)
   
   # composition table for cattle slurry and compost
   dtcm <- data.table(man_name = c('cattle_slurry','green_compost'),
@@ -20,7 +27,7 @@ rc_input_scenario <- function(B_LU_BRP, scen){
                      p_p2o5 = c(0.15,0.22))
   
   # combine input data
-  dt <- data.table(B_LU_BRP = B_LU_BRP,year = 1:length(B_LU_BRP))
+  dt <- data.table(B_LU_BRP = B_LU_BRP,year = 1:length(B_LU_BRP),cf_yield = cf_yield)
   dt <- merge(dt,
               rotsee::rc_crops[,.(B_LU_BRP = crop_code,B_LU_NAME = crop_name,B_LU_EOM,B_LU_EOM_RESIDUE,
                                 B_LU_HC,B_LU_WATERSTRESS_OBIC)],
@@ -179,8 +186,12 @@ rc_input_scenario <- function(B_LU_BRP, scen){
     
   }
   
+  # add default situation with no irrigation
+  rotation[, M_IRRIGATION := FALSE]
+  
   # subset final rotation
-  rotation <- rotation[,.(year,B_LU_BRP,B_LU_EOM,B_LU_EOM_RESIDUE,B_LU_HC,M_GREEN_TIMING,M_CROPRESIDUE)]
+  rotation <- rotation[,.(year,B_LU_BRP,B_LU_EOM,B_LU_EOM_RESIDUE,B_LU_HC,
+                          M_GREEN_TIMING,M_CROPRESIDUE,M_IRRIGATION, cf_yield)]
   
   # add B_LU for Dutch situation
   rotation[, B_LU := paste0('nl_',B_LU_BRP)]
