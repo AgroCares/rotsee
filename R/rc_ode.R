@@ -12,9 +12,9 @@
 rc_ode <- function (time, y, parms) {
   
   with(as.list(c(y,parms)),{
-    dCDPM   <- abc(time)*-k1*CDPM
-    dCRPM   <- abc(time)*-k2*CRPM
-    dCBIO   <- abc(time)*-k3*CBIO - (abc(time)*-k3*CBIO*R1*0.46)-(dCDPM*R1*0.46)-(dCRPM*R1*0.46)-(abc(time)*-k4*CHUM*R1*0.46)
-    dCHUM   <- abc(time)*-k4*CHUM - (abc(time)*-k4*CHUM*R1*0.54)-(dCDPM*R1*0.54)-(dCRPM*R1*0.54)-(abc(time)*-k3*CBIO*R1*0.54)
+    dCDPM   <- abcd(time)*-k1*CDPM
+    dCRPM   <- abcd(time)*-k2*CRPM
+    dCBIO   <- abcd(time)*-k3*CBIO - (abcd(time)*-k3*CBIO*R1*0.46)-(dCDPM*R1*0.46)-(dCRPM*R1*0.46)-(abcd(time)*-k4*CHUM*R1*0.46)
+    dCHUM   <- abcd(time)*-k4*CHUM - (abcd(time)*-k4*CHUM*R1*0.54)-(dCDPM*R1*0.54)-(dCRPM*R1*0.54)-(abcd(time)*-k3*CBIO*R1*0.54)
     list(c(dCDPM,dCRPM,dCBIO,dCHUM))})
 }

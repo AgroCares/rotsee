@@ -100,7 +100,7 @@ test_that("rc_input_rmf handles irrigation data correctly", {
   
   # Check result structure
   expect_type(result, "list")
-  expect_true(all(c("R1", "abc", "time") %in% names(result)))
+  expect_true(all(c("R1", "abcd", "time") %in% names(result)))
 })
 
 test_that("rc_input_rmf validates irrigation input correctly", {
@@ -299,7 +299,7 @@ test_that("rc_input_rmf handles multiple irrigation events", {
   )
   
   expect_type(result, "list")
-  expect_true(all(c("R1", "abc", "time") %in% names(result)))
+  expect_true(all(c("R1", "abcd", "time") %in% names(result)))
 })
 
 test_that("rc_input_rmf handles irrigation dates correctly", {

@@ -8,6 +8,7 @@ rc_input_rmf(
   dt = NULL,
   B_DEPTH = 0.3,
   A_CLAY_MI,
+  M_TILLAGE_SYSTEM = "CT",
   dt.weather,
   dt.time,
   dt.irrigation = NULL
@@ -19,6 +20,8 @@ rc_input_rmf(
 \item{B_DEPTH}{(numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.}
 
 \item{A_CLAY_MI}{(numeric) The clay content of the soil (\%)}
+
+\item{M_TILLAGE_SYSTEM}{(character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.}
 
 \item{dt.weather}{(data.table) Data table of monthly weather}
 
