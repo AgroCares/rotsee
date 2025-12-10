@@ -29,19 +29,24 @@ rc_input_rmf(
 
 \item{dt.irrigation}{(data.table) Data table of irrigation events}
 }
+\value{
+data table with rate modifying factors
+}
 \description{
 This function prepares the rate modifying factors for RothC given crop cover
 }
-\details{
-dt: crop rotation table
-contains at least the following columns:
+\section{dt}{
+
+crop rotation table
 \itemize{
 \item B_LU_START (date), start of crop growth
 \item B_LU_END (DATE), end of crop growth
 }
+}
 
-dt.weather: weather table
-contains the following columns:
+\section{dt.weather}{
+
+weather table
 \itemize{
 \item year
 \item month
@@ -51,11 +56,14 @@ contains the following columns:
 \item W_ET_ACT_MONTH (optional), calculated from W_ET_REF_MONTH when not supplied
 \item W_ET_REFACT
 }
+}
 
-dt.irrigation: irrigation table
-contains the following columns:
+\section{dt.irrigation}{
+
+irrigation table
 \itemize{
 \item B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
 \item B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 }
 }
+
