@@ -148,7 +148,7 @@ test_that("rc_input_amendment correctly checks input validity", {
   expect_error(rc_input_amendment(dt = amendment_pcof), 'Provide both P_DOSE and P_C_OF')
   
   # Run with only P_DOSE
-  amendment_pcof <- copy(amendment)[, P_C_OF := NULL]
+  amendment_dose <- copy(amendment)[, P_C_OF := NULL]
   expect_error(rc_input_amendment(dt = amendment_pcof), 'Provide both P_DOSE and P_C_OF')
  
   # Run with too high P_C_OF

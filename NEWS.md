@@ -7,6 +7,9 @@
 * replaced weather parameter `W_ET_POT_MONTH` with `W_ET_REF_MONTH` to align with scientific standard
 * renamed function `rc_calculate_B_C_OF` to `rc_calculate_bcof` for ease of application
 
+## fixed 
+* calculation of total C input in DR_amendment initialisation calculations now is correctly re-calculated to kg C/ha when giving amendment inputs as `P_C_OF` and `P_DOSE`
+
 
 
 # rotsee v0.2.0 2025-12-10
@@ -26,7 +29,6 @@
 # rotsee v0.1.7 2025-10-16
 
 ## added
-
 * rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
 * Weather input supports `W_ET_REFACT` (factor to convert reference to actual ET; defaults to 0.75 when missing).
 

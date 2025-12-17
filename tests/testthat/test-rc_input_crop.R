@@ -16,14 +16,14 @@ test_that("rc_input_crop runs correctly", {
   expect_equal(result$year, c(2022, 2023))
   
   # --- Manually calculate expected values for the crop ---
-  # B_C_OF_CULT = 1500, P_HC = 0.32
+  # B_C_OF_CULT = 1500, B_LU_HC = 0.32
   fr_dpm_rpm <- -2.174 * 0.32 + 2.02
   cin_tot <- 1500
   cin_dpm <- cin_tot * fr_dpm_rpm / (1 + fr_dpm_rpm)
   cin_rpm <- cin_tot - cin_dpm
   
   
-  # Check calculated values for the first row (April amendment)
+  # Check calculated values for the first row 
   expect_equal(result[1, cin_dpm], cin_dpm)
   expect_equal(result[1, cin_rpm], cin_rpm)
   expect_equal(result[1, cin_dpm] + result[1, cin_rpm], cin_tot)
