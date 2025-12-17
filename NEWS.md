@@ -8,7 +8,7 @@
 * renamed function `rc_calculate_B_C_OF` to `rc_calculate_bcof` for ease of application
 
 ## fixed 
-* calculation of total C input in DR_amendment initialisation calculations now is correctly re-calculated to kg C/ha when giving amendment inputs as `P_C_OF` and `P_DOSE`
+* calculation of total C input in DR_amendment initialisation now correctly expresses kg C/ha when amendment inputs are provided as `P_C_OF` and `P_DOSE`
 
 
 
