@@ -10,9 +10,9 @@
 #'
 #' rothc_amendment: amendment table
 #' Includes the columns:
-#' * B_C_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_AMENDMENT is not supplied
-#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_AMENDMENT is not supplied
+#' * B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #'
@@ -21,7 +21,7 @@ rc_input_amendment <- function(dt = NULL){
   
 
   # add visual bindings
-  B_C_AMENDMENT = P_C_OF = P_DATE_FERTILIZATION = P_DOSE = P_HC =  NULL
+  B_C_OF_AMENDMENT = P_C_OF = P_DATE_FERTILIZATION = P_DOSE = P_HC =  NULL
   cin_dpm = cin_hum = cin_rpm = cin_tot = fr_dpm_rpm = NULL
   
   # Check amendment table
@@ -31,19 +31,19 @@ rc_input_amendment <- function(dt = NULL){
   checkmate::assert_names(names(dt), must.include = req)
   checkmate::assert_date(as.Date(dt$P_DATE_FERTILIZATION), any.missing = FALSE)
   checkmate::assert_numeric(dt$P_HC, lower = rc_minval("P_HC"), upper = rc_maxval("P_HC"), any.missing = FALSE)
-  if ("B_C_AMENDMENT" %in% names(dt)) { 
-    # Validate B_C_AMENDMENT
-    checkmate::assert_numeric(dt$B_C_AMENDMENT, lower = rc_minval("B_C_AMENDMENT"), upper = rc_maxval("B_C_AMENDMENT"), any.missing = TRUE)
-    # Check P_DOSE and P_C_OF when B_C_AMENDMENT is missing
-      if (anyNA(dt$B_C_AMENDMENT)) {
+  if ("B_C_OF_AMENDMENT" %in% names(dt)) { 
+    # Validate B_C_OF_AMENDMENT
+    checkmate::assert_numeric(dt$B_C_OF_AMENDMENT, lower = rc_minval("B_C_OF_AMENDMENT"), upper = rc_maxval("B_C_OF_AMENDMENT"), any.missing = TRUE)
+    # Check P_DOSE and P_C_OF when B_C_OF_AMENDMENT is missing
+      if (anyNA(dt$B_C_OF_AMENDMENT)) {
          checkmate::assert(
           all(c("P_DOSE","P_C_OF") %in% names(dt)),
-          msg = "For rows with NA B_C_AMENDMENT, both P_DOSE and P_C_OF must be provided"
+          msg = "For rows with NA B_C_OF_AMENDMENT, both P_DOSE and P_C_OF must be provided"
           )
         checkmate::assert(
-          all(!is.na(dt$P_DOSE[is.na(dt$B_C_AMENDMENT)]) &
-              !is.na(dt$P_C_OF[is.na(dt$B_C_AMENDMENT)])),
-          msg = "For rows with NA B_C_AMENDMENT, both P_DOSE and P_C_OF must be provided"
+          all(!is.na(dt$P_DOSE[is.na(dt$B_C_OF_AMENDMENT)]) &
+              !is.na(dt$P_C_OF[is.na(dt$B_C_OF_AMENDMENT)])),
+          msg = "For rows with NA B_C_OF_AMENDMENT, both P_DOSE and P_C_OF must be provided"
           )
       }
     # Check P_DOSE and P_C_OF
@@ -51,7 +51,7 @@ rc_input_amendment <- function(dt = NULL){
     if ("P_C_OF" %in% names(dt)) checkmate::assert_numeric(dt$P_C_OF, lower = rc_minval("P_C_OF"), upper = rc_maxval("P_C_OF"), any.missing = TRUE)
   }else{
     checkmate::assert(all(c("P_DOSE","P_C_OF") %in% names(dt)),
-                      msg = "Provide both P_DOSE and P_C_OF when B_C_AMENDMENT is absent")
+                      msg = "Provide both P_DOSE and P_C_OF when B_C_OF_AMENDMENT is absent")
     checkmate::assert_numeric(
       dt$P_DOSE,
       lower = rc_minval("P_DOSE"),
@@ -81,10 +81,10 @@ rc_input_amendment <- function(dt = NULL){
   
   
   # estimate total Carbon input per crop and year (kg C/ha)
-    if("B_C_AMENDMENT" %in% names(dt.org)){
+    if("B_C_OF_AMENDMENT" %in% names(dt.org)){
       # If supplied, copy value, calculate from P_DOSE and P_C_OF only for NA rows
-      dt.org[, cin_tot := B_C_AMENDMENT]
-      if (anyNA(dt.org$B_C_AMENDMENT)) {
+      dt.org[, cin_tot := B_C_OF_AMENDMENT]
+      if (anyNA(dt.org$B_C_OF_AMENDMENT)) {
         dt.org[is.na(cin_tot), cin_tot := P_DOSE * P_C_OF/1000]
       }
   }else{

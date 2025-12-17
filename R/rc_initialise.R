@@ -1,7 +1,7 @@
 #' Function to initialise the RothC model for a single field
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_INPUT or both P_DOSE and P_HC.
+#' @param amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_AMENDMENT or both P_DOSE and P_HC.
 #' @param dt.soc (data.table) Data table containing information on soil properties. See details for information.
 #' @param dt.time (data.table) Combination of months and years of the entire simulation period. 
 #' @param rothc.parms (list) List with relevant RothC parameters. See details for more information
