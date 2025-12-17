@@ -20,7 +20,7 @@ rc_initialise(
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.}
 
-\item{amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_INPUT or both P_DOSE and P_HC.}
+\item{amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_AMENDMENT or both P_DOSE and P_HC.}
 
 \item{dt.soc}{(data.table) Data table containing information on soil properties. See details for information.}
 
@@ -52,8 +52,8 @@ Includes the columns:
 amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
 Includes the columns:
 * B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
+* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
 * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 
