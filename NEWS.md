@@ -1,6 +1,6 @@
 # rotsee v0.2.1 2025-12-18
 ## added 
-* helper function `rc_set_refact` to calculate `W_ET_REFACT` for the weather data table based on grown crops
+* new function `rc_set_refact` to calculate `W_ET_REFACT` for the weather data table based on grown crops
 * unit tests for `rc_set_refact` and `rc_check_inputs`
 
 ## changed
