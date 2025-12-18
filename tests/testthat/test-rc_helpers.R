@@ -260,8 +260,8 @@ test_that("rc_update_weather default weather includes W_ET_REFACT", {
   expect_equal(ncol(default_weather), 7)
 })
 
-test_that("rc_update_weather with only actual ET and W_ET_REFACT", {
-  # Test scenario with only actual ET and W_ET_REFACT
+test_that("rc_update_weather runs with only actual ET and W_ET_REFACT", {
+  # Test scenario with only actual ET and W_ET_REFACT, W_ET_REFACT should pass straight through
   weather_actual_only <- data.table(
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
@@ -1554,7 +1554,7 @@ test_that("rc_set_refact properly validates input", {
   expect_error(rc_set_refact(weather = weather_noyr, crop = crop, dt.time = dt.time), 'missing elements')
   
   # missing month column
-  weather_nomon <- copy(weather)[, year := NULL]
+  weather_nomon <- copy(weather)[, month := NULL]
   expect_error(rc_set_refact(weather = weather_nomon, crop = crop, dt.time = dt.time), 'missing elements')
   
   ## crop data ---
