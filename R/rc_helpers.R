@@ -815,9 +815,7 @@ rc_set_refact <- function(weather, crop, dt.time){
   # check weather table
   checkmate::assert_data_table(weather)
   checkmate::assert_names(names(weather), must.include = c("year",
-                                                           "month",
-                                                           "W_TEMP_MEAN_MONTH",
-                                                           "W_PREC_SUM_MONTH"))
+                                                           "month"))
   
   # check crop table
   checkmate::assert_data_table(crop,min.rows = 1)
