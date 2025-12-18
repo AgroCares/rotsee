@@ -380,7 +380,7 @@ rc_check_inputs <- function(soil_properties,
   if(!is.null(rothc_rotation)){
     checkmate::assert_data_table(rothc_rotation, null.ok = TRUE, min.rows = 1)
 
-    req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_CULT")
+    req <- c("B_LU_START", "B_LU_END","B_LU_HC","B_C_OF_CULT")
     checkmate::assert_names(colnames(rothc_rotation), must.include = req)
     
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = FALSE)
@@ -534,7 +534,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   crops <- as.data.table(crops)
   setnames(crops,toupper(colnames(crops)))
   
-  req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_CULT")
+  req <- c("B_LU_START", "B_LU_END",  "B_LU_HC", "B_C_OF_CULT")
   checkmate::assert_names(colnames(crops), must.include = req)
   if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
   checkmate::assert_numeric(crops$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = F)
