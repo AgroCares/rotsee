@@ -665,7 +665,7 @@ test_that("rc_check_inputs handles edge case with maximum valid values", {
   valid_soil <- create_soil_properties()[, A_C_OF := 200][, B_C_ST03 := 500]
  
   
-  valid_crop <- create_rotation()[, B_LU_HC := 1][, B_C_OF_INPUT := 10000]
+  valid_crop <- create_rotation()[, B_LU_HC := 1][, B_C_OF_CULT := 10000]
    
   valid_amendment <- create_amendment()[, P_HC := 1]
     
