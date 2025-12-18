@@ -387,6 +387,10 @@ rc_check_inputs <- function(soil_properties,
     checkmate::assert_numeric(rothc_rotation$B_C_OF_CULT, lower = rc_minval('B_C_OF_CULT'), upper = rc_maxval('B_C_OF_CULT'), any.missing = FALSE)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
+    if(any(rothc_rotation$B_LU_START > rothc_rotation$B_LU_END)) {
+      bad_rows <- which(rothc_rotation$B_LU_START > rothc_rotation$B_LU_END)
+      stop(sprintf('Crop start date after end date in row: %s', paste(bad_rows, collapse=", ")))
+    }
     }
 
   # Check amendment properties if supplied
@@ -792,8 +796,93 @@ rc_maxval <- function(this.parameter){
   return(out)
 }
 
+#' Function to determine W_ET_REFACT given a crop profile and supplied weather table, based on Dutch Makkink factors. 
+#' NOTE: this function sets W_ET_REFACT to crop-specific Makkink factors during growth periods and 0.36 for non-crop months (alternative to the general default of 0.75)
+#'
+#' @param weather (data.table) weather data table containing columns year, month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, and either W_ET_REF_MONTH or W_ET_ACT_MONTH.
+#' @param crop (data.table) data table with crop information. Contains at least the columns B_LU_START, B_LU_END, and D_MAKKINK_JAN through DEC for the unique crops.
+#' @param dt.time (data.table) Data table with the combination of years and months spanning the entire simulation period. Can be generated using \link{rc_time_period}.
+#'
+#' @returns
+#' Weather table with W_ET_REFACT column added
+#' 
+#' @export
+#'
+rc_set_refact <- function(weather, crop, dt.time){
+  # add visible bindings
+  B_LU_END  = B_LU_START = W_ET_REFACT = . = NULL
+  
+  # check weather table
+  checkmate::assert_data_table(weather)
+  checkmate::assert_names(names(weather), must.include = c("year",
+                                                           "month"))
+  
+  # check crop table
+  checkmate::assert_data_table(crop,min.rows = 1)
+  checkmate::assert_names(names(crop), must.include = c("B_LU_START",
+                                                        "B_LU_END"))
+  checkmate::assert_date(as.Date(crop$B_LU_START), any.missing = FALSE)
+  checkmate::assert_date(as.Date(crop$B_LU_END), any.missing = FALSE)
+  
+  
+  # validate D_MAKKINK inputs
+  month_abbrevs <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", 
+                     "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
+  for (month in month_abbrevs) {
+    col_name <- paste0("D_MAKKINK_", month)
+    checkmate::assert_numeric(crop[[col_name]], 
+                              lower = rc_minval(col_name), 
+                              upper = rc_maxval(col_name))
+  }
+  
+  # check dt.time 
+  checkmate::assert_data_table(dt.time, min.rows = 1)
+  checkmate::assert_names(names(dt.time), must.include = c("year", "month"))
+  checkmate::assert_integerish(dt.time$year, lower = 1, any.missing = FALSE)
+  checkmate::assert_integerish(dt.time$month, lower = 1, upper = 12, any.missing = FALSE)
+  
+  # copy data tables
+  weather <- copy(weather)
+  crop <- copy(crop)
+  
+  # Expand weather data to simulation period
+  weather_ext <- merge(dt.time, weather, by = c("year", "month"), all.x = TRUE)
 
+  # establish crop growth
+  # base crop cover on supplied start and end dates of crop growth
+  crop_refact <- crop[, {
+    
+    # Create a sequence of year-month combinations when crops are growing
+    seq_dates <- seq.Date(as.Date(B_LU_START), as.Date(B_LU_END), by = 'month')
+    
+    # Derive year and month of growth
+    growth_months <- month(seq_dates)
+    growth_years <- year(seq_dates)
+    
+    # Set correct W_ET_REFACT value
+    values_refact <- sapply(growth_months, function(m) {
+      col_name <- paste0("D_MAKKINK_", toupper(month.abb[m]))
+      get(col_name)
+      
+    }) 
+   
+    # Extract year and month
+    list(year = growth_years, month = growth_months, W_ET_REFACT = values_refact)
+  }, by = 1:nrow(crop)][, .(year, month, W_ET_REFACT)]
 
+  # if multiple crops growing, take highest value of W_ET_REFACT
+  crop_refact <- crop_refact[, .SD[which.max(W_ET_REFACT)], by = .(year, month)]
+ 
+  # Remove provided refact values
+  if("W_ET_REFACT" %in% colnames(weather_ext)) weather_ext[, W_ET_REFACT := NULL]
+
+  # Merge weather and crop data table, fill missing dates values with 0.36
+  dt <- merge(weather_ext, crop_refact, by = c("year", "month"), all.x = TRUE)
+  
+  dt[, W_ET_REFACT := fifelse(is.na(W_ET_REFACT), 0.36, W_ET_REFACT)]
+  
+  return(dt)
+}
 
 
 #' Function to plot information on C pools when rc_sim is run in visualize mode

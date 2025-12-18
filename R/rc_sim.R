@@ -8,7 +8,7 @@
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_AMENDMENT and/or P_DOSE and P_C_OF. See details for desired format.
 #' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
-#' @param weather (data.table) Table with following column names: month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.
+#' @param weather (data.table) Table with following column names: year (optional), month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.
 #' @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.
 #' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
 #' @param visualize (boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation. 
@@ -59,7 +59,7 @@
 #' * W_PREC_SUM_MONTH (precipitation in mm)
 #' * W_ET_REF_MONTH (reference evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
-#' * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
+#' * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration).  When not provided, defaults to 0.75 for all months. Can be set given crop information using \link{rc_set_refact}, which applies crop-specific Makkink factors during growth periods and 0.36 for non-crop months.
 #' 
 #' Irrigation: Irrigation table, optional.
 #' Includes the columns:
