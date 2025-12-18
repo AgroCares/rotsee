@@ -812,18 +812,21 @@ rc_set_refact <- function(weather, crop, dt.time){
   # add visible bindings
   B_LU_END  = B_LU_START = W_ET_REFACT = . = NULL
   
-  # check provided inputs
+  # check weather table
   checkmate::assert_data_table(weather)
   checkmate::assert_names(names(weather), must.include = c("year",
                                                            "month",
                                                            "W_TEMP_MEAN_MONTH",
                                                            "W_PREC_SUM_MONTH"))
   
+  # check crop table
   checkmate::assert_data_table(crop,min.rows = 1)
   checkmate::assert_names(names(crop), must.include = c("B_LU_START",
                                                         "B_LU_END"))
   checkmate::assert_date(as.Date(crop$B_LU_START), any.missing = FALSE)
   checkmate::assert_date(as.Date(crop$B_LU_END), any.missing = FALSE)
+  
+  
   # validate D_MAKKINK inputs
   month_abbrevs <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", 
                      "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
@@ -834,6 +837,11 @@ rc_set_refact <- function(weather, crop, dt.time){
                               upper = rc_maxval(col_name))
   }
   
+  # check dt.time 
+  checkmate::assert_data_table(dt.time, min.rows = 1)
+  checkmate::assert_names(names(dt.time), must.include = c("year", "month"))
+  checkmate::assert_integerish(dt.time$year, lower = 1, any.missing = FALSE)
+  checkmate::assert_integerish(dt.time$month, lower = 1, upper = 12, any.missing = FALSE)
   
   # copy data tables
   weather <- copy(weather)
