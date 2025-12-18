@@ -1478,7 +1478,7 @@ test_that("rc_update_parms returns default initialisation_method", {
 
 
 
-test_that("rc_set_refact correctly assigns W_ET_REFACT", {
+test_that("rc_set_refact runs with valid input", {
   
   weather <- data.table(year = rep(2022:2023, each = 12),
     month = rep(1:12,2),
@@ -1511,6 +1511,120 @@ test_that("rc_set_refact correctly assigns W_ET_REFACT", {
   
 })
 
+
+test_that("rc_set_refact properly validates input", {
+  # read in data
+  weather <- data.table(year = rep(2022:2023, each = 12),
+                        month = rep(1:12,2),
+                        W_TEMP_MEAN_MONTH = rep(c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2), 2),
+                        W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8), 2),
+                        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),2)
+  )
+  
+  crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    D_MAKKINK_JAN = 0.36,
+    D_MAKKINK_FEB = 0.36,
+    D_MAKKINK_MAR = 0.36,
+    D_MAKKINK_APR = 0.52,
+    D_MAKKINK_MAY = 0.9,
+    D_MAKKINK_JUN = 1.2,
+    D_MAKKINK_JUL = 0.72,
+    D_MAKKINK_AUG = 0.36,
+    D_MAKKINK_SEP = 0.36,
+    D_MAKKINK_OCT = 0.36,
+    D_MAKKINK_NOV = 0.36,
+    D_MAKKINK_DEC = 0.36
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-04-01", end_date = "2023-10-01")
+  
+  ## weather data ---
+  # no weather data
+  expect_error(rc_set_refact(weather = NULL, crop = crop, dt.time = dt.time), 'data.table')
+  
+  # weather data supplied as a list
+  weather_list <- as.list(weather)
+  expect_error(rc_set_refact(weather = weather_list, crop = crop, dt.time = dt.time), 'data.table')
+  
+  # missing year column
+  weather_noyr <- copy(weather)[, year := NULL]
+  expect_error(rc_set_refact(weather = weather_noyr, crop = crop, dt.time = dt.time), 'missing elements')
+  
+  # missing month column
+  weather_nomon <- copy(weather)[, year := NULL]
+  expect_error(rc_set_refact(weather = weather_nomon, crop = crop, dt.time = dt.time), 'missing elements')
+  
+  ## crop data ---
+  # no crop data
+  expect_error(rc_set_refact(weather = weather, crop = NULL, dt.time = dt.time), 'data.table')
+  
+  # crop as list
+  crop_list <- as.list(crop)
+  expect_error(rc_set_refact(weather = weather, crop = crop_list, dt.time = dt.time), 'data.table')
+  
+  # empty crop file
+  empty_crop <- data.table()
+  expect_error(rc_set_refact(weather = weather, crop = empty_crop, dt.time = dt.time), 'at least 1 row')
+  
+  # no B_LU_START
+  crop_nostart <- copy(crop)[, B_LU_START := NULL]
+  expect_error(rc_set_refact(weather = weather, crop = crop_nostart, dt.time = dt.time), 'missing elements')
+  
+  # wrong format B_LU_START
+  crop_badstart <- copy(crop)[, B_LU_START := 'wrong']
+  expect_error(rc_set_refact(weather = weather, crop = crop_badstart, dt.time = dt.time), 'ambiguous format')
+  
+  # no B_LU_END
+  crop_noend <- copy(crop)[, B_LU_END := NULL]
+  expect_error(rc_set_refact(weather = weather, crop = crop_noend, dt.time = dt.time), 'missing elements')
+  
+  # wrong format B_LU_END
+  crop_badend <- copy(crop)[, B_LU_END := 'wrong']
+  expect_error(rc_set_refact(weather = weather, crop = crop_badend, dt.time = dt.time), 'ambiguous format')
+  
+  # D_MAKKINK too high
+  crop_highmak <- copy(crop)[, D_MAKKINK_JUL := 8]
+  expect_error(rc_set_refact(weather = weather, crop = crop_highmak, dt.time = dt.time), paste0('not <= ', rc_maxval('D_MAKKINK_JUL')))
+  
+  # D_MAKKINK too low
+  crop_lowmak <- copy(crop)[, D_MAKKINK_JUL := -1]
+  expect_error(rc_set_refact(weather = weather, crop = crop_lowmak, dt.time = dt.time), paste0('not >= ', rc_minval('D_MAKKINK_JUL')))
+  
+  ## time data table ---
+  # no time table
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = NULL), 'data.table')
+  
+  # time as list
+  time_list <- as.list(dt.time)
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_list), 'data.table')
+  
+  # empty time table
+  empty_time <- data.table()
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = empty_time), 'at least 1 row')
+  
+  # missing month column
+  time_nomon <- copy(dt.time)[, month := NULL]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_nomon), 'missing elements')
+  
+  # missing year column
+  time_noyr <- copy(dt.time)[, year := NULL]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_noyr), 'missing elements')
+  
+  # too high month
+  time_highmon <- copy(dt.time)[, month := 13]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_highmon), 'not <= 12')
+  
+  # too low month
+  time_lowmon <- copy(dt.time)[, month := 0]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_lowmon), 'not >= 1')
+
+  # too low year
+  time_lowyr <- copy(dt.time)[, year := 0]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_lowyr), 'not >= 1')
+})
 
 test_that("rc_set_refact returns correct structure and values", {
     weather <- data.table(
