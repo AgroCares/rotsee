@@ -127,8 +127,198 @@ test_that("rc_update_weather default weather replicates correctly for simulation
   expect_s3_class(out, "data.table")
 })
 
-test_that("rc_update_parms correctly runs when no parms supplied", {
+test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
+  # Test with W_ET_REFACT supplied
+  weather_with_correction <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = rep(NA_real_, 12),
+    W_ET_REFACT = rep(0.8, 12)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_with_correction, dt.time = dt.time)
+  
+  expect_s3_class(result, "data.table")
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.8, 12))
+})
 
+test_that("rc_update_weather handles partials NAs in W_ET_REFACT", {
+  # Test with partial NAs in W_ET_REFACT - should fill with 0.75
+  weather_partial_na <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_partial_na, dt.time)
+  expect_equal(result$W_ET_REFACT, c(0.8, 0.75, 0.7, 0.75, rep(0.75, 8)))
+})
+
+test_that("rc_update_weather runs without W_ET_REFACT column", {
+  # Test without W_ET_REFACT column - should add default 0.75
+  weather_no_correction <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_no_correction, dt.time)
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.75, 12))
+})
+
+test_that("rc_update_weather validates W_ET_REFACT ranges", {
+  # Test with out of range W_ET_REFACT values (too high)
+  invalid_high <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(2.5, 12)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  expect_error(rc_update_weather(invalid_high, dt.time), "W_ET_REFACT")
+  
+  # Test with negative W_ET_REFACT values
+  invalid_negative <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(-0.1, 12)
+  )
+  
+  expect_error(rc_update_weather(invalid_negative, dt.time), "W_ET_REFACT")
+})
+
+test_that("rc_update_weather boundary values for W_ET_REFACT", {
+  # Test with W_ET_REFACT at lower boundary (0.3)
+  weather_lower <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(0.3, 12)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  expect_no_error(rc_update_weather(weather_lower, dt.time))
+  
+  # Test with W_ET_REFACT at upper boundary (2)
+  weather_upper <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = rep(2, 12)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result_upper <- rc_update_weather(weather_upper, dt.time)
+  expect_equal(result_upper$W_ET_REFACT, rep(2, 12))
+  
+  # Test with mixed W_ET_REFACT values
+  weather_mixed <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_REFACT = seq(0.3, 2, length.out = 12)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result_mixed <- rc_update_weather(weather_mixed, dt.time)
+  expect_equal(result_mixed$W_ET_REFACT, seq(0.3, 2, length.out = 12), tolerance = 1e-10)
+})
+
+test_that("rc_update_weather default weather includes W_ET_REFACT", {
+  # When no weather data is provided, default should include W_ET_REFACT
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  default_weather <- rc_update_weather(NULL, dt.time)
+  
+  expect_true("W_ET_REFACT" %in% names(default_weather))
+  expect_equal(default_weather$W_ET_REFACT, rep(0.75, 12))
+  expect_equal(nrow(default_weather), 12)
+  expect_equal(ncol(default_weather), 7)
+})
+
+test_that("rc_update_weather runs with only actual ET and W_ET_REFACT", {
+  # Test scenario with only actual ET and W_ET_REFACT, W_ET_REFACT should pass straight through
+  weather_actual_only <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = rep(40, 12),
+    W_ET_REFACT = rep(0.85, 12)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_actual_only, dt.time)
+  expect_true("W_ET_REFACT" %in% names(result))
+  expect_equal(result$W_ET_REFACT, rep(0.85, 12))
+})
+
+test_that("rc_update_weather edge case with both ET types and W_ET_REFACT", {
+  # Both reference and actual ET provided with W_ET_REFACT
+  weather_both <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12),
+    W_ET_ACT_MONTH = c(rep(40, 6), rep(NA_real_, 6)),
+    W_ET_REFACT = rep(0.8, 12)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_both, dt.time)
+  expect_equal(result$W_ET_REFACT, rep(0.8, 12))
+  expect_equal(nrow(result), 12)
+})
+
+test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
+  # Ensure no side effects on other columns
+  weather_original <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5)
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_update_weather(weather_original, dt.time)
+  
+  # Check original columns are preserved
+  expect_equal(result$month, weather_original$month)
+  expect_equal(result$W_TEMP_MEAN_MONTH, weather_original$W_TEMP_MEAN_MONTH)
+  expect_equal(result$W_PREC_SUM_MONTH, weather_original$W_PREC_SUM_MONTH)
+  expect_equal(result$W_ET_REF_MONTH, weather_original$W_ET_REF_MONTH)
+})
+
+
+
+test_that("rc_update_parms correctly runs when no parms supplied", {
+  
   
   # Set default crop table
   crops <- data.table(crop = c(1, 2),
@@ -147,8 +337,6 @@ test_that("rc_update_parms correctly runs when no parms supplied", {
   expect_equal(result_crop$start_date, min(as.Date(crops$B_LU_START)))
   expect_equal(result_crop$end_date, max(as.Date(crops$B_LU_END)))
 })
-  
-
 
 test_that("rc_update_parms accepts and validates dec_rates", {
   # Set default crop table
@@ -295,7 +483,378 @@ test_that("rc_update_parms accepts and validates poutput", {
   expect_error(rc_update_parms(list(poutput = "invalid"), crops = crops), "element of set")
 })
 
+test_that("rc_check_inputs correctly validates soil_properties data", {
+  # Generate valid soil properties data
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
+  valid_amendment <- data.table(
+    P_ID = c(1, 1),
+    P_NAME = c('cattle_slurry', 'cattle_slurry'),
+    P_DOSE = c(63300, 63300),
+    P_HC = c(0.7,0.7),
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+  
+  
+  # Run with valid values (should not error)
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
+                                  rothc_amendment = valid_amendment,
+                                  soil_properties = valid_soil))
+  
+  # Run as a list (not allowed)
+  soil_list <- as.list(valid_soil)
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_list), "Must be a data.table")
+  
+  # Run without A_C_OF
+  soil_no_ac <- copy(valid_soil)[, A_C_OF := NULL]
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_ac))
+  
+  # Run without B_C_ST03
+  soil_no_bc <- copy(valid_soil)[, B_C_ST03 := NULL]
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_bc))
 
+  # Run without A_C_OF and B_C_ST03
+  soil_no_acbc <- copy(valid_soil)[, A_C_OF := NULL][, B_C_ST03 := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_acbc),
+               "Both A_C_OF and B_C_ST03 are missing")
+  
+  # Run without clay
+  soil_no_clay <- copy(valid_soil)[, A_CLAY_MI := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_clay),
+               "Must be of type 'numeric'")
+  
+  # Run without bulk density
+  soil_no_dens <- copy(valid_soil)[, A_DENSITY_SA := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = soil_no_dens),
+               "Must be of type 'numeric'")
+})
+
+
+
+test_that("rc_check_inputs correctly validates crop data", {
+  # Generate valid soil properties data
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01", "2024-04-01", "2025-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01", "2024-10-01", "2025-10-01"),
+    B_LU = rep("nl_308", 4),
+    B_LU_NAME = rep("erwten (droog te oogsten)", 4),
+    B_LU_HC = rep(0.32, 4),
+    B_C_OF_INPUT = rep(1500, 4)
+  )
+  
+  valid_amendment <- data.table(
+    P_ID = rep(1, 4),
+    P_NAME = rep('cattle_slurry', 4),
+    P_DOSE = rep(63300, 4),
+    P_HC = rep(0.7,4),
+    P_C_OF = rep(35, 4),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01", "2024-05-01", "2025-05-01"))
+  
+ 
+  
+  # Run as a list (not allowed)
+  crop_list <- as.list(valid_crop)
+  expect_error(rc_check_inputs(rothc_rotation = crop_list,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil), "Must be a data.table")
+  
+  # Without B_LU_START
+  crop_no_start <- copy(valid_crop)[,B_LU_START := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_start,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # Without B_LU_END
+  crop_no_end <- copy(valid_crop)[,B_LU_END := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_end,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # Without B_LU
+  crop_no_lu <- copy(valid_crop)[,B_LU := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_lu,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # Without B_LU_HC
+  crop_no_hc <- copy(valid_crop)[,B_LU_HC := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_hc,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # Without B_C_OF_INPUT
+  crop_no_bc <- copy(valid_crop)[,B_C_OF_INPUT := NULL]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_no_bc,
+                  rothc_amendment = valid_amendment,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+})
+
+
+test_that("rc_check_inputs correctly validates amendment data", {
+  # Generate valid soil properties data
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_INPUT = c(1500, 1500)
+  )
+  
+  valid_amendment <- data.table(
+    P_ID = c(1, 1),
+    P_NAME = c('cattle_slurry', 'cattle_slurry'),
+    P_DOSE = c(63300, 63300),
+    P_HC = c(0.7,0.7),
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+  
+  
+  
+  # Run as a list (not allowed)
+  amendment_list <- as.list(valid_amendment)
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_list,
+                  soil_properties = valid_soil), "Must be a data.table")
+  
+  # run without HC
+  amendment_no_hc <- copy(valid_amendment)[, P_HC := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_no_hc,
+                  soil_properties = valid_soil),
+               "missing elements")
+  
+  # run without dose
+  amendment_no_dose <- copy(valid_amendment)[, P_DOSE := NULL]
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_no_dose,
+                  soil_properties = valid_soil))
+  
+  amendment_no_pc <- copy(valid_amendment)[, P_C_OF := NULL]
+  expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_no_pc,
+                  soil_properties = valid_soil))
+  
+  amendment_no_date <- copy(valid_amendment)[, P_DATE_FERTILIZATION := NULL]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                  rothc_amendment = amendment_no_date,
+                  soil_properties = valid_soil),
+               "missing elements")
+})
+
+
+
+test_that("rc_check_inputs handles edge case with maximum valid values", {
+  # Create data with maximum valid values
+  valid_soil_max <- data.table(
+    A_C_OF = 200,  # Assuming high but valid
+    B_C_ST03 = 500,  # Assuming high but valid
+    A_CLAY_MI = 75,
+    A_DENSITY_SA = 2.0
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01"),
+    B_LU_END = c("2022-10-01"),
+    B_LU = c("nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)"),
+    B_LU_HC = c(1.0),  # Maximum
+    B_C_OF_INPUT = c(10000)  # High value
+  )
+  
+  valid_amendment <- data.table(
+    P_ID = c(1),
+    P_NAME = c('cattle_slurry'),
+    P_DOSE = c(100000),
+    P_HC = c(1.0),  # Maximum
+    P_C_OF = c(100),
+    P_DATE_FERTILIZATION = c("2022-05-01")
+  )
+  
+  # Should work with high but valid values
+  expect_no_error(
+    rc_check_inputs(rothc_rotation = valid_crop,
+                    rothc_amendment = valid_amendment,
+                    soil_properties = valid_soil_max)
+  )
+})
+
+test_that("rc_check_inputs handles multiple amendment dates correctly", {
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01"),
+    B_LU_END = c("2022-10-01"),
+    B_LU = c("nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)"),
+    B_LU_HC = c(0.32),
+    B_C_OF_INPUT = c(1500)
+  )
+  
+  # Multiple amendments at different times
+  multi_amendment <- data.table(
+    P_ID = c(1, 1, 2),
+    P_NAME = c('cattle_slurry', 'cattle_slurry', 'compost'),
+    P_DOSE = c(63300, 50000, 40000),
+    P_HC = c(0.7, 0.7, 0.5),
+    P_C_OF = c(35, 35, 45),
+    P_DATE_FERTILIZATION = c("2022-03-01", "2022-05-01", "2022-07-15")
+  )
+  
+  expect_no_error(
+    rc_check_inputs(rothc_rotation = valid_crop,
+                    rothc_amendment = multi_amendment,
+                    soil_properties = valid_soil)
+  )
+})
+
+test_that("rc_check_inputs validates date ordering in crops", {
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  # Crop with end before start (invalid dates)
+  crop_bad_dates <- data.table(
+    B_LU_START = c("2022-10-01"),  # Start after end
+    B_LU_END = c("2022-04-01"),
+    B_LU = c("nl_308"),
+    B_LU_NAME = c("erwten (droog te oogsten)"),
+    B_LU_HC = c(0.32),
+    B_C_OF_INPUT = c(1500)
+  )
+  
+  # rc_check_inputs validates that dates are valid Date objects yet ordering is not logical
+  expect_error(
+    rc_check_inputs(rothc_rotation = crop_bad_dates,
+                    rothc_amendment = NULL,
+                    soil_properties = valid_soil),
+    "start date after end date in row: 1"
+  )
+  
+  # rc_check_inputs validates that dates are valid Date objects yet ordering is not logical with multiple crops
+  # wrong crop in row 2
+  multi_crop_bad_dates <- data.table(
+    B_LU_START = c("2022-04-01", "2023-10-01", "2024-04-01"),  # Start after end
+    B_LU_END = c("2022-10-01", "2023-04-01", "2024-10-01"),
+    B_LU = rep("nl_308", 3),
+    B_LU_NAME = rep("erwten (droog te oogsten)", 3),
+    B_LU_HC = rep(0.32, 3),
+    B_C_OF_INPUT = rep(1500, 3)
+  )
+  
+  expect_error(
+    rc_check_inputs(rothc_rotation = multi_crop_bad_dates,
+                    rothc_amendment = NULL,
+                    soil_properties = valid_soil),
+    "start date after end date in row: 2"
+  )
+  
+  # wrong crop in rows 1 and 2
+  multi_crop_bad_dates <- data.table(
+    B_LU_START = c("2022-10-01", "2023-10-01", "2024-04-01"),  # Start after end
+    B_LU_END = c("2022-04-01", "2023-04-01", "2024-10-01"),
+    B_LU = rep("nl_308", 3),
+    B_LU_NAME = rep("erwten (droog te oogsten)", 3),
+    B_LU_HC = rep(0.32, 3),
+    B_C_OF_INPUT = rep(1500, 3)
+  )
+  
+  expect_error(
+    rc_check_inputs(rothc_rotation = multi_crop_bad_dates,
+                    rothc_amendment = NULL,
+                    soil_properties = valid_soil),
+    "start date after end date in row: 1, 2"
+  )
+})
+
+test_that("rc_check_inputs handles missing optional P_NAME field", {
+  valid_soil <- data.table(
+    A_C_OF = 50,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  valid_crop <- data.table(
+    B_LU_START = c("2022-04-01"),
+    B_LU_END = c("2022-10-01"),
+    B_LU = c("nl_308"),
+    B_LU_HC = c(0.32),
+    B_C_OF_INPUT = c(1500)
+  )
+  
+  # Amendment without P_NAME (optional field)
+  amendment_no_name <- data.table(
+    P_ID = c(1),
+    P_DOSE = c(63300),
+    P_HC = c(0.7),
+    P_C_OF = c(35),
+    P_DATE_FERTILIZATION = c("2022-05-01")
+  )
+  
+  expect_no_error(
+    rc_check_inputs(rothc_rotation = valid_crop,
+                    rothc_amendment = amendment_no_name,
+                    soil_properties = valid_soil)
+  )
+})
 
 test_that("rc_calculate_bd correctly calculates bulk density",{
   dt <- data.table(A_CLAY_MI = 12,
@@ -312,7 +871,6 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
     C_dt <- dt[, A_C_OF := 80]
     expect_no_error(rc_calculate_bd(dt = C_dt))
 })
-
 
 
 test_that("rc_calculate_B_C_OF correctly validates input", {
@@ -803,7 +1361,7 @@ test_that("rc_time_period handles edge cases", {
 
 
 
-test_that("rc_update_parms validates c_fractions sum does not exceed 1", {
+test_that("rc_update_parms validates c_fractions sum (minus IOM) does not exceed 1", {
   # Set default crop table
   crops <- data.table(crop = c(1, 2),
                       B_LU_START = c("2022-01-01", "2023-01-01"),
@@ -917,193 +1475,794 @@ test_that("rc_update_parms returns default initialisation_method", {
   result <- rc_update_parms(parms, crops = crops)
   expect_equal(result$initialisation_method, 'none')
 })
-test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
-  # Test with W_ET_REFACT supplied
-  weather_with_correction <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = rep(NA_real_, 12),
-    W_ET_REFACT = rep(0.8, 12)
+
+
+
+test_that("rc_set_refact runs with valid input", {
+  
+  weather <- data.table(year = rep(2022:2023, each = 12),
+    month = rep(1:12,2),
+    W_TEMP_MEAN_MONTH = rep(c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2), 2),
+    W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8), 2),
+    W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),2)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    D_MAKKINK_JAN = 0.36,
+    D_MAKKINK_FEB = 0.36,
+    D_MAKKINK_MAR = 0.36,
+    D_MAKKINK_APR = 0.52,
+    D_MAKKINK_MAY = 0.9,
+    D_MAKKINK_JUN = 1.2,
+    D_MAKKINK_JUL = 0.72,
+    D_MAKKINK_AUG = 0.36,
+    D_MAKKINK_SEP = 0.36,
+    D_MAKKINK_OCT = 0.36,
+    D_MAKKINK_NOV = 0.36,
+    D_MAKKINK_DEC = 0.36
+  )
   
-  result <- rc_update_weather(weather_with_correction, dt.time = dt.time)
+  dt.time <- rc_time_period(start_date = "2022-04-01", end_date = "2023-10-01")
   
-  expect_s3_class(result, "data.table")
-  expect_true("W_ET_REFACT" %in% names(result))
-  expect_equal(result$W_ET_REFACT, rep(0.8, 12))
+  expect_no_error(rc_set_refact(weather = weather, crop = crop, dt.time = dt.time))
+  
 })
 
-test_that("rc_update_weather handles partials NAs in W_ET_REFACT", {
-    # Test with partial NAs in W_ET_REFACT - should fill with 0.75
-    weather_partial_na <- data.table(
-      month = 1:12,
-      W_TEMP_MEAN_MONTH = rep(10, 12),
-      W_PREC_SUM_MONTH = rep(50, 12),
-      W_ET_REF_MONTH = rep(50, 12),
-      W_ET_REFACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
-    )
-    
-    dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
-    
-    result <- rc_update_weather(weather_partial_na, dt.time)
-    expect_equal(result$W_ET_REFACT, c(0.8, 0.75, 0.7, 0.75, rep(0.75, 8)))
-})
+
+test_that("rc_set_refact properly validates input", {
+  # read in data
+  weather <- data.table(year = rep(2022:2023, each = 12),
+                        month = rep(1:12,2),
+                        W_TEMP_MEAN_MONTH = rep(c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2), 2),
+                        W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8), 2),
+                        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5),2)
+  )
   
-test_that("rc_update_weather runs without W_ET_REFACT column", {
-  # Test without W_ET_REFACT column - should add default 0.75
-  weather_no_correction <- data.table(
+  crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    D_MAKKINK_JAN = 0.36,
+    D_MAKKINK_FEB = 0.36,
+    D_MAKKINK_MAR = 0.36,
+    D_MAKKINK_APR = 0.52,
+    D_MAKKINK_MAY = 0.9,
+    D_MAKKINK_JUN = 1.2,
+    D_MAKKINK_JUL = 0.72,
+    D_MAKKINK_AUG = 0.36,
+    D_MAKKINK_SEP = 0.36,
+    D_MAKKINK_OCT = 0.36,
+    D_MAKKINK_NOV = 0.36,
+    D_MAKKINK_DEC = 0.36
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-04-01", end_date = "2023-10-01")
+  
+  ## weather data ---
+  # no weather data
+  expect_error(rc_set_refact(weather = NULL, crop = crop, dt.time = dt.time), 'data.table')
+  
+  # weather data supplied as a list
+  weather_list <- as.list(weather)
+  expect_error(rc_set_refact(weather = weather_list, crop = crop, dt.time = dt.time), 'data.table')
+  
+  # missing year column
+  weather_noyr <- copy(weather)[, year := NULL]
+  expect_error(rc_set_refact(weather = weather_noyr, crop = crop, dt.time = dt.time), 'missing elements')
+  
+  # missing month column
+  weather_nomon <- copy(weather)[, month := NULL]
+  expect_error(rc_set_refact(weather = weather_nomon, crop = crop, dt.time = dt.time), 'missing elements')
+  
+  ## crop data ---
+  # no crop data
+  expect_error(rc_set_refact(weather = weather, crop = NULL, dt.time = dt.time), 'data.table')
+  
+  # crop as list
+  crop_list <- as.list(crop)
+  expect_error(rc_set_refact(weather = weather, crop = crop_list, dt.time = dt.time), 'data.table')
+  
+  # empty crop file
+  empty_crop <- data.table()
+  expect_error(rc_set_refact(weather = weather, crop = empty_crop, dt.time = dt.time), 'at least 1 row')
+  
+  # no B_LU_START
+  crop_nostart <- copy(crop)[, B_LU_START := NULL]
+  expect_error(rc_set_refact(weather = weather, crop = crop_nostart, dt.time = dt.time), 'missing elements')
+  
+  # wrong format B_LU_START
+  crop_badstart <- copy(crop)[, B_LU_START := 'wrong']
+  expect_error(rc_set_refact(weather = weather, crop = crop_badstart, dt.time = dt.time), 'ambiguous format')
+  
+  # no B_LU_END
+  crop_noend <- copy(crop)[, B_LU_END := NULL]
+  expect_error(rc_set_refact(weather = weather, crop = crop_noend, dt.time = dt.time), 'missing elements')
+  
+  # wrong format B_LU_END
+  crop_badend <- copy(crop)[, B_LU_END := 'wrong']
+  expect_error(rc_set_refact(weather = weather, crop = crop_badend, dt.time = dt.time), 'ambiguous format')
+  
+  # D_MAKKINK too high
+  crop_highmak <- copy(crop)[, D_MAKKINK_JUL := 8]
+  expect_error(rc_set_refact(weather = weather, crop = crop_highmak, dt.time = dt.time), paste0('not <= ', rc_maxval('D_MAKKINK_JUL')))
+  
+  # D_MAKKINK too low
+  crop_lowmak <- copy(crop)[, D_MAKKINK_JUL := -1]
+  expect_error(rc_set_refact(weather = weather, crop = crop_lowmak, dt.time = dt.time), paste0('not >= ', rc_minval('D_MAKKINK_JUL')))
+  
+  ## time data table ---
+  # no time table
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = NULL), 'data.table')
+  
+  # time as list
+  time_list <- as.list(dt.time)
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_list), 'data.table')
+  
+  # empty time table
+  empty_time <- data.table()
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = empty_time), 'at least 1 row')
+  
+  # missing month column
+  time_nomon <- copy(dt.time)[, month := NULL]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_nomon), 'missing elements')
+  
+  # missing year column
+  time_noyr <- copy(dt.time)[, year := NULL]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_noyr), 'missing elements')
+  
+  # too high month
+  time_highmon <- copy(dt.time)[, month := 13]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_highmon), 'not <= 12')
+  
+  # too low month
+  time_lowmon <- copy(dt.time)[, month := 0]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_lowmon), 'not >= 1')
+
+  # too low year
+  time_lowyr <- copy(dt.time)[, year := 0]
+  expect_error(rc_set_refact(weather = weather, crop = crop, dt.time = time_lowyr), 'not >= 1')
+})
+
+test_that("rc_set_refact returns correct structure and values", {
+    weather <- data.table(
+        year = rep(2022:2023, each = 12),
+        month = rep(1:12, 2),
+        W_TEMP_MEAN_MONTH = rep(c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2), 2),
+        W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8), 2),
+        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5), 2)
+      )
+    
+      crop <- data.table(
+          B_LU_START = c("2022-04-01", "2023-04-01"),
+          B_LU_END = c("2022-10-01", "2023-10-01"),
+          B_LU = c("nl_308", "nl_308"),
+          D_MAKKINK_JAN = 0.36,
+          D_MAKKINK_FEB = 0.36,
+          D_MAKKINK_MAR = 0.36,
+          D_MAKKINK_APR = 0.52,
+          D_MAKKINK_MAY = 0.9,
+          D_MAKKINK_JUN = 1.2,
+          D_MAKKINK_JUL = 0.72,
+          D_MAKKINK_AUG = 0.36,
+          D_MAKKINK_SEP = 0.36,
+          D_MAKKINK_OCT = 0.36,
+          D_MAKKINK_NOV = 0.36,
+          D_MAKKINK_DEC = 0.36
+        )
+      
+        dt.time <- rc_time_period(start_date = "2022-04-01", end_date = "2023-10-01")
+        
+          result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+          
+            # Check structure
+            expect_s3_class(result, "data.table")
+          expect_true("W_ET_REFACT" %in% names(result))
+          expect_true(all(c("year", "month") %in% names(result)))
+          
+            # Check that result covers entire time period
+            expect_equal(nrow(result), nrow(dt.time))
+          
+            # Check that default value (0.36) is applied outside crop growth period
+            expect_true(all(result[month %in% c(1, 2, 3, 11, 12), W_ET_REFACT] == 0.36))
+          
+            # Check that crop-specific values are applied during growth period
+            # April should have 0.52
+            expect_equal(result[month == 4, unique(W_ET_REFACT)], 0.52)
+          # May should have 0.9
+            expect_equal(result[month == 5, unique(W_ET_REFACT)], 0.9)
+          # June should have 1.2
+            expect_equal(result[month == 6, unique(W_ET_REFACT)], 1.2)
+          # July should have 0.72
+            expect_equal(result[month == 7, unique(W_ET_REFACT)], 0.72)
+        })
+
+  test_that("rc_set_refact handles multiple crops correctly", {
+      weather <- data.table(
+          year = rep(2022:2023, each = 12),
+          month = rep(1:12, 2),
+          W_TEMP_MEAN_MONTH = rep(c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2), 2),
+          W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8), 2),
+          W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5), 2)
+        )
+      
+        # Different crops with different Makkink factors
+        crop <- data.table(
+            B_LU_START = c("2022-04-01", "2022-11-01"),
+            B_LU_END = c("2022-09-01", "2023-03-01"),
+            B_LU = c("nl_308", "nl_259"),
+            D_MAKKINK_JAN = c(0.36, 0.5),
+            D_MAKKINK_FEB = c(0.36, 0.55),
+            D_MAKKINK_MAR = c(0.36, 0.6),
+            D_MAKKINK_APR = c(0.52, 0.4),
+            D_MAKKINK_MAY = c(0.9, 0.4),
+            D_MAKKINK_JUN = c(1.2, 0.4),
+            D_MAKKINK_JUL = c(0.72, 0.4),
+            D_MAKKINK_AUG = c(0.36, 0.4),
+            D_MAKKINK_SEP = c(0.36, 0.4),
+            D_MAKKINK_OCT = c(0.36, 0.4),
+            D_MAKKINK_NOV = c(0.36, 0.45),
+            D_MAKKINK_DEC = c(0.36, 0.48)
+          )
+        
+          dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")
+          
+            result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+            
+              expect_s3_class(result, "data.table")
+            expect_true("W_ET_REFACT" %in% names(result))
+            
+              # Check that different crops have different factors in their respective periods
+              # November 2022 should have 0.45 (from crop 2)
+              expect_equal(result[year == 2022 & month == 11, W_ET_REFACT], 0.45)
+            
+              # January 2023 should have 0.5 (from crop 2)
+              expect_equal(result[year == 2023 & month == 1, W_ET_REFACT], 0.5)
+          })
+
+  test_that("rc_set_refact handles single crop across years", {
+      weather <- data.table(
+          year = rep(2022:2024, each = 12),
+          month = rep(1:12, 3),
+          W_TEMP_MEAN_MONTH = rep(c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2), 3),
+          W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8), 3),
+          W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5), 3)
+        )
+      
+        crop <- data.table(
+            B_LU_START = "2022-04-01",
+            B_LU_END = "2024-10-01",
+            B_LU = "nl_308",
+            D_MAKKINK_JAN = 0.36,
+            D_MAKKINK_FEB = 0.36,
+            D_MAKKINK_MAR = 0.36,
+            D_MAKKINK_APR = 0.52,
+            D_MAKKINK_MAY = 0.9,
+            D_MAKKINK_JUN = 1.2,
+            D_MAKKINK_JUL = 0.72,
+            D_MAKKINK_AUG = 0.36,
+            D_MAKKINK_SEP = 0.36,
+            D_MAKKINK_OCT = 0.36,
+            D_MAKKINK_NOV = 0.36,
+            D_MAKKINK_DEC = 0.36
+          )
+        
+          dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2024-12-31")
+          
+            result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+            
+              expect_s3_class(result, "data.table")
+            
+              # Check continuity across years - May should have 0.9 in all years
+              expect_true(all(result[month == 5, W_ET_REFACT] == 0.9))
+            
+              # Check months outside crop period in 2022 (Jan-Mar)
+              expect_true(all(result[year == 2022 & month %in% 1:3, W_ET_REFACT] == 0.36))
+            
+              # Check months outside crop period in 2024 (Nov-Dec)
+              expect_true(all(result[year == 2024 & month %in% 11:12, W_ET_REFACT] == 0.36))
+          })
+
+  test_that("rc_set_refact validates input parameters", {
+      weather <- data.table(
+          year = rep(2022:2023, each = 12),
+          month = rep(1:12, 2),
+          W_TEMP_MEAN_MONTH = rep(10, 24),
+          W_PREC_SUM_MONTH = rep(50, 24),
+          W_ET_REF_MONTH = rep(50, 24)
+        )
+      
+        dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")
+        
+          # Missing required Makkink columns
+          crop_incomplete <- data.table(
+              B_LU_START = "2022-04-01",
+              B_LU_END = "2022-10-01",
+              B_LU = "nl_308",
+              D_MAKKINK_JAN = 0.36,
+              D_MAKKINK_FEB = 0.36
+              # Missing other months
+              )
+          
+            # Should error when Makkink columns are missing
+            expect_error(
+                rc_set_refact(weather = weather, crop = crop_incomplete, dt.time = dt.time),
+                "Must be of type 'numeric'"
+              )
+        })
+
+  test_that("rc_set_refact handles edge case dates correctly", {
+      weather <- data.table(
+          year = rep(2022, 12),
+          month = 1:12,
+          W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
+          W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+          W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5)
+        )
+      
+        # Crop starting and ending on first day of month
+        crop <- data.table(
+            B_LU_START = "2022-05-01",
+            B_LU_END = "2022-08-01",
+            B_LU = "nl_308",
+            D_MAKKINK_JAN = 0.36,
+            D_MAKKINK_FEB = 0.36,
+            D_MAKKINK_MAR = 0.36,
+            D_MAKKINK_APR = 0.36,
+            D_MAKKINK_MAY = 0.9,
+            D_MAKKINK_JUN = 1.2,
+            D_MAKKINK_JUL = 0.72,
+            D_MAKKINK_AUG = 0.5,
+            D_MAKKINK_SEP = 0.36,
+            D_MAKKINK_OCT = 0.36,
+            D_MAKKINK_NOV = 0.36,
+            D_MAKKINK_DEC = 0.36
+          )
+        
+          dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+          
+            result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+            
+              expect_s3_class(result, "data.table")
+            
+              # Verify correct months are covered
+              expect_equal(result[month == 5, W_ET_REFACT], 0.9)
+            expect_equal(result[month == 6, W_ET_REFACT], 1.2)
+            expect_equal(result[month == 7, W_ET_REFACT], 0.72)
+            expect_equal(result[month == 8, W_ET_REFACT], 0.5)
+            
+              # Months outside should have default
+              expect_equal(result[month == 4, W_ET_REFACT], 0.36)
+            expect_equal(result[month == 9, W_ET_REFACT], 0.36)
+          })
+
+  test_that("rc_set_refact handles overlapping crop periods", {
+      weather <- data.table(
+          year = rep(2022, 12),
+          month = 1:12,
+          W_TEMP_MEAN_MONTH = rep(10, 12),
+          W_PREC_SUM_MONTH = rep(50, 12),
+          W_ET_REF_MONTH = rep(50, 12)
+        )
+      
+        # Overlapping crops (should use highest value for overlapping periods)
+        crop <- data.table(
+            B_LU_START = c("2022-04-01", "2022-07-01"),
+            B_LU_END = c("2022-09-01", "2022-10-01"),
+            B_LU = c("nl_308", "nl_259"),
+            D_MAKKINK_JAN = c(0.36, 0.36),
+            D_MAKKINK_FEB = c(0.36, 0.36),
+            D_MAKKINK_MAR = c(0.36, 0.36),
+            D_MAKKINK_APR = c(0.52, 0.40),
+            D_MAKKINK_MAY = c(0.9, 0.40),
+            D_MAKKINK_JUN = c(1.2, 0.40),
+            D_MAKKINK_JUL = c(0.72, 0.80),
+            D_MAKKINK_AUG = c(0.9, 0.85),
+            D_MAKKINK_SEP = c(0.36, 0.75),
+            D_MAKKINK_OCT = c(0.36, 0.70),
+            D_MAKKINK_NOV = c(0.36, 0.36),
+            D_MAKKINK_DEC = c(0.36, 0.36)
+          )
+        
+          dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+          
+            result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+            
+            expect_s3_class(result, "data.table")
+            expect_true("W_ET_REFACT" %in% names(result))
+            
+            # Check that result covers entire time period
+            expect_equal(nrow(result), nrow(dt.time))
+            
+            # July should have value from second crop (0.80) since it overlaps and it is the highest value
+            expect_true(0.80 %in% result[month == 7, W_ET_REFACT])
+            
+            # August should have value from 1st crop (0.9) since crops overlap and it is the highest value
+            expect_true(0.9 %in% result[month == 8, W_ET_REFACT])
+          })
+
+  test_that("rc_set_refact returns correct default for all non-crop months", {
+      weather <- data.table(
+          year = rep(2022, 12),
+          month = 1:12,
+          W_TEMP_MEAN_MONTH = rep(10, 12),
+          W_PREC_SUM_MONTH = rep(50, 12),
+          W_ET_REF_MONTH = rep(50, 12)
+        )
+      
+        # Very short crop period
+        crop <- data.table(
+            B_LU_START = "2022-06-01",
+            B_LU_END = "2022-07-01",
+            B_LU = "nl_308",
+            D_MAKKINK_JAN = 0.36,
+            D_MAKKINK_FEB = 0.36,
+            D_MAKKINK_MAR = 0.36,
+            D_MAKKINK_APR = 0.36,
+            D_MAKKINK_MAY = 0.36,
+            D_MAKKINK_JUN = 1.2,
+            D_MAKKINK_JUL = 0.72,
+            D_MAKKINK_AUG = 0.36,
+            D_MAKKINK_SEP = 0.36,
+            D_MAKKINK_OCT = 0.36,
+            D_MAKKINK_NOV = 0.36,
+            D_MAKKINK_DEC = 0.36
+          )
+        
+          dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+          
+            result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+            
+              # All months except June and July should have default 0.36
+              expect_true(all(result[!month %in% c(6, 7), W_ET_REFACT] == 0.36))
+            
+              # June and July should have crop-specific values
+              expect_equal(result[month == 6, W_ET_REFACT], 1.2)
+            expect_equal(result[month == 7, W_ET_REFACT], 0.72)
+          })
+
+  test_that("rc_set_refact preserves data.table by reference semantics", {
+      weather_original <- data.table(
+          year = rep(2022, 12),
+          month = 1:12,
+          W_TEMP_MEAN_MONTH = rep(10, 12),
+          W_PREC_SUM_MONTH = rep(50, 12),
+          W_ET_REF_MONTH = rep(50, 12)
+        )
+      
+        crop_original <- data.table(
+            B_LU_START = "2022-04-01",
+            B_LU_END = "2022-10-01",
+            B_LU = "nl_308",
+            D_MAKKINK_JAN = 0.36, D_MAKKINK_FEB = 0.36, D_MAKKINK_MAR = 0.36,
+            D_MAKKINK_APR = 0.52, D_MAKKINK_MAY = 0.9, D_MAKKINK_JUN = 1.2,
+            D_MAKKINK_JUL = 0.72, D_MAKKINK_AUG = 0.36, D_MAKKINK_SEP = 0.36,
+            D_MAKKINK_OCT = 0.36, D_MAKKINK_NOV = 0.36, D_MAKKINK_DEC = 0.36
+          )
+        
+          dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+          
+            # Store original row counts
+            weather_rows_before <- nrow(weather_original)
+            crop_rows_before <- nrow(crop_original)
+            
+              result <- rc_set_refact(weather = weather_original, crop = crop_original, dt.time = dt.time)
+              
+                # Original data tables should remain unchanged (function uses copy())
+                expect_equal(nrow(weather_original), weather_rows_before)
+              expect_equal(nrow(crop_original), crop_rows_before)
+              expect_false("W_ET_REFACT" %in% names(weather_original))
+            })
+
+  test_that("rc_set_refact handles year-spanning crop periods", {
+      weather <- data.table(
+          year = rep(2022:2023, each = 12),
+          month = rep(1:12, 2),
+          W_TEMP_MEAN_MONTH = rep(10, 24),
+          W_PREC_SUM_MONTH = rep(50, 24),
+          W_ET_REF_MONTH = rep(50, 24)
+        )
+      
+        # Crop spanning from fall to spring
+        crop <- data.table(
+            B_LU_START = "2022-10-01",
+            B_LU_END = "2023-04-01",
+            B_LU = "nl_259",
+            D_MAKKINK_JAN = 0.5,
+            D_MAKKINK_FEB = 0.55,
+            D_MAKKINK_MAR = 0.6,
+            D_MAKKINK_APR = 0.65,
+            D_MAKKINK_MAY = 0.4,
+            D_MAKKINK_JUN = 0.4,
+            D_MAKKINK_JUL = 0.4,
+            D_MAKKINK_AUG = 0.4,
+            D_MAKKINK_SEP = 0.4,
+            D_MAKKINK_OCT = 0.45,
+            D_MAKKINK_NOV = 0.48,
+            D_MAKKINK_DEC = 0.52
+          )
+        
+          dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")
+          
+            result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+            
+              expect_s3_class(result, "data.table")
+            
+              # Check October 2022
+              expect_equal(result[year == 2022 & month == 10, W_ET_REFACT], 0.45)
+            
+              # Check winter months 2022-2023
+              expect_equal(result[year == 2022 & month == 11, W_ET_REFACT], 0.48)
+            expect_equal(result[year == 2022 & month == 12, W_ET_REFACT], 0.52)
+            expect_equal(result[year == 2023 & month == 1, W_ET_REFACT], 0.5)
+            expect_equal(result[year == 2023 & month == 2, W_ET_REFACT], 0.55)
+            
+              # Check months outside crop period
+              expect_equal(result[year == 2022 & month == 5, W_ET_REFACT], 0.36)
+            expect_equal(result[year == 2023 & month == 6, W_ET_REFACT], 0.36)
+          })
+
+test_that("rc_set_refact handles single month crop period", {
+  weather <- data.table(
+    year = rep(2022, 12),
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
     W_ET_REF_MONTH = rep(50, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  # Very short crop - only June
+  crop <- data.table(
+    B_LU_START = "2022-06-01",
+    B_LU_END = "2022-06-30",
+    B_LU = "nl_308",
+    D_MAKKINK_JAN = 0.36,
+    D_MAKKINK_FEB = 0.36,
+    D_MAKKINK_MAR = 0.36,
+    D_MAKKINK_APR = 0.36,
+    D_MAKKINK_MAY = 0.36,
+    D_MAKKINK_JUN = 1.5,
+    D_MAKKINK_JUL = 0.36,
+    D_MAKKINK_AUG = 0.36,
+    D_MAKKINK_SEP = 0.36,
+    D_MAKKINK_OCT = 0.36,
+    D_MAKKINK_NOV = 0.36,
+    D_MAKKINK_DEC = 0.36
+  )
   
-  result <- rc_update_weather(weather_no_correction, dt.time)
-  expect_true("W_ET_REFACT" %in% names(result))
-  expect_equal(result$W_ET_REFACT, rep(0.75, 12))
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+  
+  # Only June should have the crop-specific value
+  expect_equal(result[month == 6, W_ET_REFACT], 1.5)
+  expect_true(all(result[month != 6, W_ET_REFACT] == 0.36))
 })
 
-test_that("rc_update_weather validates W_ET_REFACT ranges", {
-  # Test with out of range W_ET_REFACT values (too high)
-  invalid_high <- data.table(
+test_that("rc_set_refact removes existing W_ET_REFACT from weather", {
+  # Weather already has W_ET_REFACT - should be replaced
+  weather <- data.table(
+    year = rep(2022, 12),
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
     W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = rep(2.5, 12)
+    W_ET_REFACT = rep(0.99, 12)  # This should be overwritten
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
-  
-  expect_error(rc_update_weather(invalid_high, dt.time), "W_ET_REFACT")
-  
-  # Test with negative W_ET_REFACT values
-  invalid_negative <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = rep(-0.1, 12)
+  crop <- data.table(
+    B_LU_START = "2022-05-01",
+    B_LU_END = "2022-07-01",
+    B_LU = "nl_308",
+    D_MAKKINK_JAN = 0.36, D_MAKKINK_FEB = 0.36, D_MAKKINK_MAR = 0.36,
+    D_MAKKINK_APR = 0.36, D_MAKKINK_MAY = 0.8, D_MAKKINK_JUN = 1.0,
+    D_MAKKINK_JUL = 0.7, D_MAKKINK_AUG = 0.36, D_MAKKINK_SEP = 0.36,
+    D_MAKKINK_OCT = 0.36, D_MAKKINK_NOV = 0.36, D_MAKKINK_DEC = 0.36
   )
   
-  expect_error(rc_update_weather(invalid_negative, dt.time), "W_ET_REFACT")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+  
+  # Should NOT have 0.99 anymore
+  expect_false(any(result$W_ET_REFACT == 0.99))
+  expect_equal(result[month == 5, W_ET_REFACT], 0.8)
+  expect_equal(result[month == 6, W_ET_REFACT], 1.0)
+  expect_equal(result[month == 7, W_ET_REFACT], 0.7)
 })
 
-test_that("rc_update_weather boundary values for W_ET_REFACT", {
-  # Test with W_ET_REFACT at lower boundary (0.3)
-  weather_lower <- data.table(
+test_that("rc_set_refact handles crop with varying Makkink values", {
+  weather <- data.table(
+    year = rep(2022, 12),
     month = 1:12,
     W_TEMP_MEAN_MONTH = rep(10, 12),
     W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = rep(0.3, 12)
+    W_ET_REF_MONTH = rep(50, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
-  
-  expect_no_error(rc_update_weather(weather_lower, dt.time))
-  
-  # Test with W_ET_REFACT at upper boundary (2)
-  weather_upper <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = rep(2, 12)
+  # Crop with extreme variation in Makkink factors
+  crop <- data.table(
+    B_LU_START = "2022-01-01",
+    B_LU_END = "2022-12-31",
+    B_LU = "test_crop",
+    D_MAKKINK_JAN = 0.3,   # Minimum
+    D_MAKKINK_FEB = 0.5,
+    D_MAKKINK_MAR = 0.7,
+    D_MAKKINK_APR = 0.9,
+    D_MAKKINK_MAY = 1.1,
+    D_MAKKINK_JUN = 1.5,
+    D_MAKKINK_JUL = 1.8,
+    D_MAKKINK_AUG = 2.0,   # Maximum
+    D_MAKKINK_SEP = 1.5,
+    D_MAKKINK_OCT = 1.0,
+    D_MAKKINK_NOV = 0.6,
+    D_MAKKINK_DEC = 0.4
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
-  result_upper <- rc_update_weather(weather_upper, dt.time)
-  expect_equal(result_upper$W_ET_REFACT, rep(2, 12))
+  result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
   
-  # Test with mixed W_ET_REFACT values
-  weather_mixed <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = seq(0.3, 2, length.out = 12)
-  )
-  
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
-  
-  result_mixed <- rc_update_weather(weather_mixed, dt.time)
-  expect_equal(result_mixed$W_ET_REFACT, seq(0.3, 2, length.out = 12), tolerance = 1e-10)
+  # Verify all months get their specific values
+  expect_equal(result[month == 1, W_ET_REFACT], 0.3)
+  expect_equal(result[month == 6, W_ET_REFACT], 1.5)
+  expect_equal(result[month == 8, W_ET_REFACT], 2.0)
+  expect_equal(result[month == 12, W_ET_REFACT], 0.4)
 })
 
-test_that("rc_update_weather default weather includes W_ET_REFACT", {
-  # When no weather data is provided, default should include W_ET_REFACT
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
-  
-  default_weather <- rc_update_weather(NULL, dt.time)
-  
-  expect_true("W_ET_REFACT" %in% names(default_weather))
-  expect_equal(default_weather$W_ET_REFACT, rep(0.75, 12))
-  expect_equal(nrow(default_weather), 12)
-  expect_equal(ncol(default_weather), 7)
-})
-
-test_that("rc_update_weather with only actual ET and W_ET_REFACT", {
-  # Test scenario with only actual ET and W_ET_REFACT
-  weather_actual_only <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = rep(40, 12),
-    W_ET_REFACT = rep(0.85, 12)
+test_that("rc_set_refact merges correctly with partial weather data", {
+  # Weather data missing some months
+  weather <- data.table(
+    year = 2022,
+    month = c(1, 3, 5, 7, 9, 11),  # Only odd months
+    W_TEMP_MEAN_MONTH = rep(10, 6),
+    W_PREC_SUM_MONTH = rep(50, 6),
+    W_ET_REF_MONTH = rep(50, 6)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
-  
-  result <- rc_update_weather(weather_actual_only, dt.time)
-  expect_true("W_ET_REFACT" %in% names(result))
-  expect_equal(result$W_ET_REFACT, rep(0.85, 12))
-})
-
-test_that("rc_update_weather edge case with both ET types and W_ET_REFACT", {
-  # Both reference and actual ET provided with W_ET_REFACT
-  weather_both <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = c(rep(40, 6), rep(NA_real_, 6)),
-    W_ET_REFACT = rep(0.8, 12)
+  crop <- data.table(
+    B_LU_START = "2022-04-01",
+    B_LU_END = "2022-08-01",
+    B_LU = "nl_308",
+    D_MAKKINK_JAN = 0.36, D_MAKKINK_FEB = 0.36, D_MAKKINK_MAR = 0.36,
+    D_MAKKINK_APR = 0.5, D_MAKKINK_MAY = 0.9, D_MAKKINK_JUN = 1.2,
+    D_MAKKINK_JUL = 0.7, D_MAKKINK_AUG = 0.5, D_MAKKINK_SEP = 0.36,
+    D_MAKKINK_OCT = 0.36, D_MAKKINK_NOV = 0.36, D_MAKKINK_DEC = 0.36
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
-  result <- rc_update_weather(weather_both, dt.time)
-  expect_equal(result$W_ET_REFACT, rep(0.8, 12))
+  result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+  
+  # Should cover all 12 months in dt.time
   expect_equal(nrow(result), 12)
+  expect_true("W_ET_REFACT" %in% names(result))
+  
+  # Crop months should have correct values
+  expect_equal(result[month == 5, W_ET_REFACT], 0.9)
+  expect_equal(result[month == 7, W_ET_REFACT], 0.7)
 })
 
-test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
-  # Ensure no side effects on other columns
-  weather_original <- data.table(
+test_that("rc_set_refact handles successive crops correctly", {
+  weather <- data.table(
+    year = rep(2022, 12),
     month = 1:12,
-    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
-    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5)
+    W_TEMP_MEAN_MONTH = rep(10, 12),
+    W_PREC_SUM_MONTH = rep(50, 12),
+    W_ET_REF_MONTH = rep(50, 12)
   )
   
-  dt.time <- rotsee::rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  # Two successive crops with no gap
+  crop <- data.table(
+    B_LU_START = c("2022-03-01", "2022-07-01"),
+    B_LU_END = c("2022-06-30", "2022-11-01"),
+    B_LU = c("crop1", "crop2"),
+    D_MAKKINK_JAN = c(0.36, 0.36),
+    D_MAKKINK_FEB = c(0.36, 0.36),
+    D_MAKKINK_MAR = c(0.6, 0.36),
+    D_MAKKINK_APR = c(0.8, 0.36),
+    D_MAKKINK_MAY = c(1.0, 0.36),
+    D_MAKKINK_JUN = c(1.2, 0.36),
+    D_MAKKINK_JUL = c(0.36, 0.7),
+    D_MAKKINK_AUG = c(0.36, 0.9),
+    D_MAKKINK_SEP = c(0.36, 1.1),
+    D_MAKKINK_OCT = c(0.36, 1.3),
+    D_MAKKINK_NOV = c(0.36, 0.8),
+    D_MAKKINK_DEC = c(0.36, 0.36)
+  )
   
-  result <- rc_update_weather(weather_original, dt.time)
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
-  # Check original columns are preserved
-  expect_equal(result$month, weather_original$month)
-  expect_equal(result$W_TEMP_MEAN_MONTH, weather_original$W_TEMP_MEAN_MONTH)
-  expect_equal(result$W_PREC_SUM_MONTH, weather_original$W_PREC_SUM_MONTH)
-  expect_equal(result$W_ET_REF_MONTH, weather_original$W_ET_REF_MONTH)
+  result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+  
+  # First crop period (Mar-Jun)
+  expect_equal(result[month == 3, W_ET_REFACT], 0.6)
+  expect_equal(result[month == 4, W_ET_REFACT], 0.8)
+  
+  # Second crop period (Jul-Nov)
+  expect_equal(result[month == 8, W_ET_REFACT], 0.9)
+  expect_equal(result[month == 10, W_ET_REFACT], 1.3)
+  
+  # Gap periods
+  expect_equal(result[month == 1, W_ET_REFACT], 0.36)
+  expect_equal(result[month == 12, W_ET_REFACT], 0.36)
 })
+
+test_that("rc_set_refact handles multi-year simulation with single crop", {
+  weather <- data.table(
+    year = rep(2022:2025, each = 12),
+    month = rep(1:12, 4),
+    W_TEMP_MEAN_MONTH = rep(10, 48),
+    W_PREC_SUM_MONTH = rep(50, 48),
+    W_ET_REF_MONTH = rep(50, 48)
+  )
+  
+  # Long-duration crop spanning multiple years
+  crop <- data.table(
+    B_LU_START = "2023-01-01",
+    B_LU_END = "2024-12-31",
+    B_LU = "perennial",
+    D_MAKKINK_JAN = 0.4, D_MAKKINK_FEB = 0.45, D_MAKKINK_MAR = 0.5,
+    D_MAKKINK_APR = 0.6, D_MAKKINK_MAY = 0.8, D_MAKKINK_JUN = 1.0,
+    D_MAKKINK_JUL = 1.2, D_MAKKINK_AUG = 1.1, D_MAKKINK_SEP = 0.9,
+    D_MAKKINK_OCT = 0.7, D_MAKKINK_NOV = 0.5, D_MAKKINK_DEC = 0.4
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2025-12-31")
+  
+  result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+  
+  expect_equal(nrow(result), 48)
+  
+  # 2022 should all be default
+  expect_true(all(result[year == 2022, W_ET_REFACT] == 0.36))
+  
+  # 2023 and 2024 should have crop values
+  expect_true(all(result[year == 2023 & month == 7, W_ET_REFACT] == 1.2))
+  expect_true(all(result[year == 2024 & month == 5, W_ET_REFACT] == 0.8))
+  
+  # 2025 should be default
+  expect_true(all(result[year == 2025, W_ET_REFACT] == 0.36))
+})
+
+test_that("rc_set_refact preserves all weather columns", {
+  weather <- data.table(
+    year = rep(2022, 12),
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = seq(5, 16, length.out = 12),
+    W_PREC_SUM_MONTH = seq(40, 90, length.out = 12),
+    W_ET_REF_MONTH = seq(10, 100, length.out = 12),
+    W_ET_ACT_MONTH = seq(8, 80, length.out = 12),
+    custom_column = 1:12
+  )
+  
+  crop <- data.table(
+    B_LU_START = "2022-04-01",
+    B_LU_END = "2022-09-01",
+    B_LU = "nl_308",
+    D_MAKKINK_JAN = 0.36, D_MAKKINK_FEB = 0.36, D_MAKKINK_MAR = 0.36,
+    D_MAKKINK_APR = 0.5, D_MAKKINK_MAY = 0.9, D_MAKKINK_JUN = 1.2,
+    D_MAKKINK_JUL = 0.7, D_MAKKINK_AUG = 0.5, D_MAKKINK_SEP = 0.4,
+    D_MAKKINK_OCT = 0.36, D_MAKKINK_NOV = 0.36, D_MAKKINK_DEC = 0.36
+  )
+  
+  dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
+  
+  result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+  
+  # All original columns should be preserved
+  expect_true(all(c("W_TEMP_MEAN_MONTH", "W_PREC_SUM_MONTH", "W_ET_REF_MONTH", 
+                    "W_ET_ACT_MONTH", "custom_column") %in% names(result)))
+  
+  # Weather data should be unchanged
+  expect_equal(result$W_TEMP_MEAN_MONTH, seq(5, 16, length.out = 12))
+  expect_equal(result$custom_column, 1:12)
+})
+
+
+
 test_that("rc_visualize_plot runs without error", {
   # Use a small subset of your debug output
   dt <- data.table(
