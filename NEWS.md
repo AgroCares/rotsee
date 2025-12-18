@@ -1,25 +1,23 @@
 # rotsee UNRELEASED
 ## added
 * test helper factories to aid with unit test creation
+
+## changed
+* split total C input `B_C_OF_INPUT` into separate C input from plants `B_C_OF_CULT` and C input from amendments `B_C_OF_AMENDMENT` 
+* replaced weather parameter `W_ET_POT_MONTH` with `W_ET_REF_MONTH` to align with scientific standard
+* renamed function `rc_calculate_B_C_OF` to `rc_calculate_bcof` for ease of application
+
+## fixed 
+* calculation of total C input in DR_amendment initialisation now correctly expresses kg C/ha when amendment inputs are provided as `P_C_OF` and `P_DOSE`
+
 # rotsee v0.2.1 2025-12-18
 ## added 
 * new function `rc_set_refact` to calculate `W_ET_REFACT` for the weather data table based on grown crops
 * unit tests for `rc_set_refact` and `rc_check_inputs`
 
 ## changed
-* split total C input `B_C_OF_INPUT` into separate C input from plants `B_C_OF_CULT` and C input from amendments `B_C_OF_AMENDMENT` 
-* replaced weather parameter `W_ET_POT_MONTH` with `W_ET_REF_MONTH` to align with scientific standard
-* renamed function `rc_calculate_B_C_OF` to `rc_calculate_bcof` for ease of application
-## changed
 * news of `rotsee v0.1.4`, to better reflect the updates of introduced parameters table
 * updated parameter table with new inputs
-
-## fixed 
-* calculation of total C input in DR_amendment initialisation now correctly expresses kg C/ha when amendment inputs are provided as `P_C_OF` and `P_DOSE`
-
-
-
-# rotsee v0.2.0 2025-12-10
 
 # rotsee v0.2.0 2025-12-10
 
