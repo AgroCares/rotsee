@@ -14,7 +14,7 @@ rc_update_weather(dt = NULL, dt.time = dt.time)
 *W_PREC_SUM_MONTH (mm)
 *W_ET_REF_MONTH (mm)
 *W_ET_ACT_MONTH (mm; optional, can be NA)
-*W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
+*W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA and W_ET_REF_MONTH is supplied)
 If not supplied, default monthly weather based on the Netherlands is added}
 
 \item{dt.time}{Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}}
