@@ -119,14 +119,8 @@ test_that("rc_update_weather default weather replicates correctly for simulation
 
 test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
   # Test with W_ET_REFACT supplied
-  weather_with_correction <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = rep(NA_real_, 12),
-    W_ET_REFACT = rep(0.8, 12)
-  )
+  weather_with_correction <- create_weather()[, W_ET_REFACT := 0.8]
+   
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
@@ -139,13 +133,8 @@ test_that("rc_update_weather handles W_ET_REFACT parameter correctly", {
 
 test_that("rc_update_weather handles partials NAs in W_ET_REFACT", {
   # Test with partial NAs in W_ET_REFACT - should fill with 0.75
-  weather_partial_na <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = c(0.8, NA, 0.7, NA, rep(0.75, 8))
-  )
+  weather_partial_na <- create_weather()[, W_ET_REFACT := c(0.8, NA, 0.7, NA, rep(0.75, 8))]
+  
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
@@ -155,12 +144,7 @@ test_that("rc_update_weather handles partials NAs in W_ET_REFACT", {
 
 test_that("rc_update_weather runs without W_ET_REFACT column", {
   # Test without W_ET_REFACT column - should add default 0.75
-  weather_no_correction <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12)
-  )
+  weather_no_correction <- create_weather()
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
@@ -171,52 +155,29 @@ test_that("rc_update_weather runs without W_ET_REFACT column", {
 
 test_that("rc_update_weather validates W_ET_REFACT ranges", {
   # Test with out of range W_ET_REFACT values (too high)
-  invalid_high <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = rep(2.5, 12)
-  )
-  
+  invalid_high <- create_weather()[, W_ET_REFACT := 2.5]
+    
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
-  expect_error(rc_update_weather(invalid_high, dt.time), "W_ET_REFACT")
+  expect_error(rc_update_weather(invalid_high, dt.time), paste0("not <= ", rc_maxval('W_ET_REFACT')))
   
   # Test with negative W_ET_REFACT values
-  invalid_negative <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = rep(-0.1, 12)
-  )
-  
-  expect_error(rc_update_weather(invalid_negative, dt.time), "W_ET_REFACT")
+  invalid_negative <- create_weather()[, W_ET_REFACT := -0.1]
+ 
+  expect_error(rc_update_weather(invalid_negative, dt.time), paste0("not >= ", rc_minval('W_ET_REFACT')))
 })
 
 test_that("rc_update_weather boundary values for W_ET_REFACT", {
   # Test with W_ET_REFACT at lower boundary (0.3)
-  weather_lower <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = rep(0.3, 12)
-  )
-  
+  weather_lower <- create_weather()[, W_ET_REFACT := 0.3]
+    
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
-  expect_no_error(rc_update_weather(weather_lower, dt.time))
+  result_lower <- rc_update_weather(weather_lower, dt.time)
+  expect_equal(result_lower$W_ET_REFACT, rep(0.3, 12))
   
   # Test with W_ET_REFACT at upper boundary (2)
-  weather_upper <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = rep(2, 12)
-  )
+  weather_upper <- create_weather()[, W_ET_REFACT := 2]
   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
@@ -224,14 +185,8 @@ test_that("rc_update_weather boundary values for W_ET_REFACT", {
   expect_equal(result_upper$W_ET_REFACT, rep(2, 12))
   
   # Test with mixed W_ET_REFACT values
-  weather_mixed <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_REFACT = seq(0.3, 2, length.out = 12)
-  )
-  
+  weather_mixed <- create_weather()[, W_ET_REFACT := seq(0.3, 2, length.out = 12)]
+    
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result_mixed <- rc_update_weather(weather_mixed, dt.time)
@@ -252,14 +207,8 @@ test_that("rc_update_weather default weather includes W_ET_REFACT", {
 
 test_that("rc_update_weather runs with only actual ET and W_ET_REFACT", {
   # Test scenario with only actual ET and W_ET_REFACT, W_ET_REFACT should pass straight through
-  weather_actual_only <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = rep(40, 12),
-    W_ET_REFACT = rep(0.85, 12)
-  )
-  
+  weather_actual_only <- create_weather()[, W_ET_REF_MONTH := NULL][, W_ET_ACT_MONTH := 40][, W_ET_REFACT := 0.85]
+    
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_actual_only, dt.time)
@@ -269,15 +218,8 @@ test_that("rc_update_weather runs with only actual ET and W_ET_REFACT", {
 
 test_that("rc_update_weather edge case with both ET types and W_ET_REFACT", {
   # Both reference and actual ET provided with W_ET_REFACT
-  weather_both <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = rep(10, 12),
-    W_PREC_SUM_MONTH = rep(50, 12),
-    W_ET_REF_MONTH = rep(50, 12),
-    W_ET_ACT_MONTH = c(rep(40, 6), rep(NA_real_, 6)),
-    W_ET_REFACT = rep(0.8, 12)
-  )
-  
+  weather_both <- create_weather()[, W_ET_ACT_MONTH := c(rep(40, 6), rep(NA_real_, 6))][, W_ET_REFACT := 0.8]
+   
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_both, dt.time)
@@ -287,13 +229,8 @@ test_that("rc_update_weather edge case with both ET types and W_ET_REFACT", {
 
 test_that("rc_update_weather preserves other columns when adding W_ET_REFACT", {
   # Ensure no side effects on other columns
-  weather_original <- data.table(
-    month = 1:12,
-    W_TEMP_MEAN_MONTH = c(3.6, 3.9, 6.5, 9.8, 13.4, 16.2, 18.3, 17.9, 14.7, 10.9, 7, 4.2),
-    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
-    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3, 6.5)
-  )
-  
+  weather_original <- create_weather()
+ 
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2022-12-31")
   
   result <- rc_update_weather(weather_original, dt.time)
@@ -460,30 +397,11 @@ test_that("rc_update_parms accepts and validates poutput", {
 
 test_that("rc_check_inputs correctly validates soil_properties data", {
   # Generate valid soil properties data
-  valid_soil <- data.table(
-    A_C_OF = 50,
-    B_C_ST03 = 210,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
+  valid_soil <- create_soil_properties()
   
-  valid_crop <- data.table(
-    B_LU_START = c("2022-04-01", "2023-04-01"),
-    B_LU_END = c("2022-10-01", "2023-10-01"),
-    B_LU = c("nl_308", "nl_308"),
-    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
-    B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
-  )
+  valid_crop <- create_rotation()
   
-  valid_amendment <- data.table(
-    P_ID = c(1, 1),
-    P_NAME = c('cattle_slurry', 'cattle_slurry'),
-    P_DOSE = c(63300, 63300),
-    P_HC = c(0.7,0.7),
-    P_C_OF = c(35, 35),
-    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
-  
+  valid_amendment <- create_amendment()
   
   # Run with valid values (should not error)
   expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
@@ -534,29 +452,11 @@ test_that("rc_check_inputs correctly validates soil_properties data", {
 
 test_that("rc_check_inputs correctly validates crop data", {
   # Generate valid soil properties data
-  valid_soil <- data.table(
-    A_C_OF = 50,
-    B_C_ST03 = 210,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
+  valid_soil <- create_soil_properties()
   
-  valid_crop <- data.table(
-    B_LU_START = c("2022-04-01", "2023-04-01", "2024-04-01", "2025-04-01"),
-    B_LU_END = c("2022-10-01", "2023-10-01", "2024-10-01", "2025-10-01"),
-    B_LU = rep("nl_308", 4),
-    B_LU_NAME = rep("erwten (droog te oogsten)", 4),
-    B_LU_HC = rep(0.32, 4),
-    B_C_OF_INPUT = rep(1500, 4)
-  )
+  valid_crop <- create_rotation()
   
-  valid_amendment <- data.table(
-    P_ID = rep(1, 4),
-    P_NAME = rep('cattle_slurry', 4),
-    P_DOSE = rep(63300, 4),
-    P_HC = rep(0.7,4),
-    P_C_OF = rep(35, 4),
-    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01", "2024-05-01", "2025-05-01"))
+  valid_amendment <- create_amendment()
   
  
   
@@ -574,6 +474,13 @@ test_that("rc_check_inputs correctly validates crop data", {
                   soil_properties = valid_soil),
                "missing elements")
   
+  # wrong value for B_LU_START
+  crop_wrong_start <- copy(valid_crop)[, B_LU_START := 'wrong']
+  expect_error(rc_check_inputs(rothc_rotation = crop_wrong_start,
+                               rothc_amendment = valid_amendment,
+                               soil_properties = valid_soil),
+               "ambiguous format")
+  
   # Without B_LU_END
   crop_no_end <- copy(valid_crop)[,B_LU_END := NULL]
   
@@ -582,13 +489,19 @@ test_that("rc_check_inputs correctly validates crop data", {
                   soil_properties = valid_soil),
                "missing elements")
   
+  # wrong value for B_LU_END
+  crop_wrong_end <- copy(valid_crop)[, B_LU_END := 'wrong']
+  expect_error(rc_check_inputs(rothc_rotation = crop_wrong_end,
+                               rothc_amendment = valid_amendment,
+                               soil_properties = valid_soil),
+               "ambiguous format")
+  
   # Without B_LU
   crop_no_lu <- copy(valid_crop)[,B_LU := NULL]
   
-  expect_error(rc_check_inputs(rothc_rotation = crop_no_lu,
+  expect_no_error(rc_check_inputs(rothc_rotation = crop_no_lu,
                   rothc_amendment = valid_amendment,
-                  soil_properties = valid_soil),
-               "missing elements")
+                  soil_properties = valid_soil))
   
   # Without B_LU_HC
   crop_no_hc <- copy(valid_crop)[,B_LU_HC := NULL]
@@ -598,44 +511,55 @@ test_that("rc_check_inputs correctly validates crop data", {
                   soil_properties = valid_soil),
                "missing elements")
   
-  # Without B_C_OF_INPUT
-  crop_no_bc <- copy(valid_crop)[,B_C_OF_INPUT := NULL]
+  # too low B_LU_HC
+  crop_low_hc <- copy(valid_crop)[,B_LU_HC := -1]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_low_hc,
+                               rothc_amendment = valid_amendment,
+                               soil_properties = valid_soil),
+               paste0('not >= ', rc_minval('B_LU_HC')))
+  
+  # too high B_LU_HC
+  crop_high_hc <- copy(valid_crop)[, B_LU_HC := 3]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_high_hc,
+                               rothc_amendment = valid_amendment,
+                               soil_properties = valid_soil),
+               paste0('not <= ', rc_maxval('B_LU_HC')))
+  
+  # Without B_C_OF_CULT
+  crop_no_bc <- copy(valid_crop)[,B_C_OF_CULT := NULL]
   
   expect_error(rc_check_inputs(rothc_rotation = crop_no_bc,
                   rothc_amendment = valid_amendment,
                   soil_properties = valid_soil),
                "missing elements")
   
+  # too high B_C_OF_CULT
+  crop_high_bcof <- copy(valid_crop)[, B_C_OF_CULT := 400000]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_high_bcof,
+                               rothc_amendment = valid_amendment,
+                               soil_properties = valid_soil),
+               paste0('not <= ', format(rc_maxval('B_C_OF_CULT'), scientific = FALSE)))
+  
+  # too low B_C_OF_CULT
+  crop_low_bcof <- copy(valid_crop)[,B_C_OF_CULT := -1]
+  
+  expect_error(rc_check_inputs(rothc_rotation = crop_low_bcof,
+                               rothc_amendment = valid_amendment,
+                               soil_properties = valid_soil),
+               paste0('not >= ', rc_minval('B_C_OF_CULT')))
 })
 
 
 test_that("rc_check_inputs correctly validates amendment data", {
   # Generate valid soil properties data
-  valid_soil <- data.table(
-    A_C_OF = 50,
-    B_C_ST03 = 210,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
+  valid_soil <- create_soil_properties()
   
-  valid_crop <- data.table(
-    B_LU_START = c("2022-04-01", "2023-04-01"),
-    B_LU_END = c("2022-10-01", "2023-10-01"),
-    B_LU = c("nl_308", "nl_308"),
-    B_LU_NAME = c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),
-    B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
-  )
+  valid_crop <- create_rotation()
   
-  valid_amendment <- data.table(
-    P_ID = c(1, 1),
-    P_NAME = c('cattle_slurry', 'cattle_slurry'),
-    P_DOSE = c(63300, 63300),
-    P_HC = c(0.7,0.7),
-    P_C_OF = c(35, 35),
-    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
-  
-  
+  valid_amendment <- create_amendment()
   
   # Run as a list (not allowed)
   amendment_list <- as.list(valid_amendment)
@@ -650,77 +574,113 @@ test_that("rc_check_inputs correctly validates amendment data", {
                   soil_properties = valid_soil),
                "missing elements")
   
+  # run with too low HC
+  amendment_low_hc <- copy(valid_amendment)[, P_HC := -1]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_low_hc,
+                               soil_properties = valid_soil),
+               paste0('not >= ', rc_minval('P_HC')))
+  
+  # run with too high HC
+  amendment_high_hc <- copy(valid_amendment)[, P_HC := 3]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_high_hc,
+                               soil_properties = valid_soil),
+               paste0('not <= ', rc_maxval('P_HC')))
+  
   # run without dose
   amendment_no_dose <- copy(valid_amendment)[, P_DOSE := NULL]
   expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
                   rothc_amendment = amendment_no_dose,
                   soil_properties = valid_soil))
   
+  # run with too low dose
+  amendment_low_dose <- copy(valid_amendment)[, P_DOSE := -1]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_low_dose,
+                               soil_properties = valid_soil),
+               paste0('not >= ', rc_minval('P_DOSE')))
+  
+  # run with too high dose
+  amendment_high_dose <- copy(valid_amendment)[, P_DOSE := 300000]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_high_dose,
+                               soil_properties = valid_soil),
+               paste0('not <= ', rc_maxval('P_DOSE')))
+  
+  # no P_C_OF
   amendment_no_pc <- copy(valid_amendment)[, P_C_OF := NULL]
   expect_no_error(rc_check_inputs(rothc_rotation = valid_crop,
                   rothc_amendment = amendment_no_pc,
                   soil_properties = valid_soil))
   
+  # run with too low P_C_OF dose
+  amendment_low_pc <- copy(valid_amendment)[, P_C_OF := -1]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_low_pc,
+                               soil_properties = valid_soil),
+               paste0('not >= ', rc_minval('P_C_OF')))
+  
+  # run with too high P_C_OF
+  amendment_high_pc <- copy(valid_amendment)[, P_C_OF := 300000]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_high_pc,
+                               soil_properties = valid_soil),
+               paste0('not <= ', rc_maxval('P_C_OF')))
+  
+  
+  # Run with too low B_C_OF_AMENDMENT
+  amendment_low_bcof <- copy(valid_amendment)[, B_C_OF_AMENDMENT := -1]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_low_bcof,
+                               soil_properties = valid_soil),
+               paste0('not >= ', rc_minval('B_C_OF_AMENDMENT')))
+  
+  # run with too high B_C_OF_AMENDMENT
+  amendment_high_bcof <- copy(valid_amendment)[, B_C_OF_AMENDMENT := 300000]
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_high_bcof,
+                               soil_properties = valid_soil),
+               paste0('not <= ', format(rc_maxval('B_C_OF_AMENDMENT'), scientific = FALSE)))
+  
+  # No date
   amendment_no_date <- copy(valid_amendment)[, P_DATE_FERTILIZATION := NULL]
   expect_error(rc_check_inputs(rothc_rotation = valid_crop,
                   rothc_amendment = amendment_no_date,
                   soil_properties = valid_soil),
                "missing elements")
+  
+  # wrong date format
+  amendment_no_date <- copy(valid_amendment)[, P_DATE_FERTILIZATION := 'wrong']
+  expect_error(rc_check_inputs(rothc_rotation = valid_crop,
+                               rothc_amendment = amendment_no_date,
+                               soil_properties = valid_soil),
+               "ambiguous format")
 })
 
 
 
 test_that("rc_check_inputs handles edge case with maximum valid values", {
   # Create data with maximum valid values
-  valid_soil_max <- data.table(
-    A_C_OF = 200,  # Assuming high but valid
-    B_C_ST03 = 500,  # Assuming high but valid
-    A_CLAY_MI = 75,
-    A_DENSITY_SA = 2.0
-  )
+  valid_soil <- create_soil_properties()[, A_C_OF := 200][, B_C_ST03 := 500]
+ 
   
-  valid_crop <- data.table(
-    B_LU_START = c("2022-04-01"),
-    B_LU_END = c("2022-10-01"),
-    B_LU = c("nl_308"),
-    B_LU_NAME = c("erwten (droog te oogsten)"),
-    B_LU_HC = c(1.0),  # Maximum
-    B_C_OF_INPUT = c(10000)  # High value
-  )
-  
-  valid_amendment <- data.table(
-    P_ID = c(1),
-    P_NAME = c('cattle_slurry'),
-    P_DOSE = c(100000),
-    P_HC = c(1.0),  # Maximum
-    P_C_OF = c(100),
-    P_DATE_FERTILIZATION = c("2022-05-01")
-  )
-  
+  valid_crop <- create_rotation()[, B_LU_HC := 1][, B_C_OF_INPUT := 10000]
+   
+  valid_amendment <- create_amendment()[, P_HC := 1]
+    
   # Should work with high but valid values
   expect_no_error(
     rc_check_inputs(rothc_rotation = valid_crop,
                     rothc_amendment = valid_amendment,
-                    soil_properties = valid_soil_max)
+                    soil_properties = valid_soil)
   )
 })
 
 test_that("rc_check_inputs handles multiple amendment dates correctly", {
-  valid_soil <- data.table(
-    A_C_OF = 50,
-    B_C_ST03 = 210,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
+  valid_soil <- create_soil_properties()
   
-  valid_crop <- data.table(
-    B_LU_START = c("2022-04-01"),
-    B_LU_END = c("2022-10-01"),
-    B_LU = c("nl_308"),
-    B_LU_NAME = c("erwten (droog te oogsten)"),
-    B_LU_HC = c(0.32),
-    B_C_OF_INPUT = c(1500)
-  )
+  valid_crop <- create_rotation()
   
   # Multiple amendments at different times
   multi_amendment <- data.table(
@@ -740,21 +700,10 @@ test_that("rc_check_inputs handles multiple amendment dates correctly", {
 })
 
 test_that("rc_check_inputs validates date ordering in crops", {
-  valid_soil <- data.table(
-    A_C_OF = 50,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
+  valid_soil <- create_soil_properties()
   
   # Crop with end before start (invalid dates)
-  crop_bad_dates <- data.table(
-    B_LU_START = c("2022-10-01"),  # Start after end
-    B_LU_END = c("2022-04-01"),
-    B_LU = c("nl_308"),
-    B_LU_NAME = c("erwten (droog te oogsten)"),
-    B_LU_HC = c(0.32),
-    B_C_OF_INPUT = c(1500)
-  )
+  crop_bad_dates <- create_rotation()[, B_LU_START := c("2023-04-01", "2024-04-01")]
   
   # rc_check_inputs validates that dates are valid Date objects yet ordering is not logical
   expect_error(
@@ -772,7 +721,7 @@ test_that("rc_check_inputs validates date ordering in crops", {
     B_LU = rep("nl_308", 3),
     B_LU_NAME = rep("erwten (droog te oogsten)", 3),
     B_LU_HC = rep(0.32, 3),
-    B_C_OF_INPUT = rep(1500, 3)
+    B_C_OF_CULT = rep(1500, 3)
   )
   
   expect_error(
@@ -789,7 +738,7 @@ test_that("rc_check_inputs validates date ordering in crops", {
     B_LU = rep("nl_308", 3),
     B_LU_NAME = rep("erwten (droog te oogsten)", 3),
     B_LU_HC = rep(0.32, 3),
-    B_C_OF_INPUT = rep(1500, 3)
+    B_C_OF_CULT = rep(1500, 3)
   )
   
   expect_error(
@@ -801,28 +750,12 @@ test_that("rc_check_inputs validates date ordering in crops", {
 })
 
 test_that("rc_check_inputs handles missing optional P_NAME field", {
-  valid_soil <- data.table(
-    A_C_OF = 50,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
+  valid_soil <- create_soil_properties()
   
-  valid_crop <- data.table(
-    B_LU_START = c("2022-04-01"),
-    B_LU_END = c("2022-10-01"),
-    B_LU = c("nl_308"),
-    B_LU_HC = c(0.32),
-    B_C_OF_INPUT = c(1500)
-  )
+  valid_crop <- create_rotation()
   
   # Amendment without P_NAME (optional field)
-  amendment_no_name <- data.table(
-    P_ID = c(1),
-    P_DOSE = c(63300),
-    P_HC = c(0.7),
-    P_C_OF = c(35),
-    P_DATE_FERTILIZATION = c("2022-05-01")
-  )
+  amendment_no_name <- create_amendment()[, P_NAME := NULL]
   
   expect_no_error(
     rc_check_inputs(rothc_rotation = valid_crop,
@@ -848,70 +781,84 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
 })
 
 
-test_that("rc_calculate_B_C_OF correctly validates input", {
-  # Missing required column
+test_that("rc_calculate_bcof correctly validates input", {
+  # create valid crop data
+  crop <- data.table(
+    B_LU_YIELD = 30000,
+    B_LU_HI = 0.6,
+    B_LU_HI_RES = 0.5,
+    B_LU_RS_FR = 1,
+    M_CROPRESIDUE = TRUE
+  )
+  
+  # Missing required column B_LU_RS_FR
+  crop_nors <- copy(crop)[, B_LU_RS_FR := NULL]
   expect_error(
-    rc_calculate_bcof(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
+    rc_calculate_bcof(dt = crop_nors),
     "must include"
   )
   
-  # B_LU_YIELD out of bounds
+  # B_LU_YIELD too low
+  crop_lowyield <- copy(crop)[, B_LU_YIELD := -1]
   expect_error(
-    rc_calculate_bcof(data.table(
-      B_LU_YIELD = -1,
-      B_LU_HI = 0.6,
-      B_LU_HI_RES = 0.5,
-      B_LU_RS_FR = 1,
-      M_CROPRESIDUE = TRUE
-    )),
-    "is not >= 0"
+    rc_calculate_bcof(dt = crop_lowyield),
+    paste0('not >= ', rc_minval('B_LU_YIELD'))
   )
   
-  # B_LU_HI out of bounds
+  # B_LU_YIELD too high
+  crop_highyield <- copy(crop)[, B_LU_YIELD := 300000]
   expect_error(
-    rc_calculate_bcof(data.table(
-      B_LU_YIELD = 30000,
-      B_LU_HI = 0,
-      B_LU_HI_RES = 0.5,
-      B_LU_RS_FR = 1,
-      M_CROPRESIDUE = TRUE
-    )),
-    "is not >= 0.01"
+    rc_calculate_bcof(dt = crop_highyield),
+    paste0('not <= ', rc_maxval('B_LU_YIELD'))
   )
   
-  # B_LU_HI_RES out of bounds
+  
+  # B_LU_HI too low
+  crop_lowhi <- copy(crop)[, B_LU_HI := -1]
   expect_error(
-    rc_calculate_bcof(data.table(
-      B_LU_YIELD = 30000,
-      B_LU_HI = 0.6,
-      B_LU_HI_RES = 1.1,
-      B_LU_RS_FR = 1,
-      M_CROPRESIDUE = TRUE
-    )),
-    "is not <= 1"
+    rc_calculate_bcof(dt = crop_lowhi),
+    paste0('not >= ', rc_minval('B_LU_HI'))
   )
   
-  # B_LU_RS_FR out of bounds
+  # B_LU_HI too high
+  crop_highhi <- copy(crop)[, B_LU_HI := 2]
   expect_error(
-    rc_calculate_bcof(data.table(
-      B_LU_YIELD = 30000,
-      B_LU_HI = 0.6,
-      B_LU_HI_RES = 0.5,
-      B_LU_RS_FR = -0.1,
-      M_CROPRESIDUE = TRUE
-    )),
-    "is not >= 0"
+    rc_calculate_bcof(dt = crop_highhi),
+    paste0('not <= ', rc_maxval('B_LU_HI'))
   )
   
+  # B_LU_HI_RES too low
+  crop_lowhires <- copy(crop)[, B_LU_HI_RES := -1]
+  expect_error(
+    rc_calculate_bcof(dt = crop_lowhires),
+    paste0('not >= ', rc_minval('B_LU_HI_RES'))
+  )
+  
+  # B_LU_HI_RES too high
+  crop_highhires <- copy(crop)[, B_LU_HI_RES := 2]
+  expect_error(
+    rc_calculate_bcof(dt = crop_highhires),
+    paste0('not <= ', rc_maxval('B_LU_HI_RES'))
+  ) 
+  
+  # B_LU_RS_FR too low
+  crop_lowrs <- copy(crop)[, B_LU_RS_FR := -1]
+  expect_error(
+    rc_calculate_bcof(dt = crop_lowrs),
+    paste0('not >= ', rc_minval('B_LU_RS_FR'))
+  )
+  
+  # B_LU_RS_FR too high
+  crop_highrs <- copy(crop)[, B_LU_RS_FR := 2]
+  expect_error(
+    rc_calculate_bcof(dt = crop_highrs),
+    paste0('not <= ', rc_maxval('B_LU_RS_FR'))
+  ) 
+
   # M_CROPRESIDUE not logical
+  crop_illogres <- copy(crop)[, M_CROPRESIDUE := 'character']
   expect_error(
-    rc_calculate_bcof(data.table(
-      B_LU_YIELD = 30000,
-      B_LU_HI = 0.6,
-      B_LU_HI_RES = 0.5,
-      B_LU_RS_FR = 1,
-      M_CROPRESIDUE = "TRUE"
-    )),
+    rc_calculate_bcof(dt = crop_illogres),
     "Must be of type 'logical'"
   )
 })
@@ -938,14 +885,18 @@ test_that("rc_calculate_bcof correctly calculates C inputs", {
 })
 
 test_that("rc_calculate_bcof handles edge cases", {
-  # Zero yield
-  zero_yield_dt <- data.table(
-    B_LU_YIELD = 0,
+  # set valid input data
+  valid_dt <- data.table(
+    B_LU_YIELD = 30000,
     B_LU_HI = 0.6,
     B_LU_HI_RES = 0.5,
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = TRUE
   )
+  
+  # Zero yield
+  zero_yield_dt <- copy(valid_dt)[, B_LU_YIELD := 0]
+  
   zero_yield <- rc_calculate_bcof(zero_yield_dt)
   expect_equal(zero_yield$cin_aboveground, 0)
   expect_equal(zero_yield$cin_roots, 0)
@@ -953,13 +904,8 @@ test_that("rc_calculate_bcof handles edge cases", {
   expect_equal(zero_yield$B_C_OF_CULT, 0)
   
   # No residue
-  no_residue_dt <- data.table(
-    B_LU_YIELD = 30000,
-    B_LU_HI = 0.6,
-    B_LU_HI_RES = 0.5,
-    B_LU_RS_FR = 1,
-    M_CROPRESIDUE = FALSE
-  )
+  no_residue_dt <- copy(valid_dt)[, M_CROPRESIDUE := FALSE]
+    
   no_residue <- rc_calculate_bcof(no_residue_dt)
   expect_equal(no_residue$cin_residue, 0)
   expect_equal(no_residue$B_C_OF_CULT, no_residue$cin_roots)
@@ -982,113 +928,78 @@ test_that("rc_calculate_bcof handles edge cases", {
 
 test_that("rc_extend_crops validates inputs correctly", {
   # Empty data
-  expect_error(rc_extend_crops(data.table(), as.Date("2020-01-01")), "Must have at least 1 row")
+  expect_error(rc_extend_crops(data.table(), as.Date("2022-01-01")), "Must have at least 1 row")
+  
+  # valid dt
+  crop <- create_rotation()
   
   # Missing required columns
-  bad_crops <- data.table(B_LU_START = "2020-01-01", B_LU_END = "2020-12-31")
-  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "must.include")
+  crop_nohc <- copy(crop)[, B_LU_HC := NULL]
+  expect_error(rc_extend_crops(crop_nohc, as.Date("2022-01-01")), "must.include")
   
   # Invalid B_LU_HC
-  bad_crops <- data.table(
-    B_LU_START = "2020-01-01",
-    B_LU_END = "2020-12-31",
-    B_LU = "Crop1",
-    B_LU_HC = 1.1,
-    B_C_OF_CULT = 100
-  )
-  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "Element 1 is not <= ")
+  crop_highhc <- create_rotation()[, B_LU_HC := 1.1]
+  expect_error(rc_extend_crops(crop_highhc, as.Date("2022-01-01")), paste0("not <= ", rc_maxval('B_LU_HC')))
   
   # February 29th
-  bad_crops <- data.table(
+  crop_feb29 <- data.table(
     B_LU_START = "2020-02-29",
     B_LU_END = "2020-12-31",
-    B_LU = "Crop1",
     B_LU_HC = 0.5,
     B_C_OF_CULT = 100
   )
-  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01")), "February 29th")
+  
+  expect_error(rc_extend_crops(crop_feb29, as.Date("2020-01-01")), "February 29th")
   
   # Crop end date before start date
-  bad_crops <- data.table(
-    B_LU_START = "2020-12-31",
-    B_LU_END = "2020-01-01",
-    B_LU = "Crop1",
-    B_LU_HC = 0.5,
-    B_C_OF_CULT = 100
-  )
-  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01"), simyears = 1), "Crop end date must be after crop start date")
+  crop_wrongstart <- create_rotation()[, B_LU_START := c("2023-04-01", "2024-04-01")]
+  
+  expect_error(rc_extend_crops(crop_wrongstart, as.Date("2022-01-01"), simyears = 1), "Crop end date must be after crop start date")
   
   # Crop rotation plan outside simulation period
-  bad_crops <- data.table(
-    B_LU_START = "2019-01-01",
-    B_LU_END = "2019-12-31",
-    B_LU = "Crop1",
-    B_LU_HC = 0.5,
-    B_C_OF_CULT = 100
-  )
-  expect_error(rc_extend_crops(bad_crops, as.Date("2020-01-01"), simyears = 1), "crop rotation plan is outside of simulation period")
+  expect_error(rc_extend_crops(crop, as.Date("2025-01-01"), simyears = 1), "crop rotation plan is outside of simulation period")
 })
 
 test_that("rc_extend_crops extends crops correctly with end_date", {
-  crops <- data.table(
-    B_LU_START = c("2020-01-01", "2020-06-01"),
-    B_LU_END = c("2020-03-31", "2020-08-31"),
-    B_LU = c("Crop1", "Crop2"),
-    B_LU_HC = c(0.5, 0.3),
-    B_C_OF_CULT = c(100, 200)
-  )
+  crops <- create_rotation()
   
-  result <- rc_extend_crops(crops, as.Date("2020-01-01"), as.Date("2022-12-31"))
+  result <- rc_extend_crops(crops, as.Date("2022-01-01"), as.Date("2024-12-31"))
   
   # Check number of rows
-  expect_equal(nrow(result), 6)
+  expect_equal(nrow(result), 3)
   
   # Check dates are extended correctly
   expect_equal(result$B_LU_START, c(
-    "2020-01-01", "2020-06-01",
-    "2021-01-01", "2021-06-01",
-    "2022-01-01", "2022-06-01"
+    "2022-04-01", "2023-04-01", "2024-04-01"
   ))
   
   expect_equal(result$B_LU_END, c(
-    "2020-03-31", "2020-08-31",
-    "2021-03-31", "2021-08-31",
-    "2022-03-31", "2022-08-31"
+    "2022-10-01", "2023-10-01", "2024-10-01"
   ))
   
   # Check columns are preserved
-  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_CULT"))
+  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC", "B_C_OF_CULT"))
 })
 
 test_that("rc_extend_crops extends crops correctly with simyears", {
-  crops <- data.table(
-    B_LU_START = c("2020-01-01", "2020-06-01"),
-    B_LU_END = c("2020-03-31", "2020-08-31"),
-    B_LU = c("Crop1", "Crop2"),
-    B_LU_HC = c(0.5, 0.3),
-    B_C_OF_CULT = c(100, 200)
-  )
+  crops <- create_rotation()
   
-  result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 3)
+  result <- rc_extend_crops(crops, as.Date("2022-01-01"), simyears = 4)
   
   # Check number of rows
-  expect_equal(nrow(result), 6)
+  expect_equal(nrow(result), 4)
   
   # Check dates are extended correctly
   expect_equal(result$B_LU_START, c(
-    "2020-01-01", "2020-06-01",
-    "2021-01-01", "2021-06-01",
-    "2022-01-01", "2022-06-01"
+    "2022-04-01", "2023-04-01", "2024-04-01", "2025-04-01"
   ))
   
   expect_equal(result$B_LU_END, c(
-    "2020-03-31", "2020-08-31",
-    "2021-03-31", "2021-08-31",
-    "2022-03-31", "2022-08-31"
+    "2022-10-01", "2023-10-01", "2024-10-01", "2025-10-01"
   ))
   
   # Check columns are preserved
-  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_CULT"))
+  expect_equal(names(result), c("B_LU_START", "B_LU_END", "B_LU", "B_LU_NAME", "B_LU_HC", "B_C_OF_CULT"))
 })
 
 test_that("rc_extend_crops handles single year rotation", {
@@ -1111,30 +1022,18 @@ test_that("rc_extend_crops handles single year rotation", {
 })
 
 test_that("rc_extend_crops orders output by start date", {
-  crops <- data.table(
-    B_LU_START = c("2020-06-01", "2020-01-01"),
-    B_LU_END = c("2020-08-31", "2020-03-31"),
-    B_LU = c("Crop2", "Crop1"),
-    B_LU_HC = c(0.3, 0.5),
-    B_C_OF_CULT = c(200, 100)
-  )
+  crops <- create_rotation()
   
-  result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
+  result <- rc_extend_crops(crops, as.Date("2022-01-01"), simyears = 2)
   
   # Check order
-  expect_equal(result$B_LU_START, c("2020-01-01", "2020-06-01"))
+  expect_equal(result$B_LU_START, c("2022-04-01", "2023-04-01"))
 })
 
 test_that("rc_extend_crops removes temporary columns", {
-  crops <- data.table(
-    B_LU_START = c("2020-01-01", "2020-06-01"),
-    B_LU_END = c("2020-03-31", "2020-08-31"),
-    B_LU = c("Crop1", "Crop2"),
-    B_LU_HC = c(0.5, 0.3),
-    B_C_OF_CULT = c(100, 200)
-  )
+  crops <- create_rotation()
   
-  result <- rc_extend_crops(crops, as.Date("2020-01-01"), simyears = 1)
+  result <- rc_extend_crops(crops, as.Date("2022-01-01"), simyears = 1)
   
   # Check no temp columns
   expect_false(any(c("id", "year_start", "year_end", "yr_rep", "year_start_ext", "year_end_ext") %in% names(result)))
@@ -1163,51 +1062,37 @@ test_that("rc_extend_amendments validates inputs correctly", {
 })
 
 test_that("rc_extend_amendments extends amendments correctly with end_date", {
-  amendments <- data.table(
-    P_HC = c(0.5, 0.3),
-    P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
-    P_NAME = c("Amend1", "Amend2"),
-    P_DOSE = c(100, 200)
-  )
+  amendments <- create_amendment()
   
-  result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), as.Date("2022-12-31"))
+  result <- rc_extend_amendments(amendments, as.Date("2022-01-01"), as.Date("2025-12-31"))
   
   # Check number of rows
-  expect_equal(nrow(result), 6)
+  expect_equal(nrow(result), 4)
   
   # Check dates are extended correctly
   expect_equal(result$P_DATE_FERTILIZATION, c(
-    "2020-01-01", "2020-06-01",
-    "2021-01-01", "2021-06-01",
-    "2022-01-01", "2022-06-01"
+    "2022-05-01", "2023-05-01", "2024-05-01", "2025-05-01" 
   ))
   
   # Check columns are preserved
-  expect_equal(names(result), c("P_HC", "P_DATE_FERTILIZATION", "P_NAME", "P_DOSE"))
+  expect_equal(names(result), c("P_ID", "P_NAME", "P_DOSE", "P_HC", "P_C_OF", "P_DATE_FERTILIZATION"))
 })
 
 test_that("rc_extend_amendments extends amendments correctly with simyears", {
-  amendments <- data.table(
-    P_HC = c(0.5, 0.3),
-    P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
-    P_NAME = c("Amend1", "Amend2"),
-    P_DOSE = c(100, 200)
-  )
+  amendments <- create_amendment()
   
-  result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), simyears = 3)
+  result <- rc_extend_amendments(amendments, as.Date("2022-01-01"), simyears = 4)
   
   # Check number of rows
-  expect_equal(nrow(result), 6)
+  expect_equal(nrow(result), 4)
   
   # Check dates are extended correctly
   expect_equal(result$P_DATE_FERTILIZATION, c(
-    "2020-01-01", "2020-06-01",
-    "2021-01-01", "2021-06-01",
-    "2022-01-01", "2022-06-01"
+    "2022-05-01", "2023-05-01", "2024-05-01", "2025-05-01"
   ))
   
   # Check columns are preserved
-  expect_equal(names(result), c("P_HC", "P_DATE_FERTILIZATION", "P_NAME", "P_DOSE"))
+  expect_equal(names(result), c("P_ID", "P_NAME", "P_DOSE", "P_HC", "P_C_OF", "P_DATE_FERTILIZATION"))
 })
 
 test_that("rc_extend_amendments handles single year rotation", {
@@ -1228,26 +1113,16 @@ test_that("rc_extend_amendments handles single year rotation", {
 })
 
 test_that("rc_extend_amendments orders output by date", {
-  amendments <- data.table(
-    P_HC = c(0.5, 0.3),
-    P_DATE_FERTILIZATION = as.Date(c("2020-06-01", "2020-01-01")),
-    P_NAME = c("Amend2", "Amend1"),
-    P_DOSE = c(200, 100)
-  )
+  amendments <- create_amendment()
   
-  result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), simyears = 1)
+  result <- rc_extend_amendments(amendments, as.Date("2022-01-01"), simyears = 2)
   
   # Check order
-  expect_equal(result$P_DATE_FERTILIZATION, c("2020-01-01", "2020-06-01"))
+  expect_equal(result$P_DATE_FERTILIZATION, c("2022-05-01", "2023-05-01"))
 })
 
 test_that("rc_extend_amendments removes temporary columns", {
-  amendments <- data.table(
-    P_HC = c(0.5, 0.3),
-    P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
-    P_NAME = c("Amend1", "Amend2"),
-    P_DOSE = c(100, 200)
-  )
+  amendments <- create_amendment()
   
   result <- rc_extend_amendments(amendments, as.Date("2020-01-01"), simyears = 1)
   
