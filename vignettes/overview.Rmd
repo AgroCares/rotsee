@@ -30,9 +30,9 @@ An extensive description of the RothC model can be found in Coleman and Jenkinso
 RothC is a well-established model to calculate the development of carbon (C) stocks in soils
 based on long-term experimental data from Rothamsted. RothC uses 5 C pools to describe
 carbon turnover. The inert organic matter (IOM) pool is fixed and based on the calculation
-developed by Fallon et al., 1998. Remaining four pools are all active and are in order
+developed by Falloon et al., 1998. Remaining four pools are all active and are in order
 of highest to lowest decomposition rate: decomposable plant material (DPM), resistant plant material (RPM),
-microbial biomass (BIO) and humified organic matter (HUM). Their decomposition rates -
+microbial biomass (BIO), and humified organic matter (HUM). Their decomposition rates -
 adjusted with rate modifying factors based on temperature, soil moisture, and crop cover -
 are used to calculate C removal from and transfer between the different pools. Together with C
 inputs from crops and amendments, the model calculates changes in C stocks at a monthly resolution.
@@ -49,7 +49,7 @@ knitr::include_graphics('Rothc_structure.png')
 
 ## 3. Required and optional data for rotsee
 Below is an overview of all the optional and required data for the rotsee package. In essence,
-the only required data is soil properties data and a given simulation period.
+the only required data are soil properties data and a given simulation period.
 
 ### 3.1 Soil properties (required, data.table)
 * Clay content (A_CLAY_MI, in \%). 
@@ -88,11 +88,10 @@ Amendment applications can be extended to encompass longer simulation periods us
 * Actual evapotranspiration (W_ET_ACT_MONTH, mmm)
                   OR
 * Reference evapotranspiration (W_ET_REF_MONTH, mm)
-* factor to recalculate reference to actual evapotranspiration (W_ET_REFACT, unitless). Defaults to 0.75 when not provided.
+* factor to recalculate reference to actual evapotranspiration (W_ET_REFACT, unitless). Defaults to 0.75 when not provided. Can be easily implemented using `rc_set_refact`, see also helpers.rmd.
 
 If weather data is not provided, Dutch weather averages will be used.
 
-TO DO once branch facil-refact is merged add description of facilitating implementation of factor
 
 ### 3.5 Sampling information (optional, numeric values)
 Given as direct input parameters in `rc_sim`:
@@ -118,25 +117,24 @@ Both are defaulted to 0.3 when not supplied.
 
 ### 4.1 Pool initialization
 An important aspect of RothC is the initialization of the C pools. Rotsee implements this using
-either pre-defined pools or initialization calculations.
+either pre-defined pools or initialization calculations as described below; values can be defined in the `rothc_parms` table required for `rc_sim`.
 
-Pre-defined pools are defined via the 'c_fractions' parameter. These can be defined by the user,
+Pre-defined pools are defined via the `c_fractions` parameter. These can be defined by the user,
 otherwise the RothC defaults are used: fr_IOM = 0.049; fr_DPM = 0.015; fr_RPM = 0.125; fr_BIO = 0.015.
 **Note: pre-defined pools are overwritten if initialization calculations are requested**
 
-**Note: initialization calculations are not yet implemented. The below will be active once ghsolver branch is merged**
-Initialization calculations can be requested using the parameter `initialize`. If no initialization
-is wanted, initialize should be set to FALSE. Three initialization options exist, which can be selected
+Initialization calculations can be requested using the parameter `initialisation_method`. If no initialization
+is wanted, `initialisation_method` should be set to FALSE. Three initialization options exist, which can be selected
 based on system state. 
-If C stocks are developing and the pool size is expected to be in equilibrium, initialize should be
-set either to 'spinup_simulation' or to 'spinup_analytical_bodemcoolstof'. 'spinup_simulation'
-conducts the rotsee calculation for 150 years to establish equilibrium pools, 'spinup_analytical_bodemcoolstof'
+If C stocks are developing and the pool size is expected to be in equilibrium, `initialisation_method` should be
+set either to `spinup_simulation` or to `spinup_analytical_bodemcoolstof`. `spinup_simulation`
+conducts the RothC calculation for 150 years to establish equilibrium pools; `spinup_analytical_bodemcoolstof`
 calculates the pools based on the initialization of Bodemcoolstof (Hendriks et al., 2021).
-If C stocks are in equilibrium, initialize should be set using 'spinup_analytical_heuvelink'.
+If C stocks are in equilibrium, `initialisation_method` should be set to `spinup_analytical_heuvelink`.
 
 
 ### 4.2 C inputs
-In RothC there exist two types of C inputs into the soil: crops and amendments. Both
+In rotsee, two types of C inputs into the soil are defined: crops and amendments. Both
 are described in a similar fashion, using an input event (specific month) and a total
 C input into the soil. Once C enters the soil, it is distributed among the different C pools
 based on the humification coefficient. This distribution is expressed in the fraction DPM-to-RPM
@@ -352,7 +350,8 @@ soil <- data.table(
   
   # plot result
   ggplot(data = result)+
-  geom_line(aes(x = time, y =A_SOM_LOI, linetype = ID))+
+  geom_line(aes(x = time, y =A_SOM_LOI, color = ID))+
+    scale_color_manual(values = c("#BAE4B3", "#74C476", "#238B45"))+
   labs(x = "year", y = "OM [%]") +
     theme_bw()
   
