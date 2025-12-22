@@ -958,6 +958,9 @@ test_that("rc_extend_crops validates inputs correctly", {
   
   # Crop rotation plan outside simulation period
   expect_error(rc_extend_crops(crop, as.Date("2025-01-01"), simyears = 1), "crop rotation plan is outside of simulation period")
+  
+  # Both end_date and simyears missing
+  expect_error(rc_extend_crops(crop, "2020-01-01", NULL, NULL), "both end_date and simyears are missing")
 })
 
 test_that("rc_extend_crops extends crops correctly with end_date", {
@@ -1059,6 +1062,10 @@ test_that("rc_extend_amendments validates inputs correctly", {
   
   # Both end_date and simyears missing
   expect_error(rc_extend_amendments(bad_amendments, "2020-01-01", NULL, NULL), "both end_date and simyears are missing")
+  
+  # P_DATE_FERTILIZATION before start date
+  bad_amendments[, P_DATE_FERTILIZATION := "2018-01-01"]
+  expect_error(rc_extend_amendments(bad_amendments, "2020-01-01", end_date = "2030-01-01"), "outside of simulation period")
 })
 
 test_that("rc_extend_amendments extends amendments correctly with end_date", {
@@ -1314,6 +1321,18 @@ test_that("rc_update_parms returns default initialisation_method", {
   parms <- list(unit = 'psoc')
   result <- rc_update_parms(parms, crops = crops)
   expect_equal(result$initialisation_method, 'none')
+})
+
+
+test_that("rc_minval returns correct values", {
+  # test for B_C_OF_AMENDMENT (minimum = 0, maximum = 2e+05)
+  expect_equal(rc_minval("B_C_OF_AMENDMENT"), 0)
+  expect_equal(rc_maxval("B_C_OF_AMENDMENT"), 2e+05)
+  
+  # returns error when parameter is not present in parms table
+  expect_error(rc_minval("non-existent parameter"), "No unique minimum bound")
+  expect_error(rc_maxval("non-existent parameter"), "No unique maximum bound")
+  
 })
 
 
