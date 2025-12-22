@@ -169,5 +169,40 @@ test_that("rc_input_amendment correctly checks input validity", {
   
 })
 
-
+test_that("rc_input_amendment correctly fills NA B_C_OF_AMENDMENT", {
+  # create amendment file
+  amendment <- create_amendment()
+  
+  # Run with one NA B_C_OF_AMENDMENT
+  amendment_onena <- copy(amendment)[, B_C_OF_AMENDMENT := c(20000, NA)]
+  
+  result_onena <- rc_input_amendment(dt = amendment_onena)
+  
+  expect_s3_class(result_onena, "data.table")
+  expect_equal(result_onena$cin_tot, c(20000, 63300*35/1000))
+  
+  # run with both NA B_C_OF_AMENDMENT
+  amendment_twona <- copy(amendment)[, B_C_OF_AMENDMENT := NA]
+  
+  result_twona <- rc_input_amendment(dt = amendment_twona)
+ 
+  expect_s3_class(result_twona, "data.table")
+  expect_equal(result_twona$cin_tot, c(63300*35/1000, 63300*35/1000))
+  
+  # Run with NA P_DOSE when NA B_C_OF_AMENDMENT
+  amendment_nulldose <- copy(amendment_twona)[, P_DOSE := c(63300, NA)]
+  expect_error(rc_input_amendment(dt = amendment_nulldose), "both P_DOSE")
+  
+  # run with NA P_C_OF when NA B_C_OF_AMENDMENT
+  amendment_nullpcof <- copy(amendment_twona)[, P_C_OF := c(35, NA)]
+  expect_error(rc_input_amendment(dt = amendment_nullpcof), "P_C_OF must be provided")
+  
+  # Run with NULL P_DOSE when NA B_C_OF_AMENDMENT
+  amendment_nulldose <- copy(amendment_twona)[, P_DOSE := NULL]
+  expect_error(rc_input_amendment(dt = amendment_nulldose), "both P_DOSE")
+  
+  # run with NULL P_C_OF when NA B_C_OF_AMENDMENT
+  amendment_nullpcof <- copy(amendment_twona)[, P_C_OF := NULL]
+  expect_error(rc_input_amendment(dt = amendment_nullpcof), "P_C_OF must be provided")
+})
 

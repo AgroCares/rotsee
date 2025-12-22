@@ -1,4 +1,10 @@
 # rotsee UNRELEASED
+## changed
+* expanded unit tests for several functions
+* allow initialization if no crop or amendment inputs are provided 
+
+
+# rotsee UNRELEASED
 ## added
 * test helper factories to aid with unit test creation
 
