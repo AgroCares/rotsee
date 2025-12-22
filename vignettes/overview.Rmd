@@ -359,8 +359,8 @@ soil <- data.table(
 
 
 ## 8. references
-Coleman, K., & Jenkinson, D. S. (1996). RothC-26.3-A Model for the turnover of carbon in soil. In Evaluation of soil organic matter models: Using existing long-term datasets (pp. 237-246). Berlin, Heidelberg: Springer Berlin Heidelberg.
+Coleman, K., & Jenkinson, D. S. (1996). RothC-26.3-A Model for the turnover of carbon in soil. In Evaluation of soil organic matter models: Using existing long-term datasets (pp. 237-246). Berlin, Heidelberg: Springer Berlin Heidelberg. https://doi.org/10.1007/978-3-642-61094-3_17
 
-Falloon, P. D., Smith, P., Coleman, K., & Marshall, S. (1998). Estimating the size of the inert organic matter pool from total soil organic carbon content for use in the Rothamsted carbon model. Soil Biology and Biochemistry, 30(8/9), 1207-1211.
+Falloon, P. D., Smith, P., Coleman, K., & Marshall, S. (1998). Estimating the size of the inert organic matter pool from total soil organic carbon content for use in the Rothamsted carbon model. Soil Biology and Biochemistry, 30(8/9), 1207-1211. https://doi.org/10.1016/S0038-0717(97)00256-3
 
 Hendriks, C. M. J., Lesschen, J. P., Timmermans, B., Hanegraaf, M., Dijkman, W., Rougoor, C., & Schepens, J. (2021). Beschrijving en ontwikkeling Praktijktool BodemCoolstof.

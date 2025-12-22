@@ -35,14 +35,11 @@ when outputs are requested in C content.
 
 In case the dry soil bulk density has not been measured, it can be calculated using 
 \link{rc_calculate_bd}. This function estimates soil bulk density from soil clay-
-and C content based on the pedotransfer functions listed in CBAV, 2023. C concent can be given either as an amount
+and C content based on the pedotransfer functions listed in Verstraten et al. (2024). C concent can be given either as an amount
 organic matter (as %, `A_SOM_LOI`) or as C (in g C/kg, `A_C_OF`). Provided input is returned
 together with the column A_DENSITY_SA, listing soil bulk density in g/cm^3.
 
 
-
-TO DO: more properly list references. Currently only reference to "handboekbodemenbemesting", but this only shows calculation for sand density. 
-In reposity of pedotransfer functions reference to WUR report, but link is currently broken.
 
 ```{r examples bulk density calculation, out.width = '70%'}
 # calculate bulk density using OM content
@@ -182,8 +179,9 @@ print(amend_extended_sim)
 ```
 
 ## references
-https://www.handboekbodemenbemesting.nl/bemestingsadviezen/volumegewicht-grond/
 
-https://wur.on.worldcat.org/search/detail/1462290642?queryString=Bemestingsadvies%20Commissie%20Bemesting%20Grasland%20en%20Voedergewassen:%20Versie%202024
+Verstraten, J., van Middelkoop, J. C., Philipsen, A. P., van Dongen, C., Bussink, D. W., van der Bas, A., Velthof, G. L., de Haan, J. J., van Dijk, W., Brolsma, K. M., & van Eekeren, N. (2024). Bemestingsadvies Commissie Bemesting Grasland en Voedergewassen: Versie 2024. Commissie Bemesting Grasland en Voedergewassen. https://edepot.wur.nl/413891 **note: the ptf of clay is not present in this reference, there are referred clay densities based on OM, yet these slightly deviate from the actual equation **
 
-Pribyl, D. W. (2010). A critical review of the conventional SOC to SOM conversion factor. Geoderma, 156(3-4), 75-83.
+Pribyl, D. W. (2010). A critical review of the conventional SOC to SOM conversion factor. Geoderma, 156(3-4), 75-83. https://doi.org/10.1016/j.geoderma.2010.02.003
+
+
