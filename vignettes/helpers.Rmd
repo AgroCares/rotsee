@@ -21,10 +21,10 @@ library(rotsee); library(data.table)
 ## Facilitating input pre-processing
 The rotsee package is built on the mindset that it should be universally applicable.
 Hence, location specific calculations such as bulk density determination via pedotransfer
-functions are omitted from the core calculation code. While this makes package usage more
-flexible, it does put additional requirements on the package user. To facilitate this,
-several helper functions have been added. These functions are outlined below, together with
-a short description of their origin and an example of using the functions.
+functions are omitted from the core calculation code, as different regions use different functions
+and calculation methods. While this makes package usage more flexible, it does put additional requirements
+on the package user. To facilitate this, several helper functions have been added. These functions are 
+outlined below, together with a short description of their origin and an example of using the functions.
 
 
 ## Dry soil bulk density
@@ -90,7 +90,7 @@ root-to-shoot ratio, and assuming 50% of the crop is C (Pribyl, 2010).
 ```
 
 
-## Evapotranspiration factors
+## Evapotranspiration factors (**Note: rc_set_refact is not yet available in this branch**)
 If only reference evapotranspiration (ET) is given in the weather table, actual ET needs to be calculated using a crop-specific factor, `W_ET_REFACT`. This is facilitated
 by \link{rc_set_refact}, which considers which months and years crops are growing and assigns `W_ET_REFACT` based on supplied values. The requested simulation
 time table in this function can be easily generated using \link{rc_time_period}, given a start and end date.
