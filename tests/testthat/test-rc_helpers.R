@@ -308,8 +308,7 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
     expect_no_error(rc_calculate_bd(dt = high_OM_dt))
   
   # Test with C content as input
-    C_dt <- dt[, A_SOM_LOI := NULL]
-    C_dt <- dt[, A_C_OF := 80]
+    C_dt <- data.table(A_CLAY_MI = 12, A_C_OF = 80)
     expect_no_error(rc_calculate_bd(dt = C_dt))
 })
 
