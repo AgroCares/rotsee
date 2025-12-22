@@ -1219,7 +1219,7 @@ test_that("rc_visualize_plot returns expected structure", {
   
   # Save current working directory and switch to temp directory
   old_wd <- getwd()
-  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_events")
+  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_structure")
   dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
   setwd(temp_dir)
   

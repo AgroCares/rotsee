@@ -96,7 +96,7 @@ If weather data is not provided, Dutch weather averages will be used.
 ### 3.5 Sampling information (optional, numeric values)
 Given as direct input parameters in `rc_sim`:
 
-* Depth of the cultivation layer (A_DEPTH,, m - below surface)
+* Depth of the cultivation layer (A_DEPTH, m - below surface)
 * Sampling depth (B_depth, m - below surface)
 
 Both are defaulted to 0.3 when not supplied.
@@ -285,7 +285,7 @@ ggplot(data = results)+
 ### 7.3 multicore calculations
 In case of multiple plots, multicore calculations can be conducted to speed up the calculation
 using `rc_sim_multi`. This requires an additional ID column for soil, crop, and amendment
-data to represent the different fields/scenaro's/ This example shows multicore calculations with similar
+data to represent the different fields/scenario's. This example shows multicore calculations with similar
 crop growth yet with three different rates of amendment application.
 
 **Note: the current iteration requires also additional inputs listed above to run correctly**
