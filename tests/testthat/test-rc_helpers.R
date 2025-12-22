@@ -1115,28 +1115,23 @@ test_that("rc_visualize_plot runs without error", {
     soc = rnorm(10, 1000, 100)
   )
 
-  # Save current working directory and switch to temp directory
-  old_wd <- getwd()
+  # switch to temporary directory
   temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test")
   dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
-  setwd(temp_dir)
   
-    # Restore working directory on exit (even if test fails)
-    on.exit({
-      setwd(old_wd)
-      unlink(temp_dir, recursive = TRUE)
-      }, add = TRUE)
+    # Clean up temporary directory on exit
+    on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
     
   # Run the plot function
   expect_no_error(rc_visualize_plot(dt, save_dir = temp_dir))
  
   # Check that debug files were created
-  expect_true(file.exists("carbon_pools_linear.png"))
-  expect_true(file.exists("carbon_pools_change.png"))
+  expect_true(file.exists(file.path(temp_dir, "carbon_pools_linear.png")))
+  expect_true(file.exists(file.path(temp_dir, "carbon_pools_change.png")))
   
   # Check that the files are not empty
-  expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
-  expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
+  expect_true(file.info(file.path(temp_dir, "carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path(temp_dir, "carbon_pools_change.png"))$size > 0)
 })
 
 test_that("rc_visualize_plot handles events correctly", {
@@ -1155,28 +1150,23 @@ test_that("rc_visualize_plot handles events correctly", {
     value = c(50, 100, 75)
   )
   
-  # Save current working directory and switch to temp directory
-  old_wd <- getwd()
+  # switch to temp directory
   temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_events")
   dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
-  setwd(temp_dir)
   
   # Restore working directory on exit
-  on.exit({
-    setwd(old_wd)
-    unlink(temp_dir, recursive = TRUE)
-  }, add = TRUE)
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
   
   # Run the plot function with events
   expect_no_error(rc_visualize_plot(dt, event = event, save_dir = temp_dir))
   
   # Check that debug files were created
-  expect_true(file.exists("carbon_pools_linear.png"))
-  expect_true(file.exists("carbon_pools_change.png"))
+  expect_true(file.exists(file.path(temp_dir, "carbon_pools_linear.png")))
+  expect_true(file.exists(file.path(temp_dir, "carbon_pools_change.png")))
   
   # Check that the files are not empty
-  expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
-  expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
+  expect_true(file.info(file.path(temp_dir, "carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path(temp_dir, "carbon_pools_change.png"))$size > 0)
 })
 
 test_that("rc_visualize_plot handles custom save directory", {
@@ -1217,17 +1207,12 @@ test_that("rc_visualize_plot returns expected structure", {
     soc = rnorm(10, 1000, 100)
   )
   
-  # Save current working directory and switch to temp directory
-  old_wd <- getwd()
+  # create temp directory
   temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_structure")
   dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
-  setwd(temp_dir)
   
   # Restore working directory on exit
-  on.exit({
-    setwd(old_wd)
-    unlink(temp_dir, recursive = TRUE)
-  }, add = TRUE)
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
   
   
   # Run the plot function and capture the return value
