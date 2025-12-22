@@ -79,11 +79,11 @@ rc_input_amendment <- function(dt = NULL){
   # add default ratio if no humification coefficient is supplied
   dt.org[is.na(fr_dpm_rpm), fr_dpm_rpm := 1.44]
   
-  
   # estimate total Carbon input per crop and year (kg C/ha)
     if("B_C_OF_AMENDMENT" %in% names(dt.org)){
       # If supplied, copy value, calculate from P_DOSE and P_C_OF only for NA rows
-      dt.org[, cin_tot := B_C_OF_AMENDMENT]
+      dt.org[, cin_tot := as.numeric(B_C_OF_AMENDMENT)] # set to numeric in case of all NA
+      
       if (anyNA(dt.org$B_C_OF_AMENDMENT)) {
         dt.org[is.na(cin_tot), cin_tot := P_DOSE * P_C_OF/1000]
       }
