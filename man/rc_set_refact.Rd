@@ -2,7 +2,7 @@
 % Please edit documentation in R/rc_helpers.R
 \name{rc_set_refact}
 \alias{rc_set_refact}
-\title{Function to determine W_ET_REFACT given a crop profile and supplied weather table, based on Dutch Makkink factors. 
+\title{Function to determine W_ET_REFACT given a crop profile and supplied weather table, based on Dutch Makkink factors.
 NOTE: this function sets W_ET_REFACT to crop-specific Makkink factors during growth periods and 0.36 for non-crop months (alternative to the general default of 0.75)}
 \usage{
 rc_set_refact(weather, crop, dt.time)
@@ -18,6 +18,6 @@ rc_set_refact(weather, crop, dt.time)
 Weather table with W_ET_REFACT column added
 }
 \description{
-Function to determine W_ET_REFACT given a crop profile and supplied weather table, based on Dutch Makkink factors. 
+Function to determine W_ET_REFACT given a crop profile and supplied weather table, based on Dutch Makkink factors.
 NOTE: this function sets W_ET_REFACT to crop-specific Makkink factors during growth periods and 0.36 for non-crop months (alternative to the general default of 0.75)
 }
