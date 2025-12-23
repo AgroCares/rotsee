@@ -21,12 +21,12 @@ cf_ind_importance <- function(x) {
 #'
 #' @param dt (data.table) Monthly weather table with the following columns:
 #' * year (optional; if absent, weather is replicated across the simulation period)
-#' *month (1 - 12)
-#' *W_TEMP_MEAN_MONTH (°C)
-#' *W_PREC_SUM_MONTH (mm)
-#' *W_ET_REF_MONTH (mm)
-#' *W_ET_ACT_MONTH (mm; optional, can be NA)
-#' *W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
+#' * month (1 - 12)
+#' * W_TEMP_MEAN_MONTH (°C)
+#' * W_PREC_SUM_MONTH (mm)
+#' * W_ET_REF_MONTH (mm)
+#' * W_ET_ACT_MONTH (mm; optional, can be NA)
+#' * W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' @param dt.time Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}
 #' 
@@ -186,7 +186,6 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   # Checks names parms
   if(!is.null(parms)){
     checkmate::assert_list(parms)
-    checkmate::assert_subset(names(parms), choices = c("dec_rates", "c_fractions", "initialisation_method", "unit", "method", "poutput", "start_date", "end_date"), empty.ok = TRUE)
   }else{
     parms <- list()
   }
@@ -351,7 +350,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 
 #' Function to check input tables of soil, crop, and amendment data
 #'
-#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
+#' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
 #' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_INPUT, and P_HC.
 #'
@@ -380,7 +379,7 @@ rc_check_inputs <- function(soil_properties,
   if(!is.null(rothc_rotation)){
     checkmate::assert_data_table(rothc_rotation, null.ok = TRUE, min.rows = 1)
 
-    req <- c("B_LU_START", "B_LU_END", "B_LU","B_LU_HC","B_C_OF_INPUT")
+    req <- c("B_LU_START", "B_LU_END", "B_LU_HC","B_C_OF_INPUT")
     checkmate::assert_names(colnames(rothc_rotation), must.include = req)
     
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = FALSE)
@@ -416,10 +415,23 @@ rc_check_inputs <- function(soil_properties,
 
 #' Function to calculate the dry soil bulk density based on Dutch pedotransfer functions
 #'
-#' @param dt (data table) Contains the columns A_CLAY_MI (clay content \%) and at least one of A_SOM_LOI (organic matter content, \%) and A_C_OF (organic carbon content, g C/kg)
+#' @param dt (data table) Contains the columns A_CLAY_MI (clay content %) and at least one of A_SOM_LOI (organic matter content, %) and A_C_OF (organic carbon content, g C/kg)
 #'
 #' @returns
-#' Data table with the dry soil bulk density (g/cm3)
+#' Data table with provided data and the calculated dry soil bulk density (g/cm3)
+#' 
+#' @examples
+#' ## calculate the dry soil bulk density (g/cm3) using organic matter content (%)
+#' dt_om <- data.table::data.table(A_CLAY_MI = 12, 
+#' A_SOM_LOI = 3)
+#' 
+#' rc_calculate_bd(dt_om)
+#' 
+#' ## calculate the dry soil bulk density using organic carbon content (g C/kg)
+#' dt_c <- data.table::data.table(A_CLAY_MI = 12, 
+#' A_C_OF = 80)
+#' 
+#' rc_calculate_bd(dt_c)
 #' 
 #' @export
 rc_calculate_bd <- function(dt){
@@ -452,6 +464,10 @@ rc_calculate_bd <- function(dt){
   
   # clay dependent density
   dt[, A_DENSITY_SA := cf * dens.clay + (1-cf) * dens.sand]
+  
+  # select relevant columns
+  dt <- dt[, .SD, .SDcols =!names(dt) %in% c("dens.sand", "dens.clay", "cf")]
+  
   return(dt)
 }
 
@@ -460,20 +476,32 @@ rc_calculate_bd <- function(dt){
 #' @param dt (data table) Table with crop rotation details and crop management actions that have been taken. For more information see details.
 #'
 #' @returns
-#' Data table with total C input from crops
+#' Data table with provided input together with calculated C input from crops
 #' 
 #' @details
-#' Crop data table
-#' Contains the following columns:
+#' Crop data table contains the following columns:
 #' * B_LU_YIELD (numeric), the mean crop yield (kg dry matter/ha)
 #' * B_LU_HI (numeric), the harvest index of the crop
 #' * B_LU_HI_RES (numeric), fraction of biomass that is residue
 #' * B_LU_RS_FR (numeric), Root-to-shoot ratio of the crop
 #' * M_CROPRESIDUE (logical), indicator of whether crop residue is incorporated into the soil
 #' 
+#' @examples
+#' ## calculate crop C inputs with valid input values
+#'  dt_crop <- data.table::data.table(B_LU_YIELD = 30000,
+#'  B_LU_HI = 0.6,
+#'  B_LU_HI_RES = 0.5,
+#'  B_LU_RS_FR = 1,
+#'  M_CROPRESIDUE = TRUE
+#'  )
+#'  
+#'  result <- rc_calculate_bcof(dt_crop)
+#'  
+#'  print(result)
+#'  
 #' @export
 
-rc_calculate_B_C_OF <- function(dt){
+rc_calculate_bcof <- function(dt){
   # Add visible bindings
   cin_aboveground = B_LU_YIELD = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
   cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_INPUT = NULL
@@ -505,22 +533,34 @@ return(dt.crop)
 #'
 #' @param crops (data.table) Input crop table for the RothC model. See details for further information
 #' @param simyears (numeric) number of simulation years of the RothC model
-#' @param start_date (character, formatted YYYY-MM-DD) Date in which simulation starts
-#' @param end_date (character, formatted YYYY-MM-DD) Required if simyears is not supplied
+#' @param start_date (character/date, formatted YYYY-MM-DD) Date in which simulation starts
+#' @param end_date (character/date, formatted YYYY-MM-DD) Required if simyears is not supplied
 #'
 #' @returns
 #' An extended crop input file to be used in the rotsee package
 #' 
 #' @details
-#' Crops: crop table
-#' Includes the columns: 
+#' Crop table includes the columns: 
 #' * B_LU_START (start of crop rotation),
 #' * B_LU_END (end of crop rotation),
-#' * B_LU (a crop id), 
-#' * B_LU_NAME (a crop name, optional),
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
 #' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
 #' 
+#' @examples
+#' ## examples to extend valid crop dataset
+#' # create valid crop set
+#' crops <- data.table::data.table(
+#' B_LU_START = c("2020-01-01", "2020-06-01"),
+#' B_LU_END = c("2020-03-31", "2020-08-31"),
+#' B_LU_HC = c(0.5, 0.3),
+#' B_C_OF_INPUT = c(100, 200)
+#' )
+#' 
+#' # using start_date and end_date
+#' rc_extend_crops(crops = crops, start_date = "2020-01-01", end_date = "2022-12-31")
+#' 
+#' # using start_date and simyears
+#' rc_extend_crops(crops = crops, start_date = "2020-01-01", simyears = 3)
 #' 
 #' @export
 #'
@@ -535,7 +575,7 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   crops <- as.data.table(crops)
   setnames(crops,toupper(colnames(crops)))
   
-  req <- c("B_LU_START", "B_LU_END", "B_LU", "B_LU_HC", "B_C_OF_INPUT")
+  req <- c("B_LU_START", "B_LU_END", "B_LU_HC", "B_C_OF_INPUT")
   checkmate::assert_names(colnames(crops), must.include = req)
   if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
   checkmate::assert_numeric(crops$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = F)
@@ -619,15 +659,28 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' An extended amendment input file to be used in the rotsee package
 #' 
 #' @details
-#' amendments: amendment table
-#' Includes the columns:
-#' * P_ID (character), ID of the soil amendment product
-#' * P_NAME (character), name of the soil amendment product, optional
-#' * P_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if P_C_OF_INPUT is not supplied
-#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if P_C_OF_INPUT is not supplied
+#' Amendment table includes the columns:
+#' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+#' 
+#' @examples
+#' ## examples to extend valid amendment dataset
+#' # create valid amendment set
+#' amendments <- data.table::data.table(
+#' P_HC = c(0.5, 0.3),
+#' P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
+#' P_DOSE = c(100, 200),
+#' P_C_OF = c(150,100)
+#' )
+#' 
+#' # using start_date and end_date
+#' rc_extend_amendments(amendments = amendments, start_date = "2020-01-01", end_date = "2022-12-31")
+#' 
+#' # using start_date and simyears
+#' rc_extend_amendments(amendments = amendments, start_date = "2020-01-01", simyears = 3)
 #' 
 #' @export
 #'

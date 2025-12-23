@@ -606,15 +606,7 @@ test_that("rc_check_inputs correctly validates crop data", {
                   rothc_amendment = valid_amendment,
                   soil_properties = valid_soil),
                "missing elements")
-  
-  # Without B_LU
-  crop_no_lu <- copy(valid_crop)[,B_LU := NULL]
-  
-  expect_error(rc_check_inputs(rothc_rotation = crop_no_lu,
-                  rothc_amendment = valid_amendment,
-                  soil_properties = valid_soil),
-               "missing elements")
-  
+
   # Without B_LU_HC
   crop_no_hc <- copy(valid_crop)[,B_LU_HC := NULL]
   
@@ -866,9 +858,8 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
   high_OM_dt <- dt[,A_SOM_LOI:= 25]
     expect_no_error(rc_calculate_bd(dt = high_OM_dt))
   
-  # Test with C concent as input
-    C_dt <- dt[, A_SOM_LOI := NULL]
-    C_dt <- dt[, A_C_OF := 80]
+  # Test with C content as input
+    C_dt <- data.table(A_CLAY_MI = 12, A_C_OF = 80)
     expect_no_error(rc_calculate_bd(dt = C_dt))
 })
 
@@ -876,13 +867,13 @@ test_that("rc_calculate_bd correctly calculates bulk density",{
 test_that("rc_calculate_B_C_OF correctly validates input", {
   # Missing required column
   expect_error(
-    rc_calculate_B_C_OF(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
+    rc_calculate_bcof(data.table(B_LU_YIELD = 30000, B_LU_HI = 0.6)),
     "must include"
   )
   
   # B_LU_YIELD out of bounds
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = -1,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -894,7 +885,7 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   
   # B_LU_HI out of bounds
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0,
       B_LU_HI_RES = 0.5,
@@ -906,7 +897,7 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   
   # B_LU_HI_RES out of bounds
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 1.1,
@@ -918,7 +909,7 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   
   # B_LU_RS_FR out of bounds
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -930,7 +921,7 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   
   # M_CROPRESIDUE not logical
   expect_error(
-    rc_calculate_B_C_OF(data.table(
+    rc_calculate_bcof(data.table(
       B_LU_YIELD = 30000,
       B_LU_HI = 0.6,
       B_LU_HI_RES = 0.5,
@@ -941,7 +932,7 @@ test_that("rc_calculate_B_C_OF correctly validates input", {
   )
 })
 
-test_that("rc_calculate_B_C_OF correctly calculates C inputs", {
+test_that("rc_calculate_bcof correctly calculates C inputs", {
   # Set correct input data
   valid_dt <- data.table(
     B_LU_YIELD = 30000,
@@ -952,7 +943,7 @@ test_that("rc_calculate_B_C_OF correctly calculates C inputs", {
   )
   
   # Run function with valid DT
-  valid <- rc_calculate_B_C_OF(valid_dt)
+  valid <- rc_calculate_bcof(valid_dt)
   
   # Check if everything went correctly
   expect_s3_class(valid, "data.table")
@@ -962,7 +953,7 @@ test_that("rc_calculate_B_C_OF correctly calculates C inputs", {
   expect_equal(valid$B_C_OF_INPUT, valid$cin_roots + valid$cin_residue, tolerance = 0.001)
 })
 
-test_that("rc_calculate_B_C_OF handles edge cases", {
+test_that("rc_calculate_bcof handles edge cases", {
   # Zero yield
   zero_yield_dt <- data.table(
     B_LU_YIELD = 0,
@@ -971,7 +962,7 @@ test_that("rc_calculate_B_C_OF handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = TRUE
   )
-  zero_yield <- rc_calculate_B_C_OF(zero_yield_dt)
+  zero_yield <- rc_calculate_bcof(zero_yield_dt)
   expect_equal(zero_yield$cin_aboveground, 0)
   expect_equal(zero_yield$cin_roots, 0)
   expect_equal(zero_yield$cin_residue, 0)
@@ -985,7 +976,7 @@ test_that("rc_calculate_B_C_OF handles edge cases", {
     B_LU_RS_FR = 1,
     M_CROPRESIDUE = FALSE
   )
-  no_residue <- rc_calculate_B_C_OF(no_residue_dt)
+  no_residue <- rc_calculate_bcof(no_residue_dt)
   expect_equal(no_residue$cin_residue, 0)
   expect_equal(no_residue$B_C_OF_INPUT, no_residue$cin_roots)
   
@@ -997,7 +988,7 @@ test_that("rc_calculate_B_C_OF handles edge cases", {
     B_LU_RS_FR = 5,
     M_CROPRESIDUE = TRUE
   )
-  max_result <- rc_calculate_B_C_OF(max_dt)
+  max_result <- rc_calculate_bcof(max_dt)
   expect_equal(max_result$cin_aboveground, 150000 / 1 * 0.5, tolerance = 0.001)
   expect_equal(max_result$cin_roots, max_result$cin_aboveground * 5, tolerance = 0.001)
   expect_equal(max_result$cin_residue, max_result$cin_aboveground * 1, tolerance = 0.001)
@@ -2261,8 +2252,6 @@ test_that("rc_set_refact preserves all weather columns", {
   expect_equal(result$custom_column, 1:12)
 })
 
-
-
 test_that("rc_visualize_plot runs without error", {
   # Use a small subset of your debug output
   dt <- data.table(
@@ -2274,27 +2263,120 @@ test_that("rc_visualize_plot runs without error", {
     soc = rnorm(10, 1000, 100)
   )
 
-  # Save current working directory and switch to temp directory
-  old_wd <- getwd()
+  # switch to temporary directory
   temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test")
   dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
-  setwd(temp_dir)
   
-    # Restore working directory on exit (even if test fails)
-    on.exit({
-      setwd(old_wd)
-      unlink(temp_dir, recursive = TRUE)
-      }, add = TRUE)
+    # Clean up temporary directory on exit
+    on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
     
   # Run the plot function
-  expect_no_error(rc_visualize_plot(dt))
+  expect_no_error(rc_visualize_plot(dt, save_dir = temp_dir))
  
   # Check that debug files were created
-  expect_true(file.exists("carbon_pools_linear.png"))
-  expect_true(file.exists("carbon_pools_change.png"))
+  expect_true(file.exists(file.path(temp_dir, "carbon_pools_linear.png")))
+  expect_true(file.exists(file.path(temp_dir, "carbon_pools_change.png")))
   
   # Check that the files are not empty
-  expect_true(file.info(file.path("carbon_pools_linear.png"))$size > 0)
-  expect_true(file.info(file.path("carbon_pools_change.png"))$size > 0)
+  expect_true(file.info(file.path(temp_dir, "carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path(temp_dir, "carbon_pools_change.png"))$size > 0)
+})
 
+test_that("rc_visualize_plot handles events correctly", {
+  # Create test data with events
+  dt <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20),
+    CBIO = rnorm(10, 300, 30),
+    CHUM = rnorm(10, 400, 40),
+    soc = rnorm(10, 1000, 100)
+  )
+  event <- data.table(
+    time = c(2, 5, 8),
+    var = c("input1", "input2", "input3"),
+    value = c(50, 100, 75)
+  )
+  
+  # switch to temp directory
+  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_events")
+  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
+  
+  # Restore working directory on exit
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+  
+  # Run the plot function with events
+  expect_no_error(rc_visualize_plot(dt, event = event, save_dir = temp_dir))
+  
+  # Check that debug files were created
+  expect_true(file.exists(file.path(temp_dir, "carbon_pools_linear.png")))
+  expect_true(file.exists(file.path(temp_dir, "carbon_pools_change.png")))
+  
+  # Check that the files are not empty
+  expect_true(file.info(file.path(temp_dir, "carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path(temp_dir, "carbon_pools_change.png"))$size > 0)
+})
+
+test_that("rc_visualize_plot handles custom save directory", {
+  dt <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20),
+    CBIO = rnorm(10, 300, 30),
+    CHUM = rnorm(10, 400, 40),
+    soc = rnorm(10, 1000, 100)
+)
+    
+  custom_dir <- file.path(tempdir(), "custom_save_dir")
+  dir.create(custom_dir, showWarnings = FALSE, recursive = TRUE)
+  
+  # Ensure cleanup on exit
+  on.exit(unlink(custom_dir, recursive = TRUE), add = TRUE)
+  
+  # Run the plot function with custom save directory
+  expect_no_error(rc_visualize_plot(dt, save_dir = custom_dir))
+  
+  # Check that files were created in the custom directory
+  expect_true(file.exists(file.path(custom_dir, "carbon_pools_linear.png")))
+  expect_true(file.exists(file.path(custom_dir, "carbon_pools_change.png")))
+  
+  # Check that the files are not empty
+  expect_true(file.info(file.path(custom_dir, "carbon_pools_linear.png"))$size > 0)
+  expect_true(file.info(file.path(custom_dir, "carbon_pools_change.png"))$size > 0)
+})
+
+test_that("rc_visualize_plot returns expected structure", {
+  dt <- data.table(
+    time = 1:10,
+    CDPM = rnorm(10, 100, 10),
+    CRPM = rnorm(10, 200, 20),
+    CBIO = rnorm(10, 300, 30),
+    CHUM = rnorm(10, 400, 40),
+    soc = rnorm(10, 1000, 100)
+  )
+  
+  # create temp directory
+  temp_dir <- file.path(tempdir(), "rotsee_visualize_plot_test_structure")
+  dir.create(temp_dir, showWarnings = FALSE, recursive = TRUE)
+  
+  # Restore working directory on exit
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+  
+  
+  # Run the plot function and capture the return value
+  result <- rc_visualize_plot(dt, save_dir = temp_dir)
+  
+  # Check that the return value is a list with the expected structure
+  expect_type(result, "list")
+  expect_named(result, c("data", "plots"))
+  expect_named(result$data, c("total", "delta"))
+  expect_named(result$plots, c("linear", "change"))
+  
+  # Check that the data tables are not NULL
+  expect_false(is.null(result$data$total))
+  expect_false(is.null(result$data$delta))
+  
+  # Check that the plots are not NULL
+  expect_false(is.null(result$plots$linear))
+  expect_false(is.null(result$plots$change))
 })

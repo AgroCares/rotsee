@@ -5,21 +5,21 @@
 \alias{rc_makkink}
 \title{Makkink correction factor table}
 \format{
-A data.table with 12 rows and 4 columns:
+A data.table with 13 rows and 4 columns:
 \describe{
-  \item{crop_makkink}{Makkink crop category}
-  \item{1}{Evapotranspiration correction factors for January}
-  \item{2}{Evapotranspiration correction factors for February}
-  \item{3}{Evapotranspiration correction factors for March}
-  \item{4}{Evapotranspiration correction factors for April}
-  \item{5}{Evapotranspiration correction factors for May}
-  \item{6}{Evapotranspiration correction factors for June}
-  \item{7}{Evapotranspiration correction factors for July}
-  \item{8}{Evapotranspiration correction factors for August}
-  \item{9}{Evapotranspiration correction factors for September}
-  \item{10}{Evapotranspiration correction factors for October}
-  \item{11}{Evapotranspiration correction factors for November}
-  \item{12}{Evapotranspiration correction factors for December}
+\item{crop_makkink}{Makkink crop category}
+\item{1}{Evapotranspiration correction factors for January}
+\item{2}{Evapotranspiration correction factors for February}
+\item{3}{Evapotranspiration correction factors for March}
+\item{4}{Evapotranspiration correction factors for April}
+\item{5}{Evapotranspiration correction factors for May}
+\item{6}{Evapotranspiration correction factors for June}
+\item{7}{Evapotranspiration correction factors for July}
+\item{8}{Evapotranspiration correction factors for August}
+\item{9}{Evapotranspiration correction factors for September}
+\item{10}{Evapotranspiration correction factors for October}
+\item{11}{Evapotranspiration correction factors for November}
+\item{12}{Evapotranspiration correction factors for December}
 }
 }
 \usage{

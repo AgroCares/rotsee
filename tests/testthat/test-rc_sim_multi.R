@@ -17,16 +17,12 @@ test_that("rc_sim_multi runs with normal inputs", {
     ID = rep(c('high', 'low', 'mid'),2),
     B_LU_START = rep(c("2022-04-01", "2023-04-01"),each=3),
     B_LU_END = rep(c("2022-10-01", "2023-10-01"),each=3),
-    B_LU = rep(c("nl_308", "nl_308"),each = 3),
-    B_LU_NAME = rep(c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),each =3),
     B_LU_HC = rep(0.32, 6),
     B_C_OF_INPUT = rep(1500, 6)
   )
   
   rothc_amendment <- data.table(
     ID = rep(c('high', 'low', 'mid'),2),
-    P_ID = rep(1, 6),
-    P_NAME = rep('cattle_slurry', 6),
     P_DOSE = rep(c(100000, 25000, 70000), 2),
     P_HC = rep(0.7,6),
     P_C_OF = rep(35, 6),
@@ -100,16 +96,12 @@ test_that("rc_sim_multi handles progress reporting", {
     ID = rep(c('high', 'low', 'mid'),2),
     B_LU_START = rep(c("2022-04-01", "2023-04-01"),each=3),
     B_LU_END = rep(c("2022-10-01", "2023-10-01"),each=3),
-    B_LU = rep(c("nl_308", "nl_308"),each = 3),
-    B_LU_NAME = rep(c("erwten (droog te oogsten)", "erwten (droog te oogsten)" ),each=3),
     B_LU_HC = rep(0.32, 6),
     B_C_OF_INPUT = rep(1500, 6)
   )
   
   rothc_amendment <- data.table(
     ID = rep(c('high', 'low', 'mid'),2),
-    P_ID = rep(1, 6),
-    P_NAME = rep('cattle_slurry', 6),
     P_DOSE = rep(c(100000, 25000, 70000), 2),
     P_HC = rep(0.7,6),
     P_C_OF = rep(35, 6),
@@ -144,6 +136,7 @@ test_that("rc_sim_multi handles progress reporting", {
                          strategy = 'multisession')
   
   expect_s3_class(result, "data.table")
+  expect_equal(nrow(result), 57)
 })
 
 

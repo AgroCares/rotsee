@@ -1,3 +1,14 @@
+# rotsee UNRELEASED
+## added
+* examples for the functions `rc_calculate_bd`, `rc_calculate_bcof`, `rc_extend_crops`, `rc_extend_amendments`
+* unit tests for rc_visualize_plot
+* Vignettes to add overview of rotsee and a description of the helper functions
+
+## changed
+* removed intermediate columns dens.sand, dens.clay, and cf as output from `rc_calculate_bd`
+* set default of initialize in `parms` to FALSE
+* updated function name `rc_calculate_B_C_OF` to `rc_calculate_bcof`.
+
 # rotsee v0.2.1 2025-12-18
 ## added 
 * new function `rc_set_refact` to calculate `W_ET_REFACT` for the weather data table based on grown crops
@@ -6,6 +17,7 @@
 ## changed
 * news of `rotsee v0.1.4`, to better reflect the updates of introduced parameters table
 * updated parameter table with new inputs
+
 
 # rotsee v0.2.0 2025-12-10
 

@@ -38,67 +38,107 @@ rc_initialise(
 
 \item{initialisation_method}{(character) options for spin-up (spinup_simulation,spinup_analytical_bodemcoolstof, spinup_analytical_heuvelink)}
 }
+\value{
+Table with initialised pools used in the RothC model
+}
 \description{
 Function to initialise the RothC model for a single field
 }
-\details{
-soil_properties: soil properties table
-Includes the columns:
-* A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
-* B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
-* A_CLAY_MI (numeric), clay fraction (\%)
-* A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
+\section{soil_properties}{
 
-amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
-Includes the columns:
-* B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
-* P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
-* P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+Data table with soil properties information.
+\itemize{
+\item A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
+\item B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
+\item A_CLAY_MI (numeric), clay fraction (\\%)
+\item A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
+}
+}
 
-crops: crop table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_crops}
-Includes the columns: 
-* B_LU_START (start of crop rotation),
-* B_LU_END (end of crop rotation),
-* B_LU (a crop id), 
-* B_LU_NAME (a crop name, optional),
-* B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-* B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_B_C_OF}
+\section{amendment}{
 
+Table with amendment application details. Can be extended to encompass the entire simulation period using \link{rc_extend_amendments}
+\itemize{
+\item B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+\item P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
+\item P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+\item P_HC (numeric), the humification coefficient of the soil amendment product (fraction).
+\item P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+}
+}
 
-rothc.parms: list with RothC parameters.
-Contains the following columns:
-* k1 (numeric) decomposition rate of the DPM pool
-* k2 (numeric) decomposition rate of the RPM pool
-* k3 (numeric) decomposition rate of the BIO pool
-* k4 (numeric) decomposition rate of the hum pool
-* abcd (function) function to calculate rate modifying factors as function of time
-* R1 (numeric) Correction factor for soil structure
-* time (list) list of the entire simulation period
+\section{rothc_rotation}{
 
-rothc.event: data table with C input events
-Contains the following columns:
-* time (numeric) time within the simulation run, where 1 equals the first year
-* var (character) C pool under consideration, options being 'CDPM', 'CRPM', and 'CHUM'.
-* method (character) Method of considering listed value, default is add.
-* value (numeric) carbon amount added (kg C/ha)
+Table with crop rotation details and management actions. Can be extended to encompass the entire simulation period using \link{rc_extend_crops}.
+\itemize{
+\item B_LU_START (start of crop rotation)
+\item B_LU_END (end of crop rotation)
+\item B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
+\item B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
+}
+}
 
-dt.soc: data table with soil information
-contains at least the following columns:
-* A_CLAY_MI (numeric), clay content (\%)
-* toc (numeric), total carbon content (kg C / ha)
+\section{rothc.parms}{
 
-weather: Weather table. If no table is given, average Dutch conditions are used
-Includes the columns:
-* month
-* W_TEMP_MEAN_MONTH (temperature in °C)
-* W_PREC_SUM_MONTH (precipitation in mm)
-* W_ET_REF_MONTH (potential evapotranspiration in mm)
-* W_ET_ACT_MONTH (actual evapotranspiration in mm)
+List with RothC parameters
+\itemize{
+\item k1 (numeric) decomposition rate of the DPM pool
+\item k2 (numeric) decomposition rate of the RPM pool
+\item k3 (numeric) decomposition rate of the BIO pool
+\item k4 (numeric) decomposition rate of the hum pool
+\item abcd (function) function to calculate rate modifying factors as function of time
+\item R1 (numeric) Correction factor for soil structure
+\item time (list) list of the entire simulation period
+}
+}
 
-Choice of initialisation method depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools; 
+\section{rothc.event}{
 
+Data table with C input events
+\itemize{
+\item time (numeric) time within the simulation run, where 1 equals the first year
+\item var (character) C pool under consideration, options being 'CDPM', 'CRPM', and 'CHUM'.
+\item method (character) Method of considering listed value, default is add.
+\item value (numeric) carbon amount added (kg C/ha)
+}
+}
+
+\section{dt.soc}{
+
+Data table with soil information
+\itemize{
+\item A_CLAY_MI (numeric), clay content (\\%)
+\item toc (numeric), total carbon content (kg C / ha)
+}
+}
+
+\section{weather}{
+
+Data table with weather information
+\itemize{
+\item year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
+\item month
+\item W_TEMP_MEAN_MONTH (temperature in °C)
+\item W_PREC_SUM_MONTH (precipitation in mm)
+\item W_ET_REF_MONTH (reference evapotranspiration in mm)
+\item W_ET_ACT_MONTH (actual evapotranspiration in mm)
+\item W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
+}
+}
+
+\section{irrigation}{
+
+Data table with irrigation information
+\itemize{
+\item B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
+\item B_IRR_AMOUNT (numeric) Irrigation amount (mm)
+}
+}
+
+\section{initialisation method}{
+
+Choice of initialisation method depends on data. spinup_simulation/spinup_analytical_bodemcoolstof assume equilibrium in C distribution between pools;
 spinup_analytical_heuvelink assumes equilibrium in total C stocks. If C stocks are in equilibrium, the latter is preferable
 Otherwise one of the other two is fine.
 }
+
