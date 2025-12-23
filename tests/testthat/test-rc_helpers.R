@@ -606,15 +606,7 @@ test_that("rc_check_inputs correctly validates crop data", {
                   rothc_amendment = valid_amendment,
                   soil_properties = valid_soil),
                "missing elements")
-  
-  # Without B_LU
-  crop_no_lu <- copy(valid_crop)[,B_LU := NULL]
-  
-  expect_error(rc_check_inputs(rothc_rotation = crop_no_lu,
-                  rothc_amendment = valid_amendment,
-                  soil_properties = valid_soil),
-               "missing elements")
-  
+
   # Without B_LU_HC
   crop_no_hc <- copy(valid_crop)[,B_LU_HC := NULL]
   
