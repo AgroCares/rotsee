@@ -3,11 +3,18 @@
 * examples for the functions `rc_calculate_bd`, `rc_calculate_bcof`, `rc_extend_crops`, `rc_extend_amendments`
 * unit tests for rc_visualize_plot
 * Vignettes to add overview of rotsee and a description of the helper functions
+# rotsee v0.2.1 2025-12-18
+## added 
+* new function `rc_set_refact` to calculate `W_ET_REFACT` for the weather data table based on grown crops
+* unit tests for `rc_set_refact` and `rc_check_inputs`
 
 ## changed
 * removed intermediate columns dens.sand, dens.clay, and cf as output from `rc_calculate_bd`
 * set default of initialize in `parms` to FALSE
 * updated function name `rc_calculate_B_C_OF` to `rc_calculate_bcof`.
+## changed
+* news of `rotsee v0.1.4`, to better reflect the updates of introduced parameters table
+* updated parameter table with new inputs
 
 
 # rotsee v0.2.0 2025-12-10
@@ -26,17 +33,15 @@
 
 
 # rotsee v0.1.7 2025-10-16
-
 ## added
-
 * rc_sim gains optional `irrigation` input (forwarded to `rc_input_rmf`) to include irrigation in soil moisture deficit calculation.
 * Weather input supports `W_ET_REFACT` (factor to convert reference to actual ET; defaults to 0.75 when missing).
 
 ## changed
 * Parameter name `W_ET_POT_MONTH` to `W_ET_REF_MONTH` to avoid ambiguous use of potential evapotranspiration
 
-# rotsee v0.1.6 2025-10-31
 
+# rotsee v0.1.6 2025-10-31
 ## added
 * unit tests of `rc_update_weather` and `rc_sim` to evaluate different weather inputs
 
@@ -46,7 +51,6 @@
 
 
 # rotsee v0.1.5  2025-10-20
-
 ## added
 * unit tests for `rc_update_parms`
 
@@ -54,18 +58,18 @@
 * Description correctly reflects used roxygen version
 * allow input of partial c_fractions distribution in rothc_parms
 
-# rotsee v0.1.4 2025-10-16
 
+# rotsee v0.1.4 2025-10-16
 ## added
 * package table `parameters.rda`, with information on all used parameters in the rotsee package
 * file `rothc_params.csv`, which developers can edit to add additional parameters
-* function `rc_update_parmtable`, which developers can use to update `parameters.rda` with updated `rothc_params.csv`
+* script `update_parmtable.R` under `data-raw`, which developers can use to update `parameters.rda` with updated `rothc_params.csv`
 
 ## changed
 * Validation of input data based on information in `parameters.rda`
 
-# rotsee v0.1.3 2025-10-15
 
+# rotsee v0.1.3 2025-10-15
 ## added
 * unit tests for `rc_multicore` and `rc_parallel`
 
@@ -76,6 +80,7 @@
 
 ## removed
 * `rc_shi_field`, with core functions incorporated into `rc_parallel`
+
 
 # rotsee v0.1.2 2025-10-13
 ## added
@@ -97,11 +102,13 @@
 * Calculate actual evapotranspiration based on simple rothc correction factor
 * Corrected accumulated soil moisture deficit calculation
 
+
 # rotsee v0.0.4 2025-09-24
 ## Changed
 * Split `rc_input_events` into `rc_input_event_crop`, `rc_input_event_amendment`, and merge these in `rc_input_events`
 * Added unit tests for `rc_input_event_crop`, `rc_input_event_amendment`, and `rc_input_events`
 * Expand README with some introductory text about the package
+  
   
 # rotsee v0.0.3 2025-09-01
 ## Added
@@ -114,8 +121,8 @@
 * Option to input total crop C input or general crop management data
 * Changed amendment inputs to single event date, format yyyy-mm-dd
 
-# rotsee V0.0.2 2025-08-28
 
+# rotsee V0.0.2 2025-08-28
 ## Added
 * Add GitHub Action to run R-CMD-CHECK for PR's
 * Added helper functions to check input weather and parameter data, and insert default values when not supplied
@@ -124,8 +131,8 @@
 ## Fixed
 * Add missing dependencies for `roxygen2`, `devtools` and `usethis`
 
-# rotsee v0.0.1 2025-07-31
 
+# rotsee v0.0.1 2025-07-31
 ## Added
 * function `rc_ode` the set of ordinairy differential equations to run RothC
 * function `rc_sim()` to run a simulation for RothC

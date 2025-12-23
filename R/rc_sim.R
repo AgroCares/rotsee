@@ -58,7 +58,7 @@
 #' * W_PREC_SUM_MONTH (precipitation in mm)
 #' * W_ET_REF_MONTH (reference evapotranspiration in mm)
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
-#' * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration, default 0.75)
+#' * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration).  When not provided, defaults to 0.75 for all months. Can be set given crop information using \link{rc_set_refact}, which applies crop-specific Makkink factors during growth periods and 0.36 for non-crop months.
 #' 
 #' @section irrigation:
 #' Data table with irrigation information
