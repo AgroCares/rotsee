@@ -3,7 +3,7 @@ test_that("rc_sim_multi runs with normal inputs", {
   
   A_DEPTH = 0.3
   
-  B_DEPTH = 0.3 
+  B_DEPTH = 0.3
   
   rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
   
