@@ -1,6 +1,3 @@
-
-source("helper-testdata.R")
-
 test_that("rc_input_amendment runs correctly using P_C_OF and P_DOSE", {
   # create amendment table (only with P_C_OF and P_DOSE)
   amendment <- create_amendment()

@@ -1,6 +1,3 @@
-source("helper-testdata.R")
-
-
 test_that("rc_update_weather returns default weather data when input is NULL", {
  
   dt.time <- rc_time_period(start_date = "2022-01-01", end_date = "2023-12-31")

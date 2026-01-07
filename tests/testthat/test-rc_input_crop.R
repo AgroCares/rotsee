@@ -1,5 +1,3 @@
-source("helper-testdata.R")
-
 test_that("rc_input_crop runs correctly", {
   # create crop table
   crop <- create_rotation()

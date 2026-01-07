@@ -1,7 +1,3 @@
-# test file for rc_initialise
-# read in helper file
-source("helper-testdata.R")
-
 # conduct tests
 test_that("rc_initialise runs properly", {
   # Create valid inputs
