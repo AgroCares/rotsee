@@ -155,6 +155,7 @@ test_that("rc_sim_multi handles progress reporting", {
                          strategy = 'multisession')
   
   expect_s3_class(result, "data.table")
+  expect_equal(nrow(result), 57)
 })
 
 

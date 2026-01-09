@@ -1,0 +1,187 @@
+---
+title: "helpers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{helpers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rotsee); library(data.table)
+```
+
+## Facilitating input pre-processing
+The rotsee package is built on the mindset that it should be universally applicable.
+Hence, location specific calculations such as bulk density determination via pedotransfer
+functions are omitted from the core calculation code, as different regions use different functions
+and calculation methods. While this makes package usage more flexible, it does put additional requirements
+on the package user. To facilitate this, several helper functions have been added. These functions are 
+outlined below, together with a short description of their origin and an example of using the functions.
+
+
+## Dry soil bulk density
+Dry soil bulk density is used to calculate soil carbon (C) content (e.g. g C/kg soil) to a C stock 
+(e.g. kg C/ha) and vice versa. Calculations are always conducted based on C stocks, and hence
+providing an accurate dry bulk density is important particularly when C content is given, or
+when outputs are requested in C content.
+
+In case the dry soil bulk density has not been measured, it can be calculated using 
+\link{rc_calculate_bd}. This function estimates soil bulk density from soil clay-
+and C content based on the pedotransfer functions listed in Verstraten et al. (2024). C concent can be given either as an amount
+organic matter (as %, `A_SOM_LOI`) or as C (in g C/kg, `A_C_OF`). Provided input is returned
+together with the column A_DENSITY_SA, listing soil bulk density in g/cm^3.
+
+
+
+```{r examples bulk density calculation, out.width = '70%'}
+# calculate bulk density using OM content
+# define field soil properties
+soil_om <- data.table(A_CLAY_MI = 12,
+                 A_SOM_LOI = 3)
+
+# calculate bulk density
+result_om <- rc_calculate_bd(dt = soil_om)
+
+print(result_om)
+
+# calculate bulk density using C content
+# define field soil properties
+soil_c <- data.table(A_CLAY_MI = 12,
+                 A_C_OF = 15)
+
+# calculate bulk density
+result_c <- rc_calculate_bd(dt = soil_c)
+
+print(result_c)
+  
+```
+
+## Calculate crop C inputs
+Crops, together with amendments, increase the C stocks. The package requests for each crop rotation
+the start and end dates, a humification coefficient, and a total C input into the soil.
+The user can estimate the C input themselves, or they can use \link{rc_calculate_bcof}
+to calculate crop C inputs. If so, C input is calculated based on the harvest index,
+root-to-shoot ratio, and assuming 50% of the crop is C (Pribyl, 2010).
+
+```{r example C input calculation, out.width = '70%'}
+# calculate crop C inputs given crop type
+# define crop properties
+ crop <- data.table(
+    B_LU_YIELD = 30000, # crop yield
+    B_LU_HI = 0.6, # harvest index
+    B_LU_HI_RES = 0.5, # fraction of crop that is residue
+    B_LU_RS_FR = 0.2, # root-to-shoot ratio
+    M_CROPRESIDUE = TRUE # is residue incorporated into the soil
+  )
+  
+  # Run function with valid DT
+  result <- rc_calculate_bcof(crop)
+  
+  print(result)
+
+```
+
+
+## Evapotranspiration factors (**Note: rc_set_refact is not yet available in this branch**)
+If only reference evapotranspiration (ET) is given in the weather table, actual ET needs to be calculated using a crop-specific factor, `W_ET_REFACT`. This is facilitated
+by \link{rc_set_refact}, which considers which months and years crops are growing and assigns `W_ET_REFACT` based on supplied values. The requested simulation
+time table in this function can be easily generated using \link{rc_time_period}, given a start and end date.
+
+```{r example rc_set_refact, out.width = '70%'}
+# calculate evapotranspiration factors given certain crop inputs
+# define weather table
+ weather <- data.table(
+    month = 1:12,
+    W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+    W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+    W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5)
+    )
+
+# define crop table
+ crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU = c("nl_308", "nl_308"),
+    D_MAKKINK_JAN = 0.36,
+    D_MAKKINK_FEB = 0.36,
+    D_MAKKINK_MAR = 0.36,
+    D_MAKKINK_APR = 0.52,
+    D_MAKKINK_MAY = 0.9,
+    D_MAKKINK_JUN = 1.2,
+    D_MAKKINK_JUL = 0.72,
+    D_MAKKINK_AUG = 0.36,
+    D_MAKKINK_SEP = 0.36,
+    D_MAKKINK_OCT = 0.36,
+    D_MAKKINK_NOV = 0.36,
+    D_MAKKINK_DEC = 0.36
+  )
+  
+ # define time table
+  dt.time <- rc_time_period(start_date = "2022-04-01", end_date = "2023-10-01")
+  
+  # assign ET factor (once rc_set_refact is properly merged to this branch)
+ # result <- rc_set_refact(weather = weather, crop = crop, dt.time = dt.time)
+  
+ # print(result)
+
+```
+
+## Extend crop rotation and amendment plans
+Rotsee requires the users to provide a simulation start and end, a date of amendment application,
+and a growth period of each crop. In case no simulation start and end are provided, they are 
+defined based on crop rotation and amendment input. Yet in case the rotation and amendment plans
+do not fill the entire simulation period, the user may prefer to have their plans extended.
+This can be done using \link{rc_extend_crops} and \link{rc_extend_amendments}. Using this, the crop
+and/or amendment plans are duplicated until the provided simulation period has been covered.
+
+```{r example extension crop and amendment plans, out.width='70%'}
+# define crop input
+crop <- data.table(
+    B_LU_START = c("2022-04-01", "2023-04-01"),
+    B_LU_END = c("2022-10-01", "2023-10-01"),
+    B_LU_HC = c(0.32, 0.32),
+    B_C_OF_CULT = c(1500, 1500)
+    )
+
+# extend crop table using end date
+crop_extended_end <- rc_extend_crops(crops = crop, start_date = "2022-04-01", end_date = "2030-10-01")
+print(crop_extended_end)
+
+# extend crop table using simyears
+crop_extended_sim <- rc_extend_crops(crops = crop, start_date = "2022-04-01", simyears = 8)
+print(crop_extended_sim)
+
+
+# define amendment input
+amendment <- data.table(
+    P_DOSE = c(63300, 63300),
+    P_HC = c(0.7,0.7),
+    P_C_OF = c(35, 35),
+    P_DATE_FERTILIZATION = c("2022-05-01", "2023-05-01"))
+
+# extend amendment table using end date
+amend_extended_end <- rc_extend_amendments(amendments = amendment, start_date = "2022-04-01", end_date = "2030-10-01")
+print(amend_extended_end)
+
+# extend crop table using simyears
+amend_extended_sim <- rc_extend_amendments(amendments = amendment, start_date = "2022-04-01", simyears = 8)
+print(amend_extended_sim)
+
+
+```
+
+## references
+
+Verstraten, J., van Middelkoop, J. C., Philipsen, A. P., van Dongen, C., Bussink, D. W., van der Bas, A., Velthof, G. L., de Haan, J. J., van Dijk, W., Brolsma, K. M., & van Eekeren, N. (2024). Bemestingsadvies Commissie Bemesting Grasland en Voedergewassen: Versie 2024. Commissie Bemesting Grasland en Voedergewassen. https://edepot.wur.nl/413891 **note: the ptf of clay is not present in this reference, there are referred clay densities based on OM, yet these slightly deviate from the actual equation **
+
+Pribyl, D. W. (2010). A critical review of the conventional SOC to SOM conversion factor. Geoderma, 156(3-4), 75-83. https://doi.org/10.1016/j.geoderma.2010.02.003
+
+

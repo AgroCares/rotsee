@@ -4,20 +4,21 @@
 #'
 #' @param dt (data.table) Table with crop rotation and related crop properties for Carbon input.
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
-#' @param A_CLAY_MI (numeric) The clay content of the soil (\%)
+#' @param A_CLAY_MI (numeric) The clay content of the soil (%)
 #' @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.
 #' @param dt.weather (data.table) Data table of monthly weather
 #' @param dt.time (data.table) table with all combinations of year and month in the simulation period, can be created using \link{rc_time_period}
 #' @param dt.irrigation (data.table) Data table of irrigation events
 #'
-#' @details
-#' dt: crop rotation table
-#' contains at least the following columns:
+#' @returns data table with rate modifying factors
+#' 
+#' @section dt:
+#' crop rotation table
 #' * B_LU_START (date), start of crop growth
 #' * B_LU_END (DATE), end of crop growth
 #' 
-#' dt.weather: weather table
-#' contains the following columns:
+#' @section dt.weather:
+#' weather table
 #' * year 
 #' * month
 #' * W_TEMP_MEAN_MONTH
@@ -26,8 +27,8 @@
 #' * W_ET_ACT_MONTH (optional), calculated from W_ET_REF_MONTH when not supplied
 #' * W_ET_REFACT
 #'
-#' dt.irrigation: irrigation table
-#' contains the following columns:
+#' @section dt.irrigation:
+#'  irrigation table
 #' * B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
 #' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'

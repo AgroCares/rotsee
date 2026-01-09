@@ -2,57 +2,56 @@
 #'
 #' This function calculates the change in carbon stock or C pools (in kg C per ha) based on organic matter amendments, crop rotation, and long-term averaged weather conditions.
 #'
-#' @param soil_properties (data.table) Data table with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (\%); A_DENSITY_SA, dry soil bulk density (g/cm3)
+#' @param soil_properties (data.table) Data table with soil properties. See details below.
 #' @param A_DEPTH (numeric) Depth for which soil sample is taken (m). Default set to 0.3.
 #' @param B_DEPTH (numeric) Depth of the cultivated soil layer (m), simulation depth. Default set to 0.3.
-#' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_HC, and B_C_OF_AMENDMENT and/or P_DOSE and P_C_OF. See details for desired format.
-#' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. For more information, see details.
-#' @param weather (data.table) Table with following column names: year (optional), month, W_TEMP_MEAN_MONTH, W_PREC_SUM_MONTH, W_ET_REF_MONTH, W_ET_ACT_MONTH, W_ET_REFACT. For more information, see details.
+#' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. See details below.
+#' @param rothc_amendment (data.table) A table with amendment application details. See details below.
+#' @param rothc_parms (list) A list with simulation parameters controlling the dynamics of RothC Model. See details below.
+#' @param weather (data.table) Table with weather data. See details below.
 #' @param M_TILLAGE_SYSTEM (character) gives the tillage system applied. Options include NT (no-till), ST (shallow-till), CT (conventional-till) and DT (deep-till). Defaults to CT.
-#' @param irrigation (data.table) Table with the following column names: B_DATE_IRRIGATION, B_IRR_AMOUNT. See details for more information.
+#' @param irrigation (data.table) Table with irrigation data. See details below.
 #' @param visualize (boolean) If TRUE, run rc_sim in visualize mode. Results are directly plotted in c pools per month to allow for direct interpretation. 
 #'
-#' @details
-#' This function simulates the fate of SOC given the impact of soil properties, weather and management.
-#' The soil_properties table is required. 
-#' When no weather inputs are given, these are estimated from long-term average weather conditions in the Netherlands.
 #'
-#' soil_properties: soil properties table.
-#' Includes the columns:
-#' * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m.
-#' * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied. If both are supplied, B_C_ST03 will be used to set soil organic carbon stocks.
+#' @returns Table with development of C pools in the field over the given simulation period
+#' 
+#' 
+#' @section soil_properties:
+#' Data table with soil properties information.
+#' * A_C_OF (numeric), soil organic carbon content (g C/kg), preferably for soil depth 0.3 m
+#' * B_C_ST03 (numeric), soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m. Required if A_C_OF is not supplied
 #' * A_CLAY_MI (numeric), clay fraction (\%)
 #' * A_DENSITY_SA (numeric), dry soil bulk density(g/cm3). In case this is not know, can be calculated using function \link{rc_calculate_bd} given a clay and organic matter content
 #' 
-#' rothc_amendment: amendment table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_amendments}
-#' Includes the columns:
+#' @section rothc_amendment:
+#' Table with amendment application details. Can be extended to encompass the entire simulation period using \link{rc_extend_amendments}
 #' * B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
 #' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
-#' 
-#' rothc_rotation: crop table. Input can be duplicated to cover the entire simulation period using \link{rc_extend_crops}
-#' Includes the columns: 
-#' * B_LU_START (start of crop rotation),
-#' * B_LU_END (end of crop rotation),
+#'  
+#' @section rothc_rotation:  
+#' Table with crop rotation details and management actions. Can be extended to encompass the entire simulation period using \link{rc_extend_crops}.
+#' * B_LU_START (start of crop rotation)
+#' * B_LU_END (end of crop rotation)
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
 #' * B_C_OF_CULT, the organic carbon input from plants on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
 #'
-#' rothc_parms: parameters to adapt calculations (optional)
-#' May include the following columns:
+#' @section rothc_parms: 
+#' List with simulation parameters controlling the RothC model calculations
 #' * initialisation_method (character) scenario to initialise the carbon pools. options 'spinup_analytical_bodemcoolstof','spinup_analytical_heuvelink', 'spinup_simulation', 'none', default is 'none'
-#' * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialisation, default RothC distribution is used
+#' * c_fractions (list) Distribution over the different C pools. If not supplied nor calculated via model initialization, default RothC distribution is used
 #' * dec_rates (list) list of decomposition rates of the different pools. If not supplied, default RothC values are used
 #' * unit (character) Unit in which the output should be given. Options: 'A_SOM_LOI' (\% organic matter),'psoc' (g C/kg), 'psomperfraction' (\% organic matter of each fraction), 'cstock' (kg C/ha of each fraction)
-#' * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. default is adams.
+#' * method (character) method to solve ordinary differential equations, see \link[deSolve]{ode} for options. Default is 'adams'.
 #' * poutput (character) Resolution of data output. Options: 'year', 'month'
 #' * start_date (character, formatted "YYYY-MM-DD") Start date of simulation period. If not provided, first date of crop rotation or amendment application is taken.
 #' * end_date (character, formatted "YYYY-MM-DD") End date of simulation period. If not provided, last date of crop rotation or amendment application is taken.
 #' 
-#' weather: Weather table. If no table is given, average Dutch conditions are used
-#' Includes the columns:
+#' @section weather: 
+#' Data table with weather information
 #' * year (integer) optional, should span the entire simulation period. If not supplied, month must include all 12 months which will be auto-expanded across simulation period
 #' * month
 #' * W_TEMP_MEAN_MONTH (temperature in °C)
@@ -61,14 +60,13 @@
 #' * W_ET_ACT_MONTH (actual evapotranspiration in mm)
 #' * W_ET_REFACT (factor to recalculate reference to actual evapotranspiration).  When not provided, defaults to 0.75 for all months. Can be set given crop information using \link{rc_set_refact}, which applies crop-specific Makkink factors during growth periods and 0.36 for non-crop months.
 #' 
-#' Irrigation: Irrigation table, optional.
-#' Includes the columns:
+#' @section irrigation:
+#' Data table with irrigation information
 #' * B_DATE_IRRIGATION (date, formatted YYYY-MM-DD) Date of field irrigation
 #' * B_IRR_AMOUNT (numeric) Irrigation amount (mm)
 #'
 #' @import deSolve
-#' 
-#' @returns Table with development of C pools in the field over the given simulation period
+#'
 #'
 #' @export
 rc_sim <- function(soil_properties,

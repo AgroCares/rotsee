@@ -39,3 +39,5 @@ Suggests:
     patchwork,
     roxygen2
 Config/testthat/edition: 3
+VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)

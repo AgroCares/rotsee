@@ -1,0 +1,367 @@
+---
+title: "overview"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rotsee); library(data.table); library(ggplot2)
+```
+
+
+## 1. What is rotsee?
+Rotsee provides a calculation core for performing RothC calculations. Data pre-processing is left
+to the user to make application universal, yet the package provides several functions to
+facilitate this process. 
+
+
+## 2. Basis of the RothC model
+An extensive description of the RothC model can be found in Coleman and Jenkinson, 1996.
+RothC is a well-established model to calculate the development of carbon (C) stocks in soils
+based on long-term experimental data from Rothamsted. RothC uses 5 C pools to describe
+carbon turnover. The inert organic matter (IOM) pool is fixed and based on the calculation
+developed by Falloon et al., 1998. Remaining four pools are all active and are in order
+of highest to lowest decomposition rate: decomposable plant material (DPM), resistant plant material (RPM),
+microbial biomass (BIO), and humified organic matter (HUM). Their decomposition rates -
+adjusted with rate modifying factors based on temperature, soil moisture, and crop cover -
+are used to calculate C removal from and transfer between the different pools. Together with C
+inputs from crops and amendments, the model calculates changes in C stocks at a monthly resolution.
+A representation of the overall model functionality is listed in Figure 1.
+
+
+```{r Figure 1, echo = FALSE, out.width = '70%'}
+
+knitr::include_graphics('Rothc_structure.png')
+
+```
+
+**Figure 1: workflow of the RothC model**
+
+## 3. Required and optional data for rotsee
+Below is an overview of all the optional and required data for the rotsee package. In essence,
+the only required data are soil properties data and a given simulation period.
+
+### 3.1 Soil properties (required, data.table)
+* Clay content (A_CLAY_MI, in \%). 
+* Dry bulk density (A_DENSITY_SA, in g/cm^3). If the bulk density is unknown, it can be calculated using `rc_calculate_bd`.
+* Organic C content (A_C_OF, in g C/kg) OR
+* Organic C stock (B_C_ST03, in Mg C/ha)
+
+### 3.2 Crop rotation data (optional, data.table)
+Information is required on **individual** crop growth seasons. Following inputs are required when crop data is provided:
+
+* Start date of crop growth (B_LU_START, formatted as YYYY-MM-DD)
+* End date of crop growth (B_LU_END, formatted as YYYY-MM-DD)
+* Crop humification coefficient (B_LU_HC, unitless), representing amount of crop C remaining after 1 year of decomposition.
+* Crop C inputs (B_C_OF_INPUT, kg C/ha). If this is not known, it can be calculated with known crop harvest characteristics using `rc_calculate_bcof`.
+
+Crop rotations can be extended to encompass longer simulation periods using `rc_extend_crops`.
+
+
+### 3.3 Amendment data (optional, data.table)
+Information is required on **unique** amendment application events. Following inputs are required:
+
+* Amendment application date (P_DATE_FERTILIZATION, formatted as YYYY-MM-DD)
+* Amendment humification coefficient (P_HC, unitless), representing amount of amendment C remaining after 1 year of decomposition.
+* Amendment C input (B_C_OF_INPUT, kg C/ha) 
+                  OR
+* Amendment application dose (P_DOSE, kg/ha)
+* Amendment C content(P_C_OF, g C/kg)
+
+Amendment applications can be extended to encompass longer simulation periods using `rc_extend_amendments`.
+
+### 3.4 Weather data (optional, data.table)
+* Year (year, optional to define yearly weather variation)
+* Month (month, should be provided as 1 (being January) to 12 (being December))
+* Mean temperature (W_TEMP_MEAN_MONTH, °C)
+* Mean precipitation (W_PREC_SUM_MONTH, mm)
+* Actual evapotranspiration (W_ET_ACT_MONTH, mmm)
+                  OR
+* Reference evapotranspiration (W_ET_REF_MONTH, mm)
+* factor to recalculate reference to actual evapotranspiration (W_ET_REFACT, unitless). Defaults to 0.75 when not provided. Can be easily implemented using `rc_set_refact`, see also helpers.rmd.
+
+If weather data is not provided, Dutch weather averages will be used.
+
+
+### 3.5 Sampling information (optional, numeric values)
+Given as direct input parameters in `rc_sim`:
+
+* Depth of the cultivation layer (A_DEPTH, m - below surface)
+* Sampling depth (B_depth, m - below surface)
+
+Both are defaulted to 0.3 when not supplied.
+
+### 3.6 Model parameters (optional, list)
+* Initial pool distribution (c_fractions, list). List with fr_IOM, fr_DPM, fr_RPM, and fr_BIO, all as numeric values. Default RothC values used when not supplied
+* Pool decomposition rates (dec_rates, list). List with k1, k2, k3, and k4 representing decomposition rates of the DPM, RPM, BIO, and HUM pools respectively. Default RothC values used when not supplied
+* Pool initialization (initialize, character). If not set to 'false', method of initializing the pool distribution and **overwriting user-provided pool distribution**
+* Output unit (unit), options are 'A_SOM_LOI' (OM content in \%), 'psoc' (g C/kg), 'psomperfraction' (\% OM of each fraction), and 'cstock' (kg C/ha of each fraction).
+* Output resolution (poutput), options are 'month' or 'year'
+* Method of solving linear differential equations (method), default is 'adams'.
+* Start date of RothC simulation (start_date, formatted as YYYY-MM-DD). If not supplied, set to earliest crop growth or amendment application.
+* End date of RothC simulation (end_date, formatted as YYYY-MM-DD). If not supplied, set to latest crop removal or amendment application.
+
+
+
+## 4. Model operation
+
+### 4.1 Pool initialization
+An important aspect of RothC is the initialization of the C pools. Rotsee implements this using
+either pre-defined pools or initialization calculations as described below; values can be defined in the `rothc_parms` table required for `rc_sim`.
+
+Pre-defined pools are defined via the `c_fractions` parameter. These can be defined by the user,
+otherwise the RothC defaults are used: fr_IOM = 0.049; fr_DPM = 0.015; fr_RPM = 0.125; fr_BIO = 0.015.
+**Note: pre-defined pools are overwritten if initialization calculations are requested**
+
+Initialization calculations can be requested using the parameter `initialisation_method`. If no initialization
+is wanted, `initialisation_method` should be set to FALSE. Three initialization options exist, which can be selected
+based on system state. 
+If C stocks are developing and the pool size is expected to be in equilibrium, `initialisation_method` should be
+set either to `spinup_simulation` or to `spinup_analytical_bodemcoolstof`. `spinup_simulation`
+conducts the RothC calculation for 150 years to establish equilibrium pools, and requires a table on crop inputs and
+disallows a weather column with yearly fluctuations in weather data. `spinup_analytical_bodemcoolstof`
+calculates the pools based on the initialization of Bodemcoolstof (Hendriks et al., 2021).
+If C stocks are in equilibrium, `initialisation_method` should be set to `spinup_analytical_heuvelink`.
+
+
+### 4.2 C inputs
+In rotsee, two types of C inputs into the soil are defined: crops and amendments. Both
+are described in a similar fashion, using an input event (specific month) and a total
+C input into the soil. Once C enters the soil, it is distributed among the different C pools
+based on the humification coefficient. This distribution is expressed in the fraction DPM-to-RPM
+(fr_DPM_RPM), which if no humification coefficient is provided is defaulted to 1.44. Crop
+C inputs are directly distributed over DPM and RPM; for amendments a default 2% enters the
+HUM pool.
+
+
+### 4.3 Simulation duration
+Simulation duration can be set directly using the 'start_date' and 'end_date' parameters.
+If these parameters are not provided, the simulation period is based on the earliest 
+and latest crop and/or amendment application dates.
+
+## 5. Model output
+Model calculation provides soil C stock as a function of time. The exact output depends on
+user-provided model parameters (see section 3.6)
+
+Requested model outputs can be altered both with respect to temporal resolution and
+returned units and pool definitions of the C stocks. Output can be requested either on
+a monthly or a yearly basis; this can be adapted with the parameter 'poutput'. Output units
+can be adapted with the parameter 'unit', which allows the following options:
+
+- A_SOM_LOI, providing the organic matter content in \% 
+- psoc, providing the organic carbon content in g C/kg
+
+- psomperfraction, providing the organic matter content of the individual pools in \%
+
+- cstock, providing the carbon stock of each fraction in kg C/ha
+
+
+## 6. Helper functions
+To facilitate the user in using the rotsee package, several helper functions have been introduced.
+For this we refer you to the [helpers vignette](helpers.html).
+
+## 7. Example runs
+Here are several examples of how the rotsee package can be applied.
+
+### 7.1 Simple run
+In this first example, the only inputs provided are soil properties and a simulation
+period by providing start- and end date. This is of course a rather boring example, but does show 
+that only limited data is needed to run the model, making it flexible to use. As there are 
+no C inputs the OM content decreases within 100 years from 2.4% to 0.5%.
+
+```{r example simple, out.width = '70%'}
+# define soil properties
+soil <- data.table(
+    B_C_ST03 = 50,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+
+# define parms to set simulation period
+parms <- list(
+  start_date = "2022-01-01",
+  end_date = "2122-01-01"
+)
+
+# Run the model
+results <- rc_sim(
+  soil_properties = soil,
+  rothc_parms = parms
+)
+
+# plot results
+ggplot(data = results)+
+  geom_line(aes(x = time, y =A_SOM_LOI))+
+  labs(x = "year", y = "OM [%]") +
+  theme_bw()
+
+
+```
+
+
+
+### 7.2 Complete run
+The 2nd example simulates 100 years of constant C application via crop growth and amendment
+application. Data input is significantly more extensive. Due to the provided inputs,
+in this case a rise in OM content can be observed in the Figure.
+
+
+```{r example complete, out.width = '70%'}
+
+
+# Set crop rotation plan
+crops <- data.table(
+    B_LU_START = "2022-04-01",
+    B_LU_END = "2022-10-01",
+    B_LU_HC = 0.32,
+    B_C_OF_CULT = 2500
+    )
+
+crops <- rc_extend_crops(crops, start_date = "2022-01-01", simyears = 100)
+
+# set amendment plan
+amendment <- data.table(
+    B_C_OF_AMENDMENT = 3000,
+    P_HC = 0.7,
+    P_DATE_FERTILIZATION = "2022-10-01")
+
+amendment <- rc_extend_amendments(amendment, start_date = "2022-01-01", simyears = 100)
+
+# define weather
+weather <- data.table(year = rep(2022:2123, each = 12),
+                        month = rep(1:12, 102),
+                        W_TEMP_MEAN_MONTH = rep(c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2), 102),
+                        W_PREC_SUM_MONTH = rep(c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),102),
+                        W_ET_REF_MONTH = rep(c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5), 102),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_ET_REFACT = 0.75)
+
+# define soil properties
+soil <- data.table(
+    B_C_ST03 = 50,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+
+# define parameters
+parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
+                      c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
+                      initialisation_method = 'spinup_analytical_bodemcoolstof',
+                      unit = "A_SOM_LOI",
+                      method = "adams",
+                      poutput = "year",
+                      start_date = "2022-04-01",
+                      end_date = "2122-04-01")
+
+# Run the model
+results <- rc_sim(
+  soil_properties = soil,
+  rothc_rotation = crops,
+  rothc_amendment = amendment,
+  rothc_parms = parms,
+  weather = weather
+)
+
+# plot results
+ggplot(data = results)+
+  geom_line(aes(x = time, y =A_SOM_LOI))+
+  labs(x = "year", y = "OM [%]") +
+  theme_bw()
+
+```
+  
+
+
+
+### 7.3 multicore calculations
+In case of multiple plots, multicore calculations can be conducted to speed up the calculation
+using `rc_sim_multi`. This requires an additional ID column for soil, crop, and amendment
+data to represent the different fields/scenario's. This example shows multicore calculations with similar
+crop growth yet with three different rates of amendment application.
+
+**Note: the current iteration requires also additional inputs listed above to run correctly**
+
+```{r example multicore, out.width = '70%'}
+# define soil properties of three fields
+soil <- data.table(
+    ID = c('low', 'mid', 'high'),
+    B_C_ST03 = rep(50,3),
+    A_CLAY_MI = rep(18,3),
+    A_DENSITY_SA = rep(1.4,3)
+  )
+
+  # Define crop rotation on each field
+  crops <- data.table(
+    ID = rep(c('low', 'mid', 'high'),2),
+    B_LU_START = rep(c("2022-04-01", "2023-04-01"),each=3),
+    B_LU_END = rep(c("2022-10-01", "2023-10-01"),each=3),
+    B_LU_HC = rep(0.32, 6),
+    B_C_OF_CULT = rep(2500, 6)
+  )
+  
+  crops <- rc_extend_crops(crops = crops, start_date = "2022-01-01", simyears = 100)
+  
+  # Define amendment on each field
+  amendment <- data.table(
+    ID = rep(c('low', 'mid', 'high'),2),
+    P_NAME = rep('cattle_slurry', 6),
+    B_C_OF_AMENDMENT = rep(c(1000, 3000, 5000), each = 2),
+    P_HC = rep(0.7,6),
+    P_DATE_FERTILIZATION = rep(c("2022-05-01", "2023-05-01"),each=3)
+  )
+ 
+  amendment <- rc_extend_amendments(amendments = amendment, start_date = "2022-01-01", simyears = 100)
+  
+  # define parameters
+  parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
+                c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
+                initialisation_method = 'spinup_analytical_bodemcoolstof',
+                unit = "A_SOM_LOI",
+                method = "adams",
+                poutput = "year",
+                start_date = "2022-04-01",
+                end_date = "2122-04-01")
+
+  # define weather
+  weather <- data.table(month = c(1:12),
+                        W_TEMP_MEAN_MONTH = c(3.6,3.9,6.5,9.8,13.4,16.2,18.3,17.9,14.7,10.9,7,4.2),
+                        W_PREC_SUM_MONTH = c(70.8, 63.1, 57.8, 41.6, 59.3, 70.5, 85.2, 83.6, 77.9, 81.1, 80.0, 83.8),
+                        W_ET_REF_MONTH = c(8.5, 15.5, 35.3, 62.4, 87.3, 93.3, 98.3, 82.7, 51.7, 28.0, 11.3,  6.5),
+                        W_ET_ACT_MONTH = NA_real_,
+                        W_ET_REFACT = rep(0.75, 12))
+  
+  # Run multicore calculation
+  result <- rc_sim_multi(soil_properties = soil,
+                         parms = parms,
+                         rotation = crops,
+                         weather = weather,
+                         amendment = amendment,
+                         final = FALSE,
+                         strategy = 'multisession')
+  
+  # plot result
+  ggplot(data = result)+
+  geom_line(aes(x = time, y =A_SOM_LOI, color = ID))+
+    scale_color_manual(values = c("#BAE4B3", "#74C476", "#238B45"))+
+  labs(x = "year", y = "OM [%]") +
+    theme_bw()
+  
+```
+
+
+## 8. references
+Coleman, K., & Jenkinson, D. S. (1996). RothC-26.3-A Model for the turnover of carbon in soil. In Evaluation of soil organic matter models: Using existing long-term datasets (pp. 237-246). Berlin, Heidelberg: Springer Berlin Heidelberg. https://doi.org/10.1007/978-3-642-61094-3_17
+
+Falloon, P. D., Smith, P., Coleman, K., & Marshall, S. (1998). Estimating the size of the inert organic matter pool from total soil organic carbon content for use in the Rothamsted carbon model. Soil Biology and Biochemistry, 30(8/9), 1207-1211. https://doi.org/10.1016/S0038-0717(97)00256-3
+
+Hendriks, C. M. J., Lesschen, J. P., Timmermans, B., Hanegraaf, M., Dijkman, W., Rougoor, C., & Schepens, J. (2021). Beschrijving en ontwikkeling Praktijktool BodemCoolstof.

@@ -9,7 +9,6 @@
 #' To run this function, the dt should contain the following columns:
 #' * B_LU_START (date/character), start of crop growth (formatted YYYY-MM-DD)
 #' * B_LU_END (date/character), end of crop growth (formatted YYYY-MM-DD)
-#' * B_LU_NAME (a crop name, optional):
 #' * B_LU_HC (the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used)
 #' * B_C_OF_CULT (numeric), the organic carbon input from crops/plant residues on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof})
 #'
@@ -17,7 +16,7 @@
 rc_input_crop <- function(dt){
   
   # add visual bindings
-  B_C_OF_CULT  = B_LU  = B_LU_END  = B_LU_HC = B_LU_START = cin_dpm = NULL
+  B_C_OF_CULT  = B_LU_END  = B_LU_HC = B_LU_START = cin_dpm = NULL
     cin_rpm = fr_dpm_rpm = NULL
   
   # check crop table
@@ -51,9 +50,8 @@ rc_input_crop <- function(dt){
     dt.crop[,cin_dpm := B_C_OF_CULT * fr_dpm_rpm / (1 + fr_dpm_rpm)]
     dt.crop[,cin_rpm := B_C_OF_CULT * 1 / (1 + fr_dpm_rpm)]
 
-
   # select only relevant columns with C input (kg C/ ha)
-  dt.crop <- dt.crop[,list(year = year, month = month, B_LU_END, B_LU_START, B_LU,cin_dpm, cin_rpm)]
+  dt.crop <- dt.crop[,list(year = year, month = month, B_LU_END, B_LU_START, cin_dpm, cin_rpm)]
   
   # return
   return(dt.crop)

@@ -10,9 +10,9 @@
 
 ## Introduction
 
-`rotsee` is an R package providing an implementation of the Rothamsted Carbon Model (RothC) for agricultural soils. RothC is a model used for simulating the turnover of organic carbon in topsoil, considering factors like crop cover, fertilizer appliction, soil properties, climate and soil management.
+`rotsee` is an R package providing an implementation of the Rothamsted Carbon Model (RothC) for agricultural soils. RothC is a model used to simulate organic carbon turnover in top soils, considering factors like soil properties, crop rotation, amendment application, and climate.
 
-This package aims to provide an interface for running RothC calculations in R accurately, fast and easy-to-use functions.
+This package serves as a RothC calculation core, to enable accurate and fast calculations. The package is equipped with easy-to-use functions to prepare input and to perform the calculations.
 
 ## Installation
 
@@ -29,8 +29,33 @@ A basic example of how to use the package:
 
 ```r
 library(rotsee)
+library(data.table)
 
-# TODO: Add a basic example of how to use the package
+example_crop <- data.table(
+ B_LU_START = c("2020-01-01", "2020-06-01"),
+ B_LU_END = c("2020-03-31", "2020-08-31"),
+ B_LU_HC = c(0.5, 0.3),
+ B_C_OF_INPUT = c(100, 200)
+ )
+ 
+ example_amendment <- data.table(
+ P_HC = c(0.5, 0.3),
+ P_DATE_FERTILIZATION = c("2020-01-01", "2020-06-01"),
+ B_C_OF_INPUT = c(10000, 8000)
+ )
+ 
+ example_soil <- data.table(
+ A_CLAY_MI = c(10),
+ A_SOM_LOI = c(8),
+ A_DENSITY_SA = c(1.47)
+ )
+ 
+ example_result <- rc_sim(soil_properties = example_soil,
+ rothc_rotation = example_crop,
+ rothc_amendment = example_amendment)
+ 
+ print(example_result)
+
 ```
 
 ## License

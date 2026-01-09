@@ -8,14 +8,16 @@ rc_update_weather(dt = NULL, dt.time = dt.time)
 }
 \arguments{
 \item{dt}{(data.table) Monthly weather table with the following columns:
-* year (optional; if absent, weather is replicated across the simulation period)
-*month (1 - 12)
-*W_TEMP_MEAN_MONTH (°C)
-*W_PREC_SUM_MONTH (mm)
-*W_ET_REF_MONTH (mm)
-*W_ET_ACT_MONTH (mm; optional, can be NA)
-*W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA and W_ET_REF_MONTH is supplied)
-If not supplied, default monthly weather based on the Netherlands is added}
+\itemize{
+\item year (optional; if absent, weather is replicated across the simulation period)
+\item month (1 - 12)
+\item W_TEMP_MEAN_MONTH (°C)
+\item W_PREC_SUM_MONTH (mm)
+\item W_ET_REF_MONTH (mm)
+\item W_ET_ACT_MONTH (mm; optional, can be NA)
+\item W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA and W_ET_REF_MONTH is supplied)
+If not supplied, default monthly weather based on the Netherlands is added
+}}
 
 \item{dt.time}{Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}}
 }

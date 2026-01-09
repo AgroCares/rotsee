@@ -36,6 +36,9 @@ test_that("rc_sim correctly checks input validity", {
   expect_s3_class(result_no_amend, "data.table")
   expect_true(nrow(result_no_amend) > 0)                 
   
+  expect_s3_class(result_no_amend, "data.table")
+  expect_true(nrow(result_no_amend) > 0)
+  
     # No crop table (allowed)
   result_no_crop <- rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
                    B_DEPTH = B_DEPTH,  M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
@@ -51,9 +54,14 @@ test_that("rc_sim correctly checks input validity", {
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = NULL, rothc_parms = parms, irrigation = irrigation)
   
-  expect_s3_class(result_no_weath, "data.table")
-  expect_true(nrow(result_no_weath) > 0) 
+  # No parameters (allowed)
+  result_no_parms <- rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
+                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                         rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
+                         weather = weather, rothc_parms = NULL, irrigation = irrigation)
   
+  expect_s3_class(result_no_parms, "data.table")
+  expect_true(nrow(result_no_parms) > 0)
   
   # no irrigation (allowed)
   result_no_irri <- rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
@@ -64,7 +72,13 @@ test_that("rc_sim correctly checks input validity", {
   expect_s3_class(result_no_irri, "data.table")
   expect_true(nrow(result_no_irri) > 0) 
   
+  # No soil properties (not allowed)
+  expect_error(rc_sim(soil_properties = NULL, A_DEPTH = A_DEPTH,
+                      B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                      rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
+                      weather = weather, rothc_parms = parms, irrigation = irrigation))
 })
+
 
 
 test_that("rc_sim correctly returns different output formats", {
@@ -344,10 +358,13 @@ test_that("rc_sim with initialisation_method none correctly uses c_fractions", {
   
  
   # Should work with c_fractions supplied
-  expect_no_error(rc_sim(soil_properties = soil_properties,
+  result_cfrac <- rc_sim(soil_properties = soil_properties,
                          A_DEPTH = 0.3, B_DEPTH = 0.3,
                          rothc_rotation = rothc_rotation,
-                         rothc_parms = parms))
+                         rothc_parms = parms)
+
+  expect_true(nrow(result_cfrac) > 0)
+
   
   # Should work without c_fractions supplied
   parms_no_fractions <- list(
@@ -661,8 +678,55 @@ test_that("rc_sim handles extreme irrigation scenarios", {
   
   expect_s3_class(result_max, "data.table")
 })
-  
 
+test_that("rc_sim works with limited data input", {
+  # define soil properties
+  soil <- data.table(
+    B_C_ST03 = 210,
+    A_CLAY_MI = 18,
+    A_DENSITY_SA = 1.4
+  )
+  
+  # define parms to set simulation period
+  parms <- list(
+    start_date = "2022-01-01",
+    end_date = "2032-01-01"
+  )
+  
+  # Run the model
+  results <- rc_sim(
+    soil_properties = soil,
+    rothc_parms = parms
+  )
+  
+  expect_s3_class(results, "data.table")
+  dt.time <- rc_time_period(parms$start_date, parms$end_date)
+  expect_equal(nrow(results), nrow(dt.time))
+  
+})
+
+test_that("rc_sim handles start_date falling within a growing season", {
+  
+  # define soil properties
+  soil <- create_soil_properties()
+  
+  # define crop rotation
+  rothc_rotation <- create_rotation()
+  
+  # define start_date
+  parms <- list(
+    start_date = "2022-07-01", # within the growing season
+    unit = "A_SOM_LOI",
+    poutput = "month"
+  )
+  
+  result <- rc_sim(soil_properties = soil,
+                   rothc_rotation = rothc_rotation,
+                   rothc_parms = parms)
+  
+  expect_s3_class(result, "data.table")
+  expect_gt(result[month == 11 & year == 2022, A_SOM_LOI], result[month == 10 & year == 2022, A_SOM_LOI])
+})
 
 test_that("rc_sim provides correct output in years or months", {
   

@@ -22,13 +22,29 @@ An extended amendment input file to be used in the rotsee package
 Function to extend the user amendments input file to cover the full range of simulation years
 }
 \details{
-amendments: amendment table
-Includes the columns:
-* P_ID (character), ID of the soil amendment product
-* P_NAME (character), name of the soil amendment product, optional
-* B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-* P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
-* P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
-* P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
-* P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+Amendment table includes the columns:
+\itemize{
+\item B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+\item P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
+\item P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
+\item P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
+\item P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
+}
+}
+\examples{
+## examples to extend valid amendment dataset
+# create valid amendment set
+amendments <- data.table::data.table(
+P_HC = c(0.5, 0.3),
+P_DATE_FERTILIZATION = as.Date(c("2020-01-01", "2020-06-01")),
+P_DOSE = c(100, 200),
+P_C_OF = c(150,100)
+)
+
+# using start_date and end_date
+rc_extend_amendments(amendments = amendments, start_date = "2020-01-01", end_date = "2022-12-31")
+
+# using start_date and simyears
+rc_extend_amendments(amendments = amendments, start_date = "2020-01-01", simyears = 3)
+
 }
