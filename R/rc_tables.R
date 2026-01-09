@@ -45,7 +45,7 @@
 #'
 #' This table contains information on attributes of parameters used in rotsee
 #'
-#' @format A data.table with 19 rows and 13 columns:
+#' @format A data.table with 23 rows and 13 columns:
 #' \describe{
 #'  \item{code}{The parameter code}
 #'  \item{parameter}{Brief description of the parameter}

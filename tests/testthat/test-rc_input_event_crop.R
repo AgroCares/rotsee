@@ -1,9 +1,3 @@
-# Test file for rc_input_event_crop function
-# Testing framework: testthat
-
-library(testthat)
-library(data.table)
-
 test_that("rc_input_event_crop validates input parameters correctly", {
   
   # Test missing required columns
@@ -20,13 +14,7 @@ test_that("rc_input_event_crop validates input parameters correctly", {
 
 test_that("rc_input_event_crop handles valid inputs correctly", {
   # Create valid test data
-  crops_valid <- data.table(
-    B_LU = c("nl_308", "nl_252"),
-    year = c(2020, 2021),
-    month = c(8, 8),
-    cin_dpm = c(500, 750),
-    cin_rpm = c(300, 450)
-  )
+  crops_valid <- create_event_rotation()
   dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   
   # Test with valid data
@@ -65,13 +53,7 @@ test_that("rc_input_event_crop handles multiple years correctly", {
 
 test_that("rc_input_event_crop output structure is correct", {
   # Test output structure with valid input
-  crops_test <- data.table(
-    B_LU = "nl_308",
-    year = 2020,
-    month = 8,
-    cin_dpm = 500,
-    cin_rpm = 300
-  )
+  crops_test <- create_event_rotation()
   
   dt.time <- rc_time_period(start_date = "2020-04-01", end_date = "2022-07-01")
   

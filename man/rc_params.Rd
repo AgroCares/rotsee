@@ -5,7 +5,7 @@
 \alias{rc_params}
 \title{rc_params table}
 \format{
-A data.table with 19 rows and 13 columns:
+A data.table with 23 rows and 13 columns:
 \describe{
  \item{code}{The parameter code}
  \item{parameter}{Brief description of the parameter}
