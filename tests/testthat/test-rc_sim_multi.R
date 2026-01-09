@@ -5,10 +5,14 @@ test_that("rc_sim_multi runs sequential calculations", {
   
   B_DEPTH <- 0.3
   
-  rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  base_rotation <- create_rotation()
   
-  rothc_amendment <- create_amendment()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
-  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), 2)]
+  rothc_rotation <- copy(base_rotation)[rep(1:.N, 3)][,ID := rep(1:3, each = nrow(base_rotation))]
+  
+  base_amendment <- create_amendment()  
+  
+  rothc_amendment <- copy(base_amendment)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_amendment))]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), each = nrow(base_amendment))]
   
   weather <- create_weather()
   
@@ -53,10 +57,14 @@ test_that("rc_sim_multi runs multicore calculations", {
   
   B_DEPTH <- 0.3
   
-  rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  base_rotation <- create_rotation()
   
-  rothc_amendment <- create_amendment()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
-  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), 2)]
+  rothc_rotation <- copy(base_rotation)[rep(1:.N, 3)][,ID := rep(1:3, each = nrow(base_rotation))]
+  
+  base_amendment <- create_amendment()  
+  
+  rothc_amendment <- copy(base_amendment)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_amendment))]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), each = nrow(base_amendment))]
   
   weather <- create_weather()
   
@@ -107,11 +115,14 @@ test_that("rc_sim_multi handles progress reporting", {
   
   B_DEPTH <- 0.3
   
-  rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  base_rotation <- create_rotation()
   
+  rothc_rotation <- copy(base_rotation)[rep(1:.N, 3)][,ID := rep(1:3, each = nrow(base_rotation))]
+
+  base_amendment <- create_amendment()  
   
-  rothc_amendment <- create_amendment()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
-  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), 2)]
+  rothc_amendment <- copy(base_amendment)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_amendment))]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), each = nrow(base_amendment))]
   
   weather <- create_weather()
   
