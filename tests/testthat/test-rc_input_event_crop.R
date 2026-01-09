@@ -1,10 +1,3 @@
-# Test file for rc_input_event_crop function
-# Testing framework: testthat
-
-library(testthat)
-library(data.table)
-
-
 test_that("rc_input_event_crop validates input parameters correctly", {
   
   # Test missing required columns

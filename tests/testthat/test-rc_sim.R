@@ -1,8 +1,3 @@
-# Test file for rc_sim 
-# Testing framework: testthat
-
-source("helper-testdata.R")
-
 test_that("rc_sim correctly checks input validity", {
   soil_properties <- create_soil_properties()
   

@@ -4,7 +4,7 @@
 * allow initialization if no crop or amendment inputs are provided 
 
 
-# rotsee UNRELEASED
+# rotsee v0.2.2 2026-01-09
 ## added
 * test helper factories to aid with unit test creation
 

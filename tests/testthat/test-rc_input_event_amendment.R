@@ -1,9 +1,3 @@
-# Test file for rc_input_event_amendment function
-# Testing framework: testthat
-
-source("helper-testdata.R")
-
-
 # Test basic functionality with valid inputs
 test_that("rc_input_event_amendment returns correct structure with valid inputs", {
   
