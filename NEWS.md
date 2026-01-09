@@ -1,3 +1,9 @@
+# rotsee UNRELEASED
+## changed
+* expanded unit tests for several functions
+* allow `rc_initialise` to run with no crop or amendment inputs are provided
+
+
 # rotsee v0.2.2 2026-01-09
 ## added
 * test helper factories to aid with unit test creation

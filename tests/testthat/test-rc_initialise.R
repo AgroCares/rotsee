@@ -91,15 +91,6 @@ test_that("rc_initialise validates required inputs for spinup_simulation", {
     "start_date is required for spinup_simulation"
   )
 
-  # Missing crops for spinup_simulation
-  expect_error(
-    rc_initialise(crops = NULL, dt.soc = dt.soc, rothc.parms = rothc.parms,
-                  rothc.event = rothc.event, start_date = "2022-04-01",
-                  dt.time = dt.time, soil_properties = soil_properties,
-                  dt.weather = dt.weather, initialisation_method = 'spinup_simulation'),
-    "crops is required for spinup_simulation"
-  )
-  
   # Missing soil_properties for spinup_simulation
   expect_error(
     rc_initialise(crops = crops, dt.soc = dt.soc, rothc.parms = rothc.parms,
@@ -171,12 +162,9 @@ test_that("rc_initialise validates required inputs for analytical methods", {
 test_that("rc_initialise handles NULL crops and amendments correctly", {
   set.seed(123)
   
-  rothc.event <- data.table(
-    time = rep(1:3, times = 3),
-    var = rep(c("CDPM", "CRPM", "CHUM"), each = 3),
-    method = "add",
-    value = sample(500:2000, size = 9, replace = TRUE)
-  )
+  rothc.event <- data.table(time = numeric(0), var = character(0), value = numeric(0), method = character(0))
+  
+  soil_properties <- create_soil_properties()
   
   crops <- create_rotation()
   
@@ -191,13 +179,35 @@ test_that("rc_initialise handles NULL crops and amendments correctly", {
   rothc.parms <- list(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02,
                       R1 = dt.rmf$R1, abcd = dt.rmf$abcd, time = dt.rmf$time)
   
-  # Test with NULL crops for analytical_heuvelink
+  # Test with NULL input for analytical_heuvelink
   result <- rc_initialise(crops = NULL, amendment = NULL, dt.soc = dt.soc,
                           rothc.parms = rothc.parms, rothc.event = rothc.event,
                           dt.time = dt.time,
                           initialisation_method = 'spinup_analytical_heuvelink')
-  
 
+  expect_type(result, "double")
+  expect_named(result, c("CIOM0", "CDPM0", "CRPM0", "CBIO0"))
+  expect_true(all(result >= 0))
+  expect_true(all(result <= dt.soc[,toc/1000]))
+  
+  # Test with NULL input for spinup_simulation
+  result <- rc_initialise(crops = NULL, amendment = NULL, dt.soc = dt.soc,
+                          rothc.parms = rothc.parms, rothc.event = rothc.event,
+                          dt.time = dt.time, start_date = "2022-05-01",
+                          soil_properties = soil_properties,
+                          initialisation_method = 'spinup_simulation')
+  
+  expect_type(result, "double")
+  expect_named(result, c("CIOM0", "CDPM0", "CRPM0", "CBIO0"))
+  expect_true(all(result >= 0))
+  expect_true(all(result <= dt.soc[,toc/1000]))
+  
+  # Test with NULL input for analytical_bodemcoolstof
+  result <- rc_initialise(crops = NULL, amendment = NULL, dt.soc = dt.soc,
+                          rothc.parms = rothc.parms, rothc.event = rothc.event,
+                          dt.time = dt.time,
+                          initialisation_method = 'spinup_analytical_bodemcoolstof')
+  
   expect_type(result, "double")
   expect_named(result, c("CIOM0", "CDPM0", "CRPM0", "CBIO0"))
   expect_true(all(result >= 0))

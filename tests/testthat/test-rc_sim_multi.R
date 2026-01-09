@@ -157,4 +157,91 @@ test_that("rc_sim_multi handles progress reporting", {
   expect_s3_class(result, "data.table")
 })
 
+test_that("rc_sim_multi runs when cores are defined", {
+  # read in input data
+  soil_properties <- create_soil_properties()[rep(1:.N, 3)][, ID := .I]
+  
+  A_DEPTH = 0.3
+  
+  B_DEPTH = 0.3 
+  
+  base_rotation <- create_rotation()
+  rothc_rotation <- copy(base_rotation)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_rotation))]
+  
+  base_amendment <- create_amendment()
+  rothc_amendment <- copy(base_amendment)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_amendment))]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), nrow(base_amendment))]
+  
+  weather <- create_weather()
+  
+  parms <- create_parms()
+  
+  # Run with cores defined
+  result <- rc_sim_multi(soil_properties = soil_properties,
+                         A_DEPTH = A_DEPTH,
+                         B_DEPTH = B_DEPTH,
+                         parms = parms,
+                         weather = weather,
+                         rotation = rothc_rotation,
+                         amendment = rothc_amendment,
+                         final = FALSE,
+                         strategy = 'multisession',
+                         cores = 2)
+  
+  expect_s3_class(result, "data.table")
+  expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))
+  expect_equal(nrow(result), 57)
+})
 
+
+test_that("rc_sim_multi correctly runs different future plans", {
+
+  # read in input data
+  soil_properties <- create_soil_properties()[rep(1:.N, 3)][, ID := .I]
+  
+  A_DEPTH = 0.3
+  
+  B_DEPTH = 0.3 
+  
+  base_rotation <- create_rotation()
+  rothc_rotation <- copy(base_rotation)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_rotation))]
+  
+  base_amendment <- create_amendment()
+  rothc_amendment <- copy(base_amendment)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_amendment))]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), nrow(base_amendment))]
+  
+  weather <- create_weather()
+  
+  parms <- create_parms()
+  
+  # multicore calculation
+  result <- rc_sim_multi(soil_properties = soil_properties,
+                         A_DEPTH = A_DEPTH,
+                         B_DEPTH = B_DEPTH,
+                         parms = parms,
+                         weather = weather,
+                         rotation = rothc_rotation,
+                         amendment = rothc_amendment,
+                         final = FALSE,
+                         strategy = 'multicore')
+  
+  expect_s3_class(result, "data.table")
+  expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))
+  expect_equal(nrow(result), 57)
+  
+  # sequential calculation
+  result <- rc_sim_multi(soil_properties = soil_properties,
+                         A_DEPTH = A_DEPTH,
+                         B_DEPTH = B_DEPTH,
+                         parms = parms,
+                         weather = weather,
+                         rotation = rothc_rotation,
+                         amendment = rothc_amendment,
+                         final = FALSE,
+                         strategy = 'sequential')
+  
+  expect_s3_class(result, "data.table")
+  expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))
+  expect_equal(nrow(result), 57)
+  
+})

@@ -696,3 +696,46 @@ test_that("rc_sim provides correct output in years or months", {
   expect_s3_class(result, "data.table")
   expect_equal(nrow(result), 223)
 })
+
+test_that("rc_sim correctly runs with only A_C_OF provided", {
+ # read in relevant data
+
+  M_TILLAGE_SYSTEM = 'CT'
+  
+  rothc_rotation <- create_rotation()
+  
+  rothc_amendment <- create_amendment()
+  
+  parms <- create_parms()
+  parms$poutput <- 'month'
+
+  weather <- create_weather()
+  
+  # read in soil properties, set B_C_ST03 to 0
+  soil_properties <- create_soil_properties()[, B_C_ST03 := NULL]
+  
+  
+  result <- rc_sim(soil_properties = soil_properties, A_DEPTH = 0.3,
+                   B_DEPTH = 0.3, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                   rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
+                   weather = weather, rothc_parms = parms)
+  
+  expect_s3_class(result, "data.table")
+  
+  
+  # test that soc content is lower when A_DEPTH is smaller
+  result_A02 <- rc_sim(soil_properties = soil_properties, A_DEPTH = 0.2,
+                       B_DEPTH = 0.3, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                       rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
+                       weather = weather, rothc_parms = parms)
+ 
+  expect_gt(result[1, soc], result_A02[1,soc])
+  
+  # test that soc content is lower when B_DEPTH is smaller
+  result_B02 <- rc_sim(soil_properties = soil_properties, A_DEPTH = 0.3,
+                       B_DEPTH = 0.2, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                       rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
+                       weather = weather, rothc_parms = parms)
+  
+  expect_gt(result[1, soc], result_B02[1, soc])
+})

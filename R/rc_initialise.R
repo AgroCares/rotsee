@@ -104,8 +104,6 @@ rc_initialise <- function(crops = NULL,
   # Input validation by type
   if (initialisation_method == 'spinup_simulation') {
     if (is.null(start_date)) stop("start_date is required for spinup_simulation")
-    if (is.null(crops)) stop("crops is required for spinup_simulation")
-    if (nrow(crops) == 0) stop("crops must contain at least one row for spinup_simulation")
     if (is.null(soil_properties)) stop("soil_properties is required for spinup_simulation")
   }
   
@@ -142,13 +140,27 @@ rc_initialise <- function(crops = NULL,
       NULL
     }
  
-    
     # Set model parameters
     parms <- list(unit = 'psomperfraction',
                   initialisation_method = 'none',
                   dec_rates = c(k1 = k1, k2 = k2, k3 = k3, k4 = k4))
     
-  
+    # add start and end date to parms if no crop or amendment data is supplied
+    if(is.null(amendment_extend) && is.null(crop_extend)) {
+      parms$start_date <- start_date
+      parms$end_date <- as.Date(paste0(as.integer(format(as.Date(start_date), "%Y")) + 150, 
+                                       format(as.Date(start_date), "-%m-%d")))
+      
+      this.result <- rc_sim(rothc_rotation = NULL,
+                            rothc_amendment = NULL,
+                            soil_properties = soil_properties,
+                            weather = dt.weather,
+                            rothc_parms = parms)
+      
+      # take last ten years
+      this.result.fin <- this.result[year > max(year) - 10, lapply(.SD, mean)]
+    }else{
+    
     # Run initialisation run for 150 years
     this.result <- rc_sim(rothc_rotation = crop_extend,
                           rothc_amendment = amendment_extend,
@@ -158,7 +170,7 @@ rc_initialise <- function(crops = NULL,
     
     # take last two rotations
     this.result.fin <- this.result[year > max(year)-2*nrow(crops),lapply(.SD,mean)]
-  
+    }
   
     cpools <- this.result.fin[,.(CIOM0 = CIOM,
                                  CDPM0 = CDPM,
