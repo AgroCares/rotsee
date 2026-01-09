@@ -1,7 +1,7 @@
 # rotsee UNRELEASED
 ## changed
 * expanded unit tests for several functions
-* allow initialization if no crop or amendment inputs are provided 
+* allow `rc_initialise` to run with no crop or amendment inputs are provided
 
 
 # rotsee v0.2.2 2026-01-09
