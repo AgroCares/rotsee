@@ -165,10 +165,12 @@ test_that("rc_sim_multi runs when cores are defined", {
   
   B_DEPTH = 0.3 
   
-  rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  base_rotation <- create_rotation()
+  rothc_rotation <- copy(base_rotation)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_rotation))]
   
-  rothc_amendment <- create_amendment()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
-  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), 2)]
+  base_amendment <- create_amendment()
+  rothc_amendment <- copy(base_amendment)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_amendment))]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), nrow(base_amendment))]
   
   weather <- create_weather()
   
@@ -193,6 +195,7 @@ test_that("rc_sim_multi runs when cores are defined", {
 
 
 test_that("rc_sim_multi correctly runs different future plans", {
+
   # read in input data
   soil_properties <- create_soil_properties()[rep(1:.N, 3)][, ID := .I]
   
@@ -200,10 +203,12 @@ test_that("rc_sim_multi correctly runs different future plans", {
   
   B_DEPTH = 0.3 
   
-  rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  base_rotation <- create_rotation()
+  rothc_rotation <- copy(base_rotation)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_rotation))]
   
-  rothc_amendment <- create_amendment()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
-  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), 2)]
+  base_amendment <- create_amendment()
+  rothc_amendment <- copy(base_amendment)[rep(1:.N, 3)][, ID := rep(1:3, each = nrow(base_amendment))]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), nrow(base_amendment))]
   
   weather <- create_weather()
   

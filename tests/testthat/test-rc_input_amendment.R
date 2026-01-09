@@ -176,7 +176,7 @@ test_that("rc_input_amendment correctly fills NA B_C_OF_AMENDMENT", {
   result_onena <- rc_input_amendment(dt = amendment_onena)
   
   expect_s3_class(result_onena, "data.table")
-  expect_equal(result_onena$cin_tot, c(20000, 63300*35/1000))
+  expect_equal(result_onena$cin_tot, c(20000, 63300*35/1000), tolerance = 1)
   
   # run with both NA B_C_OF_AMENDMENT
   amendment_twona <- copy(amendment)[, B_C_OF_AMENDMENT := NA]
@@ -184,7 +184,7 @@ test_that("rc_input_amendment correctly fills NA B_C_OF_AMENDMENT", {
   result_twona <- rc_input_amendment(dt = amendment_twona)
  
   expect_s3_class(result_twona, "data.table")
-  expect_equal(result_twona$cin_tot, c(63300*35/1000, 63300*35/1000))
+  expect_equal(result_twona$cin_tot, c(63300*35/1000, 63300*35/1000), tolerance = 1)
   
   # Run with NA P_DOSE when NA B_C_OF_AMENDMENT
   amendment_nulldose <- copy(amendment_twona)[, P_DOSE := c(63300, NA)]

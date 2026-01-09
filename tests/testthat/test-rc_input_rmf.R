@@ -563,10 +563,12 @@ test_that("rc_input_rmf correctly throws error when columns do not have act or r
   
   # read in weather table
   weather <- create_weather()
+  weather <- rc_update_weather(dt = weather, dt.time = dt_time)
   
   
-  # Run with no ET_REF_MONTH column and ET_ACT all NA
+  # Run with no ET_REF_MONTH column and no usable ET_ACT
   weather_noref <- copy(weather)[, W_ET_REF_MONTH := NULL]
+  if ("W_ET_ACT_MONTH" %in% names(weather_noref)) weather_noref[, W_ET_ACT_MONTH := NA_real_]
   expect_error(rc_input_rmf(dt = dt_crop, A_CLAY_MI = 20, dt.weather = weather_noref, dt.time = dt_time),
                "W_ET_REF_MONTH is not available")
   
