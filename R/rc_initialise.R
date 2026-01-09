@@ -148,7 +148,8 @@ rc_initialise <- function(crops = NULL,
     # add start and end date to parms if no crop or amendment data is supplied
     if(is.null(amendment_extend) && is.null(crop_extend)) {
       parms$start_date <- start_date
-      parms$end_date <- as.Date(start_date) + 365.25 * 150
+      parms$end_date <- as.Date(paste0(as.integer(format(as.Date(start_date), "%Y")) + 150, 
+                                       format(as.Date(start_date), "-%m-%d")))
       
       this.result <- rc_sim(rothc_rotation = NULL,
                             rothc_amendment = NULL,
