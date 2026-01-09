@@ -56,23 +56,12 @@ test_that("rc_sim correctly checks input validity", {
   
   # No parameters (allowed)
   result_no_parms <- rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
-                         B_DEPTH = B_DEPTH, 
+                         B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
                          rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
                          weather = weather, rothc_parms = NULL, irrigation = irrigation)
   
   expect_s3_class(result_no_parms, "data.table")
   expect_true(nrow(result_no_parms) > 0)
-  
-  expect_error(rc_sim(soil_properties = NULL, A_DEPTH = A_DEPTH,
-  # No soil properties (not allowed)
-                         B_DEPTH = B_DEPTH, 
-                         rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
-                         weather = weather, rothc_parms = parms, irrigation = irrigation))
-})
-  
-  expect_s3_class(result_no_weath, "data.table")
-  expect_true(nrow(result_no_weath) > 0) 
-  
   
   # no irrigation (allowed)
   result_no_irri <- rc_sim(soil_properties = soil_properties, A_DEPTH = A_DEPTH,
@@ -83,7 +72,13 @@ test_that("rc_sim correctly checks input validity", {
   expect_s3_class(result_no_irri, "data.table")
   expect_true(nrow(result_no_irri) > 0) 
   
+  # No soil properties (not allowed)
+  expect_error(rc_sim(soil_properties = NULL, A_DEPTH = A_DEPTH,
+                      B_DEPTH = B_DEPTH, M_TILLAGE_SYSTEM = M_TILLAGE_SYSTEM,
+                      rothc_rotation = rothc_rotation, rothc_amendment = rothc_amendment, 
+                      weather = weather, rothc_parms = parms, irrigation = irrigation))
 })
+
 
 
 test_that("rc_sim correctly returns different output formats", {
@@ -713,19 +708,10 @@ test_that("rc_sim works with limited data input", {
 test_that("rc_sim handles start_date falling within a growing season", {
   
   # define soil properties
-  soil <- data.table(
-    B_C_ST03 = 210,
-    A_CLAY_MI = 18,
-    A_DENSITY_SA = 1.4
-  )
+  soil <- create_soil_properties()
   
   # define crop rotation
-  rothc_rotation <- data.table(
-    B_LU_START = c("2022-04-01", "2023-04-01"),
-    B_LU_END = c("2022-10-01", "2023-10-01"),
-    B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
-  )
+  rothc_rotation <- create_rotation()
   
   # define start_date
   parms <- list(
