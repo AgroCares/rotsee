@@ -276,7 +276,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
   if (is.null(end_date)) end_date   <- max(dates)
 }
  
-# Check is values are logical
+# Check if values are logical
   if(as.Date(start_date) > as.Date(end_date)) stop('Start_date is not before end_date')
   
   
@@ -552,7 +552,7 @@ return(dt.crop)
 #' B_LU_START = c("2020-01-01", "2020-06-01"),
 #' B_LU_END = c("2020-03-31", "2020-08-31"),
 #' B_LU_HC = c(0.5, 0.3),
-#' B_C_OF_INPUT = c(100, 200)
+#' B_C_OF_CULT = c(100, 200)
 #' )
 #' 
 #' # using start_date and end_date

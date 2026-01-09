@@ -148,7 +148,7 @@ crop <- data.table(
     B_LU_START = c("2022-04-01", "2023-04-01"),
     B_LU_END = c("2022-10-01", "2023-10-01"),
     B_LU_HC = c(0.32, 0.32),
-    B_C_OF_INPUT = c(1500, 1500)
+    B_C_OF_CULT = c(1500, 1500)
     )
 
 # extend crop table using end date

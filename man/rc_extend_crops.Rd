@@ -37,7 +37,7 @@ crops <- data.table::data.table(
 B_LU_START = c("2020-01-01", "2020-06-01"),
 B_LU_END = c("2020-03-31", "2020-08-31"),
 B_LU_HC = c(0.5, 0.3),
-B_C_OF_INPUT = c(100, 200)
+B_C_OF_CULT = c(100, 200)
 )
 
 # using start_date and end_date

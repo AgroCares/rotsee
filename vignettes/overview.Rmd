@@ -128,7 +128,8 @@ is wanted, `initialisation_method` should be set to FALSE. Three initialization 
 based on system state. 
 If C stocks are developing and the pool size is expected to be in equilibrium, `initialisation_method` should be
 set either to `spinup_simulation` or to `spinup_analytical_bodemcoolstof`. `spinup_simulation`
-conducts the RothC calculation for 150 years to establish equilibrium pools; `spinup_analytical_bodemcoolstof`
+conducts the RothC calculation for 150 years to establish equilibrium pools, and requires a table on crop inputs and
+disallows a weather column with yearly fluctuations in weather data. `spinup_analytical_bodemcoolstof`
 calculates the pools based on the initialization of Bodemcoolstof (Hendriks et al., 2021).
 If C stocks are in equilibrium, `initialisation_method` should be set to `spinup_analytical_heuvelink`.
 
@@ -223,14 +224,14 @@ crops <- data.table(
     B_LU_START = "2022-04-01",
     B_LU_END = "2022-10-01",
     B_LU_HC = 0.32,
-    B_C_OF_INPUT = 2500
+    B_C_OF_CULT = 2500
     )
 
 crops <- rc_extend_crops(crops, start_date = "2022-01-01", simyears = 100)
 
 # set amendment plan
 amendment <- data.table(
-    B_C_OF_INPUT = 3000,
+    B_C_OF_AMENDMENT = 3000,
     P_HC = 0.7,
     P_DATE_FERTILIZATION = "2022-10-01")
 
@@ -255,7 +256,7 @@ soil <- data.table(
 # define parameters
 parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                       c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-                      initialize = TRUE,
+                      initialisation_method = 'spinup_analytical_bodemcoolstof',
                       unit = "A_SOM_LOI",
                       method = "adams",
                       poutput = "year",
@@ -305,7 +306,7 @@ soil <- data.table(
     B_LU_START = rep(c("2022-04-01", "2023-04-01"),each=3),
     B_LU_END = rep(c("2022-10-01", "2023-10-01"),each=3),
     B_LU_HC = rep(0.32, 6),
-    B_C_OF_INPUT = rep(2500, 6)
+    B_C_OF_CULT = rep(2500, 6)
   )
   
   crops <- rc_extend_crops(crops = crops, start_date = "2022-01-01", simyears = 100)
@@ -314,7 +315,7 @@ soil <- data.table(
   amendment <- data.table(
     ID = rep(c('low', 'mid', 'high'),2),
     P_NAME = rep('cattle_slurry', 6),
-    B_C_OF_INPUT = rep(c(1000, 3000, 5000), each = 2),
+    B_C_OF_AMENDMENT = rep(c(1000, 3000, 5000), each = 2),
     P_HC = rep(0.7,6),
     P_DATE_FERTILIZATION = rep(c("2022-05-01", "2023-05-01"),each=3)
   )
@@ -324,7 +325,7 @@ soil <- data.table(
   # define parameters
   parms <- list(dec_rates = c(k1 = 10, k2 = 0.3, k3 = 0.66, k4 = 0.02),
                 c_fractions = c(fr_IOM = 0.049, fr_DPM = 0.015, fr_RPM = 0.125, fr_BIO = 0.015),
-                initialize = TRUE,
+                initialisation_method = 'spinup_analytical_bodemcoolstof',
                 unit = "A_SOM_LOI",
                 method = "adams",
                 poutput = "year",
