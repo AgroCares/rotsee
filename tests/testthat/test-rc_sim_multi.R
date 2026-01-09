@@ -99,12 +99,27 @@ test_that("rc_sim_multi runs multicore calculations", {
                          strategy = 'multisession')
 
   
-  expect_equal(nrow(result_final), 3)
+  expect_equal(nrow(result_final), data.table::uniqueN(soil_properties$ID))
 })
 
 
 test_that("rc_sim_multi throws error if soil_properties is not a data.table", {
-  expect_error(rc_sim_multi(soil_properties = data.frame(ID = "test")))
+  base_rotation <- create_rotation()
+  base_amendment <- create_amendment()
+  expect_error(
+    rc_sim_multi(
+      soil_properties = data.frame(ID = "test"),
+      A_DEPTH = 0.3,
+      B_DEPTH = 0.3,
+      parms = create_parms(),
+      weather = create_weather(),
+      rotation = copy(base_rotation)[, ID := 1L],
+      amendment = copy(base_amendment)[, ID := 1L],
+      final = TRUE,
+      strategy = "sequential"
+      ),
+    regexp = "soil_properties|data\\.table"
+    )
 })
 
 
