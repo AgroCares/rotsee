@@ -111,6 +111,7 @@ rc_initialise <- function(crops = NULL,
     if (is.null(crops)) stop("crops is required for spinup_simulation")
     if (nrow(crops) == 0) stop("crops must contain at least one row for spinup_simulation")
     if (is.null(soil_properties)) stop("soil_properties is required for spinup_simulation")
+    if (!is.null(dt.weather) & !is.null(dt.weather$year)) stop("weather table should not contain year column for spinup_simulation")
   }
   
   if (initialisation_method %in% c('spinup_analytical_heuvelink','spinup_analytical_bodemcoolstof')) {
@@ -146,7 +147,6 @@ rc_initialise <- function(crops = NULL,
       NULL
     }
  
-    
     # Set model parameters
     parms <- list(unit = 'psomperfraction',
                   initialisation_method = 'none',
