@@ -26,10 +26,10 @@
 #' 
 #' @section rothc_amendment:
 #' Table with amendment application details. Can be extended to encompass the entire simulation period using \link{rc_extend_amendments}
-#' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
-#' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction).
+#' * B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
+#' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #'  
 #' @section rothc_rotation:  
@@ -37,7 +37,7 @@
 #' * B_LU_START (start of crop rotation)
 #' * B_LU_END (end of crop rotation)
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
+#' * B_C_OF_CULT, the organic carbon input from plants on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
 #'
 #' @section rothc_parms: 
 #' List with simulation parameters controlling the RothC model calculations

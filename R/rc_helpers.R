@@ -26,7 +26,7 @@ cf_ind_importance <- function(x) {
 #' * W_PREC_SUM_MONTH (mm)
 #' * W_ET_REF_MONTH (mm)
 #' * W_ET_ACT_MONTH (mm; optional, can be NA)
-#' * W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
+#' *W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA and W_ET_REF_MONTH is supplied)
 #' If not supplied, default monthly weather based on the Netherlands is added
 #' @param dt.time Table with all year and month combinations of the simulation period. Must contain columns year and month. Created using \link{rc_time_period}
 #' 
@@ -352,7 +352,7 @@ rc_update_parms <- function(parms = NULL, crops = NULL, amendments = NULL){
 #'
 #' @param soil_properties (list) List with soil properties: A_C_OF, soil organic carbon content (g/kg) or B_C_ST03, soil organic carbon stock (Mg C/ha), preferably for soil depth 0.3 m; A_CLAY_MI, clay content (%); A_DENSITY_SA, dry soil bulk density (g/cm3)
 #' @param rothc_rotation (data.table) Table with crop rotation details and crop management actions that have been taken. Includes also crop inputs for carbon. See details for desired format.
-#' @param rothc_amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION, P_ID, P_NAME, P_DOSE, P_C_OF, B_C_OF_INPUT, and P_HC.
+#' @param rothc_amendment (data.table) A table with amendment data. Includes at least the columns P_DATE_FERTILIZATION and P_HC, and optionally P_DOSE, P_C_OF and/or B_C_OF_AMENDMENT.
 #'
 #' @returns
 #' Error messages indicating if input data is not in order
@@ -379,11 +379,11 @@ rc_check_inputs <- function(soil_properties,
   if(!is.null(rothc_rotation)){
     checkmate::assert_data_table(rothc_rotation, null.ok = TRUE, min.rows = 1)
 
-    req <- c("B_LU_START", "B_LU_END", "B_LU_HC","B_C_OF_INPUT")
+    req <- c("B_LU_START", "B_LU_END","B_LU_HC","B_C_OF_CULT")
     checkmate::assert_names(colnames(rothc_rotation), must.include = req)
     
     checkmate::assert_numeric(rothc_rotation$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = FALSE)
-    checkmate::assert_numeric(rothc_rotation$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = FALSE)
+    checkmate::assert_numeric(rothc_rotation$B_C_OF_CULT, lower = rc_minval('B_C_OF_CULT'), upper = rc_maxval('B_C_OF_CULT'), any.missing = FALSE)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_START), any.missing = F)
     checkmate::assert_date(as.Date(rothc_rotation$B_LU_END), any.missing = F)
     if(any(rothc_rotation$B_LU_START > rothc_rotation$B_LU_END)) {
@@ -407,8 +407,8 @@ rc_check_inputs <- function(soil_properties,
        checkmate::assert_numeric(rothc_amendment$P_DOSE, lower = rc_minval('P_DOSE'), upper = rc_maxval('P_DOSE'), any.missing = TRUE)
     if ("P_C_OF" %in% names(rothc_amendment))
       checkmate::assert_numeric(rothc_amendment$P_C_OF, lower = rc_minval('P_C_OF'), upper = rc_maxval('P_C_OF'), any.missing = TRUE)
-    if ("B_C_OF_INPUT" %in% names(rothc_amendment))
-      checkmate::assert_numeric(rothc_amendment$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = TRUE)
+    if ("B_C_OF_AMENDMENT" %in% names(rothc_amendment))
+      checkmate::assert_numeric(rothc_amendment$B_C_OF_AMENDMENT, lower = rc_minval('B_C_OF_AMENDMENT'), upper = rc_maxval('B_C_OF_AMENDMENT'), any.missing = TRUE)
   }
 }
 
@@ -500,11 +500,10 @@ rc_calculate_bd <- function(dt){
 #'  print(result)
 #'  
 #' @export
-
 rc_calculate_bcof <- function(dt){
   # Add visible bindings
   cin_aboveground = B_LU_YIELD = B_LU_HI = cin_roots = B_LU_RS_FR = NULL
-  cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_INPUT = NULL
+  cin_residue = M_CROPRESIDUE = B_LU_HI_RES = B_C_OF_CULT = NULL
   
   # Check input data
   req <- c("B_LU_YIELD", "B_LU_HI", "B_LU_HI_RES", "B_LU_RS_FR", "M_CROPRESIDUE")
@@ -512,7 +511,7 @@ rc_calculate_bcof <- function(dt){
   checkmate::assert_numeric(dt$B_LU_YIELD, lower = rc_minval('B_LU_YIELD'), upper = rc_maxval('B_LU_YIELD'), any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI, lower = rc_minval('B_LU_HI'), upper = rc_maxval('B_LU_HI'), any.missing = F)
   checkmate::assert_numeric(dt$B_LU_HI_RES, lower = rc_minval('B_LU_HI_RES'), upper = rc_maxval('B_LU_HI_RES'), any.missing = F)
-  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = 0.01, upper = 5, any.missing = F)
+  checkmate::assert_numeric(dt$B_LU_RS_FR, lower = rc_minval('B_LU_RS_FR'), upper = rc_maxval('B_LU_RS_FR'), any.missing = F)
   checkmate::assert_logical(dt$M_CROPRESIDUE)
   
   # Make copy of input table
@@ -522,7 +521,7 @@ rc_calculate_bcof <- function(dt){
   dt.crop[, cin_aboveground := B_LU_YIELD / B_LU_HI * 0.5]
   dt.crop[, cin_roots := cin_aboveground * B_LU_RS_FR]
   dt.crop[, cin_residue := fifelse(M_CROPRESIDUE, cin_aboveground * B_LU_HI_RES, 0)]
-  dt.crop[, B_C_OF_INPUT := cin_roots + cin_residue]
+  dt.crop[, B_C_OF_CULT := cin_roots + cin_residue]
   
 return(dt.crop)
 }
@@ -544,7 +543,7 @@ return(dt.crop)
 #' * B_LU_START (start of crop rotation),
 #' * B_LU_END (end of crop rotation),
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+#' * B_C_OF_CULT, the organic carbon input on field level (kg C/ha)
 #' 
 #' @examples
 #' ## examples to extend valid crop dataset
@@ -575,11 +574,11 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
   crops <- as.data.table(crops)
   setnames(crops,toupper(colnames(crops)))
   
-  req <- c("B_LU_START", "B_LU_END", "B_LU_HC", "B_C_OF_INPUT")
+  req <- c("B_LU_START", "B_LU_END",  "B_LU_HC", "B_C_OF_CULT")
   checkmate::assert_names(colnames(crops), must.include = req)
   if ("B_LU_NAME" %in% names(crops)) checkmate::assert_character(crops$B_LU_NAME, any.missing = FALSE)
   checkmate::assert_numeric(crops$B_LU_HC, lower = rc_minval('B_LU_HC'), upper = rc_maxval('B_LU_HC'), any.missing = F)
-  checkmate::assert_numeric(crops$B_C_OF_INPUT, lower = rc_minval('B_C_OF_INPUT'), upper = rc_maxval('B_C_OF_INPUT'), any.missing = F)
+  checkmate::assert_numeric(crops$B_C_OF_CULT, lower = rc_minval('B_C_OF_CULT'), upper = rc_maxval('B_C_OF_CULT'), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_START), any.missing = F)
   checkmate::assert_date(as.Date(crops$B_LU_END), any.missing = F)
   checkmate::assert_date(as.Date(start_date))
@@ -660,9 +659,9 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 #' 
 #' @details
 #' Amendment table includes the columns:
-#' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+#' * B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
+#' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 #' * P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 #' 
@@ -687,10 +686,14 @@ rc_extend_crops <- function(crops,start_date, end_date = NULL, simyears = NULL){
 rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyears = NULL){
   
   # Add visible bindings
-  id = yr_rep = P_DATE_FERTILIZATION = NULL
+  id = yr_rep = year_ext =  P_DATE_FERTILIZATION = NULL
   
   # Check input data
   checkmate::assert_data_table(amendments, null.ok = FALSE, min.rows = 1)
+  
+  amendments <- as.data.table(amendments)
+  setnames(amendments,toupper(colnames(amendments)))
+  
   req <- c("P_HC","P_DATE_FERTILIZATION")
   checkmate::assert_names(colnames(amendments), must.include = req)
   if ("P_NAME" %in% names(amendments)) checkmate::assert_character(amendments$P_NAME, any.missing = TRUE)
@@ -706,9 +709,7 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
     !any(grepl("-02-29$", amendments$P_DATE_FERTILIZATION)),
     msg = "February 29th dates are not allowed in P_DATE_FERTILIZATION to avoid leap year complications during date shifting"
   )
-  # Make copy of amendments table
-    amendments <- as.data.table(amendments)
-    setnames(amendments,toupper(colnames(amendments)))
+  
     
   # Define total length of amendment rotation (years)
   rotation_length <- max(year(amendments$P_DATE_FERTILIZATION)) - year(start_date) + 1
@@ -730,20 +731,19 @@ rc_extend_amendments <- function(amendments,start_date, end_date = NULL, simyear
     
   # Update P_DATE_FERTILIZATION for all repetitions of rotation block
   amendments_ext[, yr_rep := 1:.N, by = id]
-  amendments_ext[, year := year(P_DATE_FERTILIZATION) + (yr_rep - 1) * rotation_length]
-  amendments_ext[, P_DATE_FERTILIZATION := paste0(year,substr(P_DATE_FERTILIZATION, start = 5, stop = 10))]
+  amendments_ext[, year_ext := year(P_DATE_FERTILIZATION) + (yr_rep - 1) * rotation_length]
+  amendments_ext[, P_DATE_FERTILIZATION := paste0(year_ext,substr(P_DATE_FERTILIZATION, start = 5, stop = 10))]
     
   # filter only the years for simulation
   if (!is.null(end_date)) {
     this.amendments <- amendments_ext[as.Date(P_DATE_FERTILIZATION) <= as.Date(end_date), ]
     } else {
-      this.amendments <- amendments_ext[year <= (year(start_date) + simyears),]
+      this.amendments <- amendments_ext[year_ext <= (year(start_date) + simyears),]
     }
-  
+
   # Select relevant columns
   this.amendments <- this.amendments[, .SD, .SDcols =!names(this.amendments) %in% 
-                                         c("id", "year", "year_start", "year_end",
-                                           "yr_rep", "year_start_ext", "year_end_ext")
+                                         c("id", "year_ext","yr_rep")
     ]
 
   # order amendments file

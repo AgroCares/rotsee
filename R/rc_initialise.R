@@ -1,7 +1,7 @@
 #' Function to initialise the RothC model for a single field
 #'
 #' @param crops (data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.
-#' @param amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_INPUT or both P_DOSE and P_HC.
+#' @param amendment (data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_AMENDMENT or both P_DOSE and P_HC.
 #' @param dt.soc (data.table) Data table containing information on soil properties. See details for information.
 #' @param dt.time (data.table) Combination of months and years of the entire simulation period. 
 #' @param rothc.parms (list) List with relevant RothC parameters. See details for more information
@@ -22,7 +22,7 @@
 #' 
 #' @section amendment:
 #' Table with amendment application details. Can be extended to encompass the entire simulation period using \link{rc_extend_amendments}
-#' * B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+#' * B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
 #' * P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
 #' * P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
 #' * P_HC (numeric), the humification coefficient of the soil amendment product (fraction).
@@ -33,7 +33,7 @@
 #' * B_LU_START (start of crop rotation)
 #' * B_LU_END (end of crop rotation)
 #' * B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-#' * B_C_OF_INPUT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
+#' * B_C_OF_CULT, the organic carbon input on field level (kg C/ha). In case not known, can be calculated using function \link{rc_calculate_bcof}
 #'
 #' @section rothc.parms: 
 #' List with RothC parameters
@@ -97,7 +97,7 @@ rc_initialise <- function(crops = NULL,
   . = CIOM = CDPM = CRPM = CBIO = B_LU_EOM = M_CROPRESIDUE = B_LU_HC = chum.ini = NULL
   P_DOSE = P_OM = M_GREEN_TIMING = fr_dpm_rpm = P_HC = B_LU_EOM_RESIDUE = NULL
   abcd = bd = time = toc = var = cf_abcd = ciom.ini = biohum.ini = cbio.ini = NULL
-  A_SOM_LOI = B_C_OF_INPUT = P_C_OF = NULL
+  A_SOM_LOI = B_C_OF_CULT = B_C_OF_AMENDMENT = P_C_OF = NULL
 
   # check if a correct initialization method is supplied
   checkmate::assert_choice(initialisation_method, choices = c(
@@ -186,13 +186,13 @@ rc_initialise <- function(crops = NULL,
       
     }else{
     # Average total C input (kg C/ha/yr)
-    c_input_crop <- crops[,sum(B_C_OF_INPUT, na.rm = TRUE)/isimyears]
+    c_input_crop <- crops[,sum(B_C_OF_CULT, na.rm = TRUE)/isimyears]
     
     # estimate DPM-RPM ratio of crop inputs
     crops[,fr_dpm_rpm := fifelse(B_LU_HC < 0.92, -2.174 * B_LU_HC + 2.02, 0)]
     
     # calculate average DPM-RPM ratio
-    DR_crop <- crops[, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+    DR_crop <- crops[, weighted.mean(fr_dpm_rpm, w = B_C_OF_CULT, na.rm = TRUE)]
     
     if (!is.finite(DR_crop)) DR_crop <- 0
     }
@@ -206,25 +206,25 @@ rc_initialise <- function(crops = NULL,
        # set average DPM-RPM ratio of amendment to 0
        DR_amendment <- 0  
        
-    } else if (!is.null(amendment$B_C_OF_INPUT)) {
+    } else if (!is.null(amendment$B_C_OF_AMENDMENT)) {
       # set amendment C input [kg C/ha]
-        c_input_man <- amendment[, sum(B_C_OF_INPUT, na.rm = TRUE)/isimyears]
+        c_input_man <- amendment[, sum(B_C_OF_AMENDMENT, na.rm = TRUE)/isimyears]
         
       # Estimate DPM-RPM ratio of amendment inputs
         amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
         
         # Calculate average DPM-RPM ratio of amendment inputs
-        DR_amendment <- amendment[B_C_OF_INPUT > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_INPUT, na.rm = TRUE)]
+        DR_amendment <- amendment[B_C_OF_AMENDMENT > 0, weighted.mean(fr_dpm_rpm, w = B_C_OF_AMENDMENT, na.rm = TRUE)]
         
     } else {
           # calculate amendment inputs [kg C/ha]
-          c_input_man <- amendment[, sum(P_DOSE * P_C_OF, na.rm = TRUE)/isimyears]
+          c_input_man <- amendment[, sum(P_DOSE * P_C_OF/1000, na.rm = TRUE)/isimyears]
           
           # Estimate DPM-RPM ratio of amendment inputs
           amendment[,fr_dpm_rpm := fifelse(P_HC < 0.92, -2.174 * P_HC + 2.02, 0)]
           
           # Calculate average DPM-RPM ratio of amendment inputs
-          DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = (P_DOSE * P_C_OF), na.rm = TRUE)]
+          DR_amendment <- amendment[P_DOSE > 0, weighted.mean(fr_dpm_rpm, w = (P_DOSE * P_C_OF / 1000), na.rm = TRUE)]
           
     }
     

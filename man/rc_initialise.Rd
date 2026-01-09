@@ -20,7 +20,7 @@ rc_initialise(
 \arguments{
 \item{crops}{(data.table) Table with crop rotation, cultivation management, year and potential Carbon inputs.}
 
-\item{amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_INPUT or both P_DOSE and P_HC.}
+\item{amendment}{(data.table) A table with the following column names: P_DATE_FERTILIZATION and B_C_OF_AMENDMENT or both P_DOSE and P_HC.}
 
 \item{dt.soc}{(data.table) Data table containing information on soil properties. See details for information.}
 

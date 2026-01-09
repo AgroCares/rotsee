@@ -1,99 +1,80 @@
-test_that("rc_input_crop validates input correctly", {
-  # Mock data
-  valid_dt <- data.table(
-    B_LU_START = as.Date(c("2020-01-01", "2020-06-01")),
-    B_LU_END = as.Date(c("2020-05-31", "2020-11-30")),
-    B_LU = c("wheat", "maize"),
-    B_LU_HC = c(0.8, 0.95),
-    B_C_OF_INPUT = c(1000, 1500)
-  )
+test_that("rc_input_crop runs correctly", {
+  # create crop table
+  crop <- create_rotation()
   
-  # Test: valid input
-  expect_silent(rc_input_crop(valid_dt))
+  # run script
+  result <- rc_input_crop(dt = crop)
   
-  # Test: missing required column
-  invalid_dt <- copy(valid_dt[, .(B_LU_START, B_LU_END, B_LU, B_LU_HC)])
-  expect_error(rc_input_crop(invalid_dt), "must.include")
-
-  # Test: invalid B_C_OF_INPUT
-  invalid_dt <- copy(valid_dt)
-  invalid_dt[1, B_C_OF_INPUT := -100]
-  expect_error(rc_input_crop(invalid_dt), "not >= 0")
+  # Check that the result is a data.table with 2 rows
+  expect_s3_class(result, "data.table")
+  expect_equal(nrow(result), 2)
+  
+  # Check that dates are correct
+  expect_equal(result$month, c(10, 10))
+  expect_equal(result$year, c(2022, 2023))
+  
+  # --- Manually calculate expected values for the crop ---
+  # B_C_OF_CULT = 1500, B_LU_HC = 0.32
+  fr_dpm_rpm <- -2.174 * 0.32 + 2.02
+  cin_tot <- 1500
+  cin_dpm <- cin_tot * fr_dpm_rpm / (1 + fr_dpm_rpm)
+  cin_rpm <- cin_tot - cin_dpm
+  
+  
+  # Check calculated values for the first row 
+  expect_equal(result[1, cin_dpm], cin_dpm)
+  expect_equal(result[1, cin_rpm], cin_rpm)
+  expect_equal(result[1, cin_dpm] + result[1, cin_rpm], cin_tot)
 })
 
-test_that("rc_input_crop calculates derived columns correctly", {
-  dt <- data.table(
-    B_LU_START = as.Date(c("2020-01-01", "2020-06-01")),
-    B_LU_END = as.Date(c("2020-05-31", "2020-11-30")),
-    B_LU = c("wheat", "maize"),
-    B_LU_HC = c(0.8, 0.95),
-    B_C_OF_INPUT = c(1000, 1500)
-  )
+test_that("rc_input_crop validates inputs correctly", {
+  # Create crop table
+  crop <- create_rotation()
   
-  result <- rc_input_crop(dt)
-
-  # Check cin_dpm and cin_rpm
-  expect_equal(result$cin_dpm[1], 1000 * (-2.174 * 0.8 + 2.02) / (1 + (-2.174 * 0.8 + 2.02)), tolerance = 0.001) # P_HC = 0.8
-  expect_equal(result$cin_rpm[1], 1000 * 1 / (1 + (-2.174 * 0.8 + 2.02)), tolerance = 0.001)
-  expect_equal(result$cin_dpm[2], 0, tolerance = 0.001) # P_HC > 0.92
-  expect_equal(result$cin_rpm[2], 1500, tolerance = 0.001)
+  # Run with no crop input provided
+  expect_error(rc_input_crop(dt = NULL), 'Must be a data.table')
   
-  # Check year and month
-  expect_equal(result$year, c(2020, 2020))
-  expect_equal(result$month, c(5, 11))
-})
-
-test_that("rc_input_crop handles missing B_LU_HC", {
-  dt <- data.table(
-    B_LU_START = as.Date(c("2020-01-01", "2020-06-01")),
-    B_LU_END = as.Date(c("2020-05-31", "2020-11-30")),
-    B_LU = c("wheat", "maize"),
-    B_LU_HC = c(NA, 0.95),
-    B_C_OF_INPUT = c(1000, 1500)
-  )
+  ## B_C_OF_CULT ------------------
+  # Run without B_C_OF_CULT
+  crop_nobcof <- copy(crop)[, B_C_OF_CULT := NULL]
+  expect_error(rc_input_crop(dt = crop_nobcof), 'missing elements')
   
-  result <- rc_input_crop(dt)
+  # Too high B_C_OF_CULT
+  crop_highbcof <- copy(crop)[, B_C_OF_CULT := 500000]
+  expect_error(rc_input_crop(dt = crop_highbcof), paste0('not <= ', format(rc_maxval('B_C_OF_CULT'), scientific = FALSE)))
   
-  # Check default fr_dpm_rpm for NA HC
-  expect_equal(result$cin_dpm[1], 1.44 * result$cin_rpm[1])
-  expect_equal(result$cin_dpm[2], 0)
-})
-
-test_that("rc_input_crop returns only relevant columns", {
-  dt <- data.table(
-    B_LU_START = as.Date(c("2020-01-01", "2020-06-01")),
-    B_LU_END = as.Date(c("2020-05-31", "2020-11-30")),
-    B_LU = c("wheat", "maize"),
-    B_LU_HC = c(0.8, 0.95),
-    B_C_OF_INPUT = c(1000, 1500),
-    extra_col = c("a", "b")
-  )
+  # negative B_C_OF_CULT
+  crop_negbcof <- copy(crop)[, B_C_OF_CULT := -30]
+  expect_error(rc_input_crop(dt = crop_negbcof), paste0('not >= ', rc_minval('B_C_OF_CULT')))
   
-  result <- rc_input_crop(dt)
+  ## B_LU_START --------------------------
+  # Run without B_LU_START
+  crop_nostart <- copy(crop)[, B_LU_START := NULL]
+  expect_error(rc_input_crop(dt = crop_nostart), 'missing elements')
   
-  # Check only expected columns are returned
-  expect_equal(
-    names(result),
-    c("year", "month", "B_LU_END", "B_LU_START", "cin_dpm", "cin_rpm")
-  )
-})
-
-test_that("rc_input_crop works without B_LU column", {
-  dt <- data.table(
-    B_LU_START = as.Date(c("2020-01-01", "2020-06-01")),
-    B_LU_END = as.Date(c("2020-05-31", "2020-11-30")),
-    B_LU_HC = c(0.8, 0.95),
-    B_C_OF_INPUT = c(1000, 1500)
-  )
+  # B_LU_START in wrong format
+  crop_wrongstart <- copy(crop)[, B_LU_START := 'wrong date']
+  expect_error(rc_input_crop(dt = crop_wrongstart), 'ambiguous format')
   
-  # Should not error when B_LU is absent
-  expect_silent(rc_input_crop(dt))
+  ## B_LU_END --------------------------
+  # Run without B_LU_END
+  crop_noend <- copy(crop)[, B_LU_END := NULL]
+  expect_error(rc_input_crop(dt = crop_noend), 'missing elements')
   
-  result <- rc_input_crop(dt)
+  # B_LU_END in wrong format
+  crop_wrongend <- copy(crop)[, B_LU_END := 'wrong date']
+  expect_error(rc_input_crop(dt = crop_wrongend), 'ambiguous format')
   
-  # Verify output structure
-  expect_equal(
-    names(result),
-    c("year", "month", "B_LU_END", "B_LU_START", "cin_dpm", "cin_rpm")
-  )
+  # Humification coefficient ---------------------
+  # Run without humification coefficient
+  crop_nohc <- copy(crop)[, B_LU_HC := NULL]
+  expect_error(rc_input_crop(dt = crop_nohc), 'missing elements')
+  
+  # Humification coefficient above maximum allowed
+  crop_highhc <- copy(crop)[, B_LU_HC := 1.5]
+  expect_error(rc_input_crop(dt = crop_highhc), paste0('not <= ', rc_maxval('B_LU_HC')))
+  
+  # negative humification coefficient
+  crop_neghc <- copy(crop)[, B_LU_HC := -0.5]
+  expect_error(rc_input_crop(dt = crop_neghc), paste0('not >= ', rc_minval('B_LU_HC')))
 })

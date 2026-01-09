@@ -1,4 +1,3 @@
-# test functions for rc_input_events
 test_that("rc_input_events combines crops and amendment data correctly", {
   crops <- data.table(
     time = c(1, 1, 2, 2),
