@@ -15,7 +15,7 @@ rc_update_weather(dt = NULL, dt.time = dt.time)
 \item W_PREC_SUM_MONTH (mm)
 \item W_ET_REF_MONTH (mm)
 \item W_ET_ACT_MONTH (mm; optional, can be NA)
-\item W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA)
+*W_ET_REFACT (fraction; optional, defaults to 0.75 if missing or NA and W_ET_REF_MONTH is supplied)
 If not supplied, default monthly weather based on the Netherlands is added
 }}
 

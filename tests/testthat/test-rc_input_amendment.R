@@ -166,12 +166,13 @@ test_that("rc_input_amendment correctly checks input validity", {
   
 })
 
-test_that("rc_input_amendment works with B_C_OF_INPUT only", {
+test_that("rc_input_amendment works with B_C_OF_AMENDMENT only", {
   amendments_dt <- data.table(
     P_DATE_FERTILIZATION = c("2023-04-01", "2023-10-01"),
     P_HC = c(0.5, 0.4),
-    B_C_OF_INPUT = c(1000, 1200)  # Directly provide carbon input
+    B_C_OF_AMENDMENT = c(1000, 1200)  # Directly provide carbon input
   )
+  
   result_dt <- rc_input_amendment(amendments_dt)
   expect_s3_class(result_dt, "data.table")
   expect_equal(nrow(result_dt), 2)

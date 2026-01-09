@@ -27,7 +27,7 @@ Crop table includes the columns:
 \item B_LU_START (start of crop rotation),
 \item B_LU_END (end of crop rotation),
 \item B_LU_HC, the humification coefficient of crop organic matter (-). When not supplied, default RothC value will be used
-\item B_C_OF_INPUT, the organic carbon input on field level (kg C/ha)
+\item B_C_OF_CULT, the organic carbon input on field level (kg C/ha)
 }
 }
 \examples{

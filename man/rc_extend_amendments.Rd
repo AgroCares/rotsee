@@ -24,9 +24,9 @@ Function to extend the user amendments input file to cover the full range of sim
 \details{
 Amendment table includes the columns:
 \itemize{
-\item B_C_OF_INPUT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
-\item P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_INPUT is not supplied
-\item P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_INPUT is not supplied
+\item B_C_OF_AMENDMENT (numeric), the organic carbon input from soil amendment product on a field level (kg C/ha)
+\item P_DOSE (numeric), applied dose of soil amendment product (kg/ha), required if B_C_OF_AMENDMENT is not supplied
+\item P_C_OF (numeric), organic carbon content of the soil amendment product (g C/kg), required if B_C_OF_AMENDMENT is not supplied
 \item P_HC (numeric), the humification coefficient of the soil amendment product (fraction)
 \item P_DATE_FERTILIZATION (date), date of fertilizer application (formatted YYYY-MM-DD)
 }
