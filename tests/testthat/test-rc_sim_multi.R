@@ -1,9 +1,57 @@
-test_that("rc_sim_multi runs with normal inputs", {
+test_that("rc_sim_multi runs sequential calculations", {
   soil_properties <- create_soil_properties()[rep(1:.N, 3)][, ID := .I]
   
-  A_DEPTH = 0.3
+  A_DEPTH <- 0.3
   
-  B_DEPTH = 0.3
+  B_DEPTH <- 0.3
+  
+  rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  
+  rothc_amendment <- create_amendment()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
+  rothc_amendment[, P_DOSE := rep(c(100000, 25000, 70000), 2)]
+  
+  weather <- create_weather()
+  
+  parms <- create_parms()
+  
+  
+  # Run with all correct values
+  result <- rc_sim_multi(soil_properties = soil_properties,
+                         A_DEPTH = A_DEPTH,
+                         B_DEPTH = B_DEPTH,
+                         parms = parms,
+                         weather = weather,
+                         rotation = rothc_rotation,
+                         amendment = rothc_amendment,
+                         final = FALSE,
+                         strategy = 'sequential')
+  
+  expect_s3_class(result, "data.table")
+  expect_true(all(c("ID", "A_SOM_LOI", "soc", "xs") %in% names(result)))
+  expect_equal(nrow(result), 57)
+  
+  
+  # Runs correctly with final set to true
+  result_final <- rc_sim_multi(soil_properties = soil_properties,
+                               A_DEPTH = A_DEPTH,
+                               B_DEPTH = B_DEPTH,
+                               parms = parms,
+                               weather = weather,
+                               rotation = rothc_rotation,
+                               amendment = rothc_amendment,
+                               final = TRUE,
+                               strategy = 'sequential')
+  
+  
+  expect_equal(nrow(result_final), 3)
+})
+
+test_that("rc_sim_multi runs multicore calculations", {
+  soil_properties <- create_soil_properties()[rep(1:.N, 3)][, ID := .I]
+  
+  A_DEPTH <- 0.3
+  
+  B_DEPTH <- 0.3
   
   rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
   
@@ -55,6 +103,9 @@ test_that("rc_sim_multi throws error if soil_properties is not a data.table", {
 test_that("rc_sim_multi handles progress reporting", {
   soil_properties <- create_soil_properties()[rep(1:.N, 3)][, ID := .I]
   
+  A_DEPTH <- 0.3
+  
+  B_DEPTH <- 0.3
   
   rothc_rotation <- create_rotation()[rep(1:.N, 3)][, ID := rep(1:3, each = 2)]
   
@@ -68,8 +119,8 @@ test_that("rc_sim_multi handles progress reporting", {
   
   # Test with progress reporting
   result <- rc_sim_multi(soil_properties = soil_properties,
-                         A_DEPTH = 0.3,
-                         B_DEPTH = 0.3,
+                         A_DEPTH = A_DEPTH,
+                         B_DEPTH = B_DEPTH,
                          parms = parms,
                          weather = weather,
                          rotation = rothc_rotation,
